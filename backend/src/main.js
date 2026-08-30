@@ -22,11 +22,11 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "../../react-frontend")));
 
-//app.use(API_Limiter(900, 100)); i dont think we need global rate limiter, but it is an option
-app.use("/auth", API_Limiter(900, 5, 1), authRoutes); // 900 seconds = 15 minutes
-app.use("/chat", FN_verifyTkn, API_Limiter(10, 50, 0), chatRoutes); // 30 seconds
-app.use("/profile", FN_verifyTkn, API_Limiter(50, 20, 0), profileRoutes);
-app.use("/feedback", FN_verifyTkn, API_Limiter(60, 5, 1), feedbackRoutes);
+//app.use(API_Limiter(900, 100)); // global rate limiter disabled
+app.use("/auth", API_Limiter(60, 50, 1), authRoutes); // 60 seconds, 50 requests
+app.use("/chat", FN_verifyTkn, API_Limiter(10, 500, 0), chatRoutes); // 10 seconds, 500 requests
+app.use("/profile", FN_verifyTkn, API_Limiter(10, 50, 0), profileRoutes); // 10 seconds, 50 requests
+app.use("/feedback", FN_verifyTkn, API_Limiter(60, 50, 1), feedbackRoutes); // 60 seconds, 50 requests
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // error handlers
