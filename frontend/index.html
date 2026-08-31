@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/webp" href="/favicon.webp" />
+    <link rel="apple-touch-icon" href="/favicon.webp" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SurakhshaDrishti | AI-Driven Multi-Hazard Red Zone & Relocation DSS</title>
+    <meta name="description" content="SurakhshaDrishti: An intelligent, GIS-enabled decision support platform for identifying multi-hazard Red Zones, assessing carrying capacity of safer sites, and prioritizing vulnerable habitations for relocation. Developed for NDRF & SDMA under SIH 2026." />
+    <meta name="theme-color" content="#050914" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Italianno&family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <style>
+      /* Critical inline: prevent FOUC on dark background */
+      html, body { background: #050914; color: #E2E8F0; }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-navy-950 text-slate-200 font-sans antialiased selection:bg-hazard-critical/40 selection:text-white min-h-screen overflow-x-hidden">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
