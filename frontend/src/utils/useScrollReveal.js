@@ -11,7 +11,7 @@ export function useScrollReveal(options = {}) {
   const [isRevealed, setIsRevealed] = useState(false);
 
   useEffect(() => {
-    // Respect reduced motion preference
+
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) {
       setIsRevealed(true);

@@ -8,11 +8,11 @@ export default function IntroSequence({ onComplete }) {
 
   useEffect(() => {
     const statusMessages = [
-      { at: 15, text: 'INITIALIZING SATELLITE TELEMETRY (ISRO-RISAT & SENTINEL)...' },
-      { at: 35, text: 'GEOHASHING MULTI-HAZARD RISK BOUNDARIES (PRECISION: 8-CHAR)...' },
-      { at: 60, text: 'COMPUTING SAFE-ZONE CARRYING CAPACITY INDEXES...' },
-      { at: 85, text: 'ESTABLISHING ZERO-KNOWLEDGE E2EE REALLOCATION CHANNELS...' },
-      { at: 98, text: 'SURAKSHADRISHTI DECISION ENGINE READY.' },
+      { at: 12, text: 'INITIALIZING SATELLITE TELEMETRY (ISRO-RISAT & SENTINEL-2)...' },
+      { at: 32, text: 'GEOHASHING MULTI-HAZARD RISK BOUNDARIES (PRECISION: 8-CHAR)...' },
+      { at: 55, text: 'COMPUTING SAFE-ZONE SPATIAL CARRYING CAPACITY INDEXES...' },
+      { at: 78, text: 'ESTABLISHING ZERO-KNOWLEDGE E2EE REALLOCATION CHANNELS...' },
+      { at: 94, text: 'SURAKSHADRISHTI AI DECISION ENGINE READY.' },
     ];
 
     const interval = setInterval(() => {
@@ -25,15 +25,15 @@ export default function IntroSequence({ onComplete }) {
             setTimeout(() => {
               onComplete();
             }, 600);
-          }, 350);
+          }, 800);
           return 100;
         }
-        const next = prev + 2;
+        const next = prev + 1;
         const msg = statusMessages.find((m) => next >= m.at && prev < m.at);
         if (msg) setLoaderStatus(msg.text);
         return next;
       });
-    }, 24);
+    }, 45);
 
     return () => clearInterval(interval);
   }, [onComplete]);

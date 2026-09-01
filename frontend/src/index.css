@@ -4,7 +4,7 @@
 @tailwind utilities;
 
 /* ============================================================
-   SurakhshaDrishti — Design System
+   SurakhshaDrishti — Design System (Dark Matte Theme)
    AI-Driven Multi-Hazard Red Zone & Relocation DSS
    ============================================================ */
 
@@ -24,8 +24,34 @@
     --glass-border: rgba(255, 255, 255, 0.08);
   }
 
+  /* Matte Background with Light Grid Lines */
+  .bg-matte-grid {
+    background-color: #050914;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* Gradient Bottom-Edge Glow on Button Hover */
+  .btn-bottom-glow-blue:hover {
+    box-shadow: 0 12px 25px -4px rgba(37, 99, 235, 0.55), 0 4px 12px -2px rgba(6, 182, 212, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-bottom-glow-red:hover {
+    box-shadow: 0 12px 25px -4px rgba(220, 38, 38, 0.6), 0 4px 12px -2px rgba(245, 158, 11, 0.45);
+    transform: translateY(-2px);
+  }
+
+  .btn-bottom-glow-slate:hover {
+    box-shadow: 0 10px 20px -4px rgba(71, 85, 105, 0.4);
+    transform: translateY(-2px);
+  }
+
   html {
     scroll-behavior: smooth;
+    color-scheme: dark;
   }
 
   body {
@@ -36,6 +62,15 @@
 
   .font-cambria {
     font-family: "Cambria Math", Cambria, Georgia, serif;
+  }
+
+  .nav-scrolled {
+    background: rgba(5, 9, 20, 0.9) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 0 15px 1px rgba(6, 182, 212, 0.08) !important;
+    transform: translateY(0);
   }
 
   ::-webkit-scrollbar {

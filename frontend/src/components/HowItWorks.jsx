@@ -12,6 +12,7 @@ import { useScrollReveal } from '../utils/useScrollReveal';
 const steps = [
   {
     icon: Satellite,
+    image: '/pipeline_satellite.webp',
     title: 'Hazard Data Ingestion',
     description: 'Multi-source feeds from ISRO satellite imagery, IMD weather data, GSI geological surveys, and IoT sensor networks.',
     color: 'text-cyan-400',
@@ -22,6 +23,7 @@ const steps = [
   },
   {
     icon: Brain,
+    image: '/pipeline_ai_core.webp',
     title: 'AI Risk Engine',
     description: 'Multi-hazard scoring model evaluates landslide probability, flood risk, coastal erosion patterns, and cloudburst vulnerability.',
     color: 'text-purple-400',
@@ -32,6 +34,7 @@ const steps = [
   },
   {
     icon: Users,
+    image: '/pipeline_vulnerability.webp',
     title: 'Vulnerability Analysis',
     description: 'Population density, socioeconomic factors, building fragility, access routes, and disaster history overlaid on hazard data.',
     color: 'text-amber-400',
@@ -42,6 +45,7 @@ const steps = [
   },
   {
     icon: MapPin,
+    image: '/pipeline_rescue_drone.webp',
     title: 'Relocation Planning',
     description: 'Carrying capacity assessment of safe sites. Tiered prioritization: immediate, short-term, and medium-term relocation plans.',
     color: 'text-emerald-400',
@@ -63,42 +67,52 @@ function StepCard({ step, index, isLast }) {
         style={{ transitionDelay: `${index * 100}ms` }}
       >
         <div
-          className={`relative rounded-2xl p-5 sm:p-6 bg-slate-900/60 border ${step.border} ${step.hoverBorder} h-full flex flex-col justify-between transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-950/40 hover:bg-slate-900/90 group cursor-default overflow-hidden`}
+          className={`relative rounded-3xl p-5 sm:p-6 bg-slate-900/70 border ${step.border} ${step.hoverBorder} h-full flex flex-col justify-between transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-2xl hover:shadow-cyan-950/40 hover:bg-slate-900/90 group cursor-default overflow-hidden`}
         >
           <div 
-            className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+            className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
             style={{
               background: `radial-gradient(circle at 50% 20%, ${step.glowColor} 0%, transparent 70%)`
             }}
           />
 
-          <div className="relative z-10">
-            <div className="flex items-center justify-between mb-3.5">
-              <div className={`p-2.5 rounded-xl ${step.bg} border border-slate-800 transition-transform duration-300 group-hover:scale-110 shadow-sm`}>
-                <step.icon className={`w-5 h-5 ${step.color}`} />
-              </div>
+          <div className="relative z-10 space-y-4">
+            
+            <div className="flex items-center justify-between">
+              {step.image ? (
+                <div className="w-14 h-14 flex items-center justify-center group-hover:scale-115 transition-transform duration-300 drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]">
+                  <img src={step.image} alt={step.title} className="w-full h-full object-contain" />
+                </div>
+              ) : (
+                <div className={`p-3 rounded-2xl ${step.bg} border border-slate-800 transition-transform duration-300 group-hover:scale-110 shadow-sm`}>
+                  <step.icon className={`w-5 h-5 ${step.color}`} />
+                </div>
+              )}
+              
               <span className="text-[11px] font-mono font-bold text-slate-500 group-hover:text-cyan-400 transition-colors">
                 STAGE • 0{index + 1}
               </span>
             </div>
 
-            <h3 className="font-cambria text-sm sm:text-base font-bold text-white mb-2 group-hover:text-cyan-300 transition-colors tracking-tight">
-              {step.title}
-            </h3>
-            <p className="font-cambria text-xs text-slate-300 leading-relaxed">
-              {step.description}
-            </p>
+            <div>
+              <h3 className="font-cambria text-sm sm:text-base font-bold text-white mb-1.5 group-hover:text-cyan-300 transition-colors tracking-tight">
+                {step.title}
+              </h3>
+              <p className="font-cambria text-xs text-slate-300 leading-relaxed">
+                {step.description}
+              </p>
+            </div>
           </div>
 
-          <div className="relative z-10 mt-4 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 group-hover:text-slate-400">
+          <div className="relative z-10 mt-5 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500 group-hover:text-slate-400">
             <span className="font-cambria">Phase 0{index + 1} Verified</span>
-            <span className="w-1.5 h-1.5 rounded-full bg-slate-700 group-hover:bg-cyan-400 transition-colors"></span>
+            <span className="w-2 h-2 rounded-full bg-slate-700 group-hover:bg-cyan-400 transition-colors"></span>
           </div>
         </div>
       </div>
 
       {!isLast && (
-        <div className="hidden lg:flex items-center px-1.5 text-slate-700">
+        <div className="hidden lg:flex items-center px-1 text-slate-700">
           <ArrowRight className="w-4 h-4 text-slate-700" />
         </div>
       )}
@@ -121,8 +135,8 @@ export default function HowItWorks() {
           ref={titleRef}
           className={`text-center mb-10 sm:mb-12 reveal ${titleRevealed ? 'revealed' : ''}`}
         >
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-950/40 border border-cyan-500/30 mb-3 shadow-sm">
-            <Sparkles className="w-3 h-3 text-cyan-400" />
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-cyan-950/40 border border-cyan-500/30 mb-3 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
             <span className="font-cambria text-xs sm:text-sm text-cyan-300 font-bold tracking-wide">
               AI-Driven Intelligence Pipeline
             </span>

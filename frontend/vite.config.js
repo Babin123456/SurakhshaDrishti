@@ -6,5 +6,8 @@ export default defineConfig({
   server: {
     port: 3000,
     open: false
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'leaflet', 'lucide-react', 'lenis']
   }
 });

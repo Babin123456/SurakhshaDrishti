@@ -15,24 +15,25 @@ import {
   ShieldCheck,
   Radio,
   Lock,
-  Globe
+  Globe,
+  Zap
 } from 'lucide-react';
 
 const TILE_LAYERS = {
   streets: {
     name: 'Map View',
-    url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap'
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
   },
   satellite: {
     name: 'Satellite',
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri'
+    attribution: 'Tiles &copy; Esri, Maxar, Earthstar Geographics'
   },
   terrain: {
     name: 'Terrain',
-    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
-    attribution: '&copy; OpenStreetMap contributors, SRTM'
+    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap'
   }
 };
 
@@ -156,7 +157,7 @@ const HAZARD_ZONES = [
   }
 ];
 
-// Helper: Haversine distance in KM
+
 function getHaversineDistanceKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -183,12 +184,12 @@ export default function RealGoogleMap({ onZoneSelect }) {
   const [showSafeSites, setShowSafeSites] = useState(true);
   const [showRoutes, setShowRoutes] = useState(true);
 
-  // Exact Geolocation state
+
   const [isLocating, setIsLocating] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
 
-  // Initialize Map
+
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
@@ -218,7 +219,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
     };
   }, []);
 
-  // Update Tile Layer
+
   useEffect(() => {
     if (!mapInstanceRef.current || !tileLayerRef.current) return;
     mapInstanceRef.current.removeLayer(tileLayerRef.current);
@@ -228,7 +229,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
     }).addTo(mapInstanceRef.current);
   }, [activeLayerType]);
 
-  // Render Overlays
+
   useEffect(() => {
     if (!mapInstanceRef.current || !layersGroupRef.current) return;
 
@@ -240,7 +241,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
       const isRed = zone.type === 'red';
       const isSelected = selectedZone?.id === zone.id;
 
-      // 1. Danger Zone Circle Overlay
+
       if (showRedZones) {
         const circle = L.circle([zone.lat, zone.lng], {
           color: isRed ? '#DC2626' : '#D97706',
@@ -263,7 +264,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
         group.addLayer(circle);
       }
 
-      // 2. Custom Marker Pin
+
       const pinHtml = `
         <div style="position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer;">
           <div style="position: absolute; width: ${isSelected ? '38px' : '28px'}; height: ${isSelected ? '38px' : '28px'}; border-radius: 50%; background: ${isRed ? 'rgba(220,38,38,0.45)' : 'rgba(217,119,6,0.45)'}; animation: ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></div>
@@ -318,7 +319,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
 
       group.addLayer(marker);
 
-      // 3. Safe Site Marker
+
       if (showSafeSites && zone.safeSite) {
         const safeHtml = `
           <div style="width: 18px; height: 18px; border-radius: 50%; background: #16A34A; border: 2px solid #FFFFFF; box-shadow: 0 3px 8px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 900; cursor: pointer;">
@@ -339,7 +340,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
         group.addLayer(safeMarker);
       }
 
-      // 4. Evacuation Wayroute Polyline
+
       if (showRoutes && zone.wayroute) {
         const polyline = L.polyline(zone.wayroute, {
           color: isSelected ? '#0284C7' : '#94A3B8',
@@ -354,7 +355,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
     });
   }, [selectedZone, showRedZones, showSafeSites, showRoutes]);
 
-  // FitBounds on Hotspot Jump
+
   const handleFlyTo = (zone) => {
     setSelectedZone(zone);
     if (mapInstanceRef.current) {
@@ -387,7 +388,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
     if (onZoneSelect) onZoneSelect(zone);
   };
 
-  // Reset to All-India View
+
   const handleResetView = () => {
     if (mapInstanceRef.current) {
       mapInstanceRef.current.flyTo([20.5937, 78.9629], 5, {
@@ -396,7 +397,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
     }
   };
 
-  // Detect Location
+
   const handleDetectLocation = () => {
     if (!navigator.geolocation) {
       setLocationError('Geolocation is not supported by your browser.');
@@ -516,39 +517,45 @@ export default function RealGoogleMap({ onZoneSelect }) {
           </div>
         </div>
 
-        {/* macOS Window Top Navigation Bar */}
-        <div className="px-3 py-2 bg-slate-950/90 rounded-t-2xl border-b border-slate-800 flex items-center justify-between gap-3 text-xs">
+        {/* macOS Window Top Navigation Bar (Mobile Responsive) */}
+        <div className="px-3 py-2 bg-slate-950/95 rounded-t-2xl border-b border-slate-800 flex items-center justify-between gap-2 text-xs">
           
-          {/* macOS Traffic Lights */}
-          <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-[#FF5F56] border border-[#E0443E] shadow-sm"></div>
-            <div className="w-3 h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123] shadow-sm"></div>
-            <div className="w-3 h-3 rounded-full bg-[#27C93F] border border-[#1AAB29] shadow-sm"></div>
+          {/* Left: macOS Traffic Lights & Mode */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#FF5F56] border border-[#E0443E] shadow-sm"></div>
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#FFBD2E] border border-[#DEA123] shadow-sm"></div>
+              <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-[#27C93F] border border-[#1AAB29] shadow-sm"></div>
+            </div>
+            <span className="hidden md:inline text-[10px] font-mono font-bold text-emerald-400 pl-1 border-l border-slate-800">
+              ● LIVE GIS SATELLITE & ROAD TILES
+            </span>
           </div>
 
-          {/* Centered URL / Telemetry Address Capsule */}
-          <div className="flex-1 max-w-sm mx-auto flex items-center justify-center gap-1.5 px-3 py-1 rounded-lg bg-slate-900 border border-slate-800 text-[11px] text-slate-400 font-mono">
-            <Lock className="w-3 h-3 text-emerald-400" />
-            <span className="text-slate-300 font-medium">surakshadrishti.mha.gov.in</span>
-            <span className="text-slate-600">/</span>
-            <span className="text-cyan-400">gis-telemetry-live</span>
+          {/* Center: URL / Telemetry Address Capsule */}
+          <div className="flex-1 max-w-[200px] sm:max-w-sm mx-auto flex items-center justify-center gap-1.5 px-2.5 py-0.5 sm:py-1 rounded-lg bg-slate-900 border border-slate-800 text-[10px] sm:text-[11px] text-slate-400 font-mono truncate">
+            <Lock className="w-3 h-3 text-emerald-400 shrink-0" />
+            <span className="text-slate-300 font-medium truncate">surakshadrishti.mha.gov.in</span>
           </div>
 
-          {/* Live GIS indicator */}
-          <div className="hidden sm:flex items-center gap-1.5 text-[10px] font-bold text-emerald-400">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-            <span>GIS ENCRYPTED</span>
+          {/* Right: Live Encrypted indicator & Instruction Hint */}
+          <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 shrink-0">
+            <span className="hidden lg:inline font-cambria text-slate-400">Click marker to inspect</span>
+            <span className="flex items-center gap-1 text-emerald-400 font-mono">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>LIVE GIS</span>
+            </span>
           </div>
         </div>
 
-        {/* Interactive Tactical Control Bar */}
-        <div className="p-3 bg-slate-900 border-b border-slate-800 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-2.5 text-white">
+        {/* Interactive Tactical Control Bar (Fully Mobile Optimized) */}
+        <div className="p-2 sm:p-3 bg-slate-900 border-b border-slate-800 flex flex-col gap-2 text-white">
           
-          {/* Left Section: Search & Hotspots */}
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1 rounded-xl border border-slate-700 text-xs font-semibold">
-              <Search className="w-3 h-3 text-cyan-400" />
-              <span className="text-slate-400 text-[11px] font-bold hidden sm:inline">Sector:</span>
+          {/* Row 1: Sector Dropdown & Locate / Reset Actions */}
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            
+            <div className="flex items-center gap-1.5 bg-slate-800/90 px-2 py-1 rounded-xl border border-slate-700 text-xs font-semibold flex-1 min-w-[170px] sm:flex-initial">
+              <Search className="w-3 h-3 text-cyan-400 shrink-0" />
               <select
                 value={selectedZone?.id || ''}
                 onChange={(e) => {
@@ -556,74 +563,59 @@ export default function RealGoogleMap({ onZoneSelect }) {
                   if (found) handleFlyTo(found);
                 }}
                 aria-label="Select hotspot"
-                className="bg-slate-900 text-white rounded-lg px-2 py-1 text-xs font-bold border border-slate-700 outline-none cursor-pointer hover:border-cyan-500 transition-colors"
+                className="w-full bg-slate-900 text-white rounded-lg px-2 py-1 text-[11px] sm:text-xs font-bold border border-slate-700 outline-none cursor-pointer hover:border-cyan-500 transition-colors"
               >
                 {HAZARD_ZONES.map((z) => (
                   <option key={z.id} value={z.id}>
-                    {z.shortName} ({z.state}) — {z.riskScore}/100
+                    {z.shortName} ({z.state})
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Quick Hotspot Pills */}
-            <div className="hidden lg:flex items-center gap-1">
-              {HAZARD_ZONES.map((z) => (
-                <button
-                  key={z.id}
-                  type="button"
-                  onClick={() => handleFlyTo(z)}
-                  className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1.5 border ${
-                    selectedZone?.id === z.id
-                      ? 'bg-blue-600 text-white border-blue-500 shadow-sm'
-                      : 'bg-slate-800/70 hover:bg-slate-800 text-slate-300 border-slate-700/80 hover:text-white'
-                  }`}
-                >
-                  <span className={`w-1.5 h-1.5 rounded-full ${z.type === 'red' ? 'bg-red-500' : 'bg-amber-500'}`} />
-                  {z.shortName}
-                </button>
-              ))}
+            {/* Locate Me & Reset View */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                type="button"
+                onClick={handleDetectLocation}
+                disabled={isLocating}
+                className="px-2.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 border border-blue-400/50 text-white text-[11px] font-bold transition-all flex items-center gap-1.5 shadow-sm disabled:opacity-50 cursor-pointer"
+                title="Detect Exact GPS Coordinates"
+              >
+                {isLocating ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Locating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Crosshair className="w-3 h-3 text-cyan-200" />
+                    <span>Locate Me</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleResetView}
+                className="px-2 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer"
+                title="Reset All-India View"
+              >
+                <RotateCcw className="w-3 h-3 text-cyan-400" />
+                <span className="hidden sm:inline">Reset</span>
+              </button>
             </div>
 
-            {/* Detect Exact Location Button */}
-            <button
-              type="button"
-              onClick={handleDetectLocation}
-              disabled={isLocating}
-              className="px-2.5 py-1 rounded-xl bg-blue-600 hover:bg-blue-500 border border-blue-400/50 text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm disabled:opacity-50"
-              title="Detect Exact GPS Coordinates"
-            >
-              {isLocating ? (
-                <>
-                  <Loader2 className="w-3 h-3 animate-spin" />
-                  <span>Locating GPS...</span>
-                </>
-              ) : (
-                <>
-                  <Crosshair className="w-3 h-3 text-cyan-200" />
-                  <span>Locate Me</span>
-                </>
-              )}
-            </button>
-
-            {/* Reset View */}
-            <button
-              type="button"
-              onClick={handleResetView}
-              className="px-2 py-1 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition-all flex items-center gap-1"
-              title="Reset All-India View"
-            >
-              <RotateCcw className="w-3 h-3 text-cyan-400" />
-              <span className="hidden sm:inline">Reset</span>
-            </button>
           </div>
 
-          {/* Right Section: View Switcher & Filter Toggles */}
-          <div className="flex flex-wrap items-center gap-2 justify-end">
-            <div className="flex items-center bg-slate-800/90 p-0.5 rounded-xl border border-slate-700 text-xs font-bold">
+          {/* Row 2: Map Tile Type Switcher & Layer Filters */}
+          <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1 border-t border-slate-800/80">
+            
+            {/* Tile Style Switcher */}
+            <div className="flex items-center bg-slate-800/90 p-0.5 rounded-xl border border-slate-700 text-[11px] font-bold">
               <button
                 onClick={() => setActiveLayerType('streets')}
-                className={`px-2.5 py-1 rounded-lg transition-all ${
+                className={`px-2 py-1 rounded-lg transition-all ${
                   activeLayerType === 'streets'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-300 hover:text-white'
@@ -633,7 +625,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
               </button>
               <button
                 onClick={() => setActiveLayerType('satellite')}
-                className={`px-2.5 py-1 rounded-lg transition-all ${
+                className={`px-2 py-1 rounded-lg transition-all ${
                   activeLayerType === 'satellite'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-300 hover:text-white'
@@ -643,7 +635,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
               </button>
               <button
                 onClick={() => setActiveLayerType('terrain')}
-                className={`px-2.5 py-1 rounded-lg transition-all ${
+                className={`px-2 py-1 rounded-lg transition-all ${
                   activeLayerType === 'terrain'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'text-slate-300 hover:text-white'
@@ -653,7 +645,8 @@ export default function RealGoogleMap({ onZoneSelect }) {
               </button>
             </div>
 
-            <div className="flex items-center bg-slate-800/90 p-0.5 rounded-xl border border-slate-700 text-xs font-medium gap-0.5">
+            {/* Layer Visibility Filters */}
+            <div className="flex items-center bg-slate-800/90 p-0.5 rounded-xl border border-slate-700 text-[10px] sm:text-[11px] font-medium gap-0.5">
               <button
                 type="button"
                 onClick={() => setShowRedZones(!showRedZones)}
@@ -687,6 +680,7 @@ export default function RealGoogleMap({ onZoneSelect }) {
                 <span>Routes</span>
               </button>
             </div>
+
           </div>
 
         </div>
@@ -703,13 +697,13 @@ export default function RealGoogleMap({ onZoneSelect }) {
         )}
 
         {/* Inner Screen Display Viewport */}
-        <div className="relative w-full h-[460px] sm:h-[520px] rounded-b-2xl overflow-hidden bg-slate-950">
+        <div className="relative w-full h-[400px] sm:h-[520px] rounded-b-2xl overflow-hidden bg-slate-950">
           <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-          {/* User Location Locked Badge */}
+          {/* User Location Locked Badge (Mobile Floating Pill) */}
           {userLocation && (
-            <div className="absolute top-3 left-3 z-[1000] pointer-events-auto max-w-xs">
-              <div className="bg-slate-950/95 text-white backdrop-blur-md rounded-2xl p-2.5 border border-blue-500/40 shadow-2xl space-y-1">
+            <div className="absolute top-2 left-2 right-2 sm:right-auto sm:max-w-xs z-[1000] pointer-events-auto">
+              <div className="bg-slate-950/95 text-white backdrop-blur-md rounded-xl p-2 sm:p-2.5 border border-blue-500/40 shadow-2xl space-y-1 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1 text-[10px] font-extrabold text-blue-400">
                     <Crosshair className="w-3 h-3 text-blue-400 animate-pulse" />
@@ -717,20 +711,20 @@ export default function RealGoogleMap({ onZoneSelect }) {
                   </span>
                   <span className="text-[9px] text-slate-400">{userLocation.timestamp}</span>
                 </div>
-                <div className="text-[11px] font-mono text-slate-200">
+                <div className="text-[10px] sm:text-[11px] font-mono text-slate-200">
                   {userLocation.lat.toFixed(4)}° N, {userLocation.lng.toFixed(4)}° E
                 </div>
-                <div className={`p-1.5 rounded-lg text-[10px] font-semibold flex items-center gap-1.5 ${
+                <div className={`p-1 rounded-lg text-[10px] font-semibold flex items-center gap-1.5 ${
                   userLocation.isInsideHazard 
                     ? 'bg-red-950/80 text-red-300 border border-red-800' 
                     : 'bg-emerald-950/80 text-emerald-300 border border-emerald-800'
                 }`}>
                   {userLocation.isInsideHazard ? (
-                    <AlertTriangle className="w-3.5 h-3.5 text-red-400 shrink-0" />
+                    <AlertTriangle className="w-3 h-3 text-red-400 shrink-0" />
                   ) : (
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <ShieldCheck className="w-3 h-3 text-emerald-400 shrink-0" />
                   )}
-                  <span>
+                  <span className="truncate">
                     {userLocation.isInsideHazard
                       ? `Inside ${userLocation.nearestZone.shortName} Red Zone!`
                       : `Safe Zone • ${userLocation.distanceKm} km to ${userLocation.nearestZone.shortName}`}
@@ -740,10 +734,10 @@ export default function RealGoogleMap({ onZoneSelect }) {
             </div>
           )}
 
-          {/* Selected Zone Telemetry HUD */}
+          {/* Selected Zone Telemetry HUD (Mobile Bottom Docked Card) */}
           {selectedZone && (
-            <div className="absolute bottom-3 left-3 right-3 sm:right-auto sm:max-w-sm z-[1000] pointer-events-auto">
-              <div className="bg-slate-950/95 text-white backdrop-blur-md rounded-2xl p-3 border border-slate-800 shadow-2xl space-y-2">
+            <div className="absolute bottom-2 left-2 right-2 sm:left-3 sm:bottom-3 sm:right-auto sm:max-w-sm z-[1000] pointer-events-auto">
+              <div className="bg-slate-950/95 text-white backdrop-blur-md rounded-2xl p-2.5 sm:p-3 border border-slate-800 shadow-2xl space-y-1.5 sm:space-y-2">
                 
                 <div className="flex items-center justify-between">
                   <span className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider ${
@@ -757,34 +751,44 @@ export default function RealGoogleMap({ onZoneSelect }) {
                 </div>
 
                 <div>
-                  <h3 className="text-sm font-bold text-white tracking-tight">{selectedZone.name}</h3>
-                  <div className="text-[11px] text-red-400 font-medium">{selectedZone.hazard}</div>
+                  <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight leading-tight">{selectedZone.name}</h3>
+                  <div className="text-[10px] sm:text-[11px] text-red-400 font-medium">{selectedZone.hazard}</div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-1.5 text-xs">
-                  <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-800">
-                    <div className="text-slate-400 text-[9px]">Threat Index</div>
-                    <div className="text-xs font-black text-red-400">{selectedZone.riskScore} / 100</div>
+                <div className="grid grid-cols-2 gap-1 text-xs">
+                  <div className="p-1 rounded-lg bg-slate-900 border border-slate-800">
+                    <div className="text-slate-400 text-[8px] sm:text-[9px]">Threat Index</div>
+                    <div className="text-[11px] sm:text-xs font-black text-red-400">{selectedZone.riskScore} / 100</div>
                   </div>
-                  <div className="p-1.5 rounded-lg bg-slate-900 border border-slate-800">
-                    <div className="text-slate-400 text-[9px]">At-Risk Habitations</div>
-                    <div className="text-xs font-black text-amber-400">{selectedZone.populationRisk.toLocaleString()} People</div>
+                  <div className="p-1 rounded-lg bg-slate-900 border border-slate-800">
+                    <div className="text-slate-400 text-[8px] sm:text-[9px]">At-Risk Population</div>
+                    <div className="text-[11px] sm:text-xs font-black text-amber-400">{selectedZone.populationRisk.toLocaleString()}</div>
                   </div>
                 </div>
 
-                <div className="p-2 rounded-lg bg-emerald-950/50 border border-emerald-500/40 text-xs">
+                <div className="p-1.5 sm:p-2 rounded-lg bg-emerald-950/50 border border-emerald-500/40 text-xs">
                   <div className="text-[9px] text-emerald-300 font-bold flex items-center gap-1">
                     <CheckCircle2 className="w-3 h-3 text-emerald-400" /> Designated Safe Hub:
                   </div>
-                  <div className="text-white font-bold text-[11px] mt-0.5">{selectedZone.safeSite.name}</div>
-                  <div className="text-[10px] text-emerald-300">
+                  <div className="text-white font-bold text-[10px] sm:text-[11px] mt-0.5 truncate">{selectedZone.safeSite.name}</div>
+                  <div className="text-[9px] sm:text-[10px] text-emerald-300 truncate">
                     {selectedZone.safeSite.capacity} • {selectedZone.corridorName} ({selectedZone.evacEta})
                   </div>
                 </div>
 
+                <button
+                  type="button"
+                  onClick={() => onZoneSelect?.(selectedZone)}
+                  className="w-full py-1.5 sm:py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] sm:text-xs tracking-wide shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer btn-bottom-glow-blue"
+                >
+                  <Zap className="w-3 h-3 text-amber-300" />
+                  <span>Generate QuickPass for this Sector</span>
+                </button>
+
               </div>
             </div>
           )}
+
         </div>
 
       </div>

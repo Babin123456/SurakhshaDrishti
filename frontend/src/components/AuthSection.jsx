@@ -25,12 +25,11 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
   const [authMode, setAuthMode] = useState(initialMode); // 'signin' | 'signup'
   const [loginType, setLoginType] = useState('authority'); // 'authority' | 'resident'
   
-  // Sign In Form State
+
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [trustedDevice, setTrustedDevice] = useState(false);
 
-  // Sign Up Form State
   const [signupRole, setSignupRole] = useState('resident'); // 'resident' | 'ndrf' | 'sdma'
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
@@ -45,6 +44,17 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
   const [isLoading, setIsLoading] = useState(false);
   const [locationStatus, setLocationStatus] = useState(null);
   const [message, setMessage] = useState(null);
+
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    if (window.__lenis) window.__lenis.stop();
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      if (window.__lenis) window.__lenis.start();
+    };
+  }, []);
 
   useEffect(() => {
     if ('geolocation' in navigator) {
@@ -106,7 +116,6 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
     setIsLoading(true);
     setMessage(null);
 
-    // Call API or register session
     const res = await apiService.quickSign({
       name: fullName,
       phone,
@@ -141,65 +150,67 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto"
+      className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-label="Authentication portal"
     >
-      <div className="w-full max-w-lg my-8 animate-scale-in">
+      <div className="w-full max-w-lg my-auto animate-scale-in max-h-[90vh] flex flex-col justify-center">
         
         {/* Red Zone Context Banner */}
         {locationStatus?.inRedZone && (
-          <div className="flex items-center justify-between gap-2 p-3 rounded-t-2xl bg-red-950/80 border border-red-500/30 border-b-0 text-xs">
-            <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-red-500 shrink-0" />
-              <span className="text-slate-300">
-                Red Zone Detected: <span className="text-white font-bold">{locationStatus.name}</span>
+          <div className="flex items-center justify-between gap-2 px-4 py-2 sm:p-3 rounded-t-2xl bg-red-950/90 border border-red-500/30 border-b-0 text-[11px] sm:text-xs shrink-0">
+            <div className="flex items-center gap-1.5 sm:gap-2 truncate">
+              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500 shrink-0" />
+              <span className="text-slate-300 truncate">
+                Red Zone: <span className="text-white font-bold">{locationStatus.name}</span>
               </span>
             </div>
-            <span className="px-2 py-0.5 rounded bg-red-600 text-white font-black text-[10px] uppercase">
+            <span className="px-2 py-0.5 rounded bg-red-600 text-white font-black text-[9px] sm:text-[10px] uppercase shrink-0">
               2FA Bypass Active
             </span>
           </div>
         )}
 
         {/* Modal Card */}
-        <div className={`bg-slate-900/95 border border-slate-800 ${locationStatus?.inRedZone ? 'rounded-b-2xl rounded-t-none' : 'rounded-2xl'} p-6 sm:p-7 shadow-2xl backdrop-blur-xl`}>
+        <div className={`bg-slate-900/95 border border-slate-800 ${
+          locationStatus?.inRedZone ? 'rounded-b-2xl rounded-t-none' : 'rounded-2xl'
+        } p-4 sm:p-7 shadow-2xl backdrop-blur-xl overflow-y-auto max-h-[85vh] sm:max-h-[80vh]`}>
           
           {/* Top Header & Close */}
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex items-start justify-between gap-3 mb-4 sm:mb-5">
             <div>
-              <div className="flex items-center gap-2 mb-1.5">
-                <img src="/favicon.webp" alt="Logo" className="w-5 h-5 object-contain" />
-                <span className="font-cambria text-[11px] font-bold uppercase tracking-wider text-cyan-400">SurakshaDrishti Portal</span>
+              <div className="flex items-center gap-1.5 mb-1">
+                <img src="/favicon.webp" alt="Logo" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
+                <span className="font-cambria text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-cyan-400">SurakshaDrishti Portal</span>
               </div>
-              <h2 className="font-cambria text-xl font-black text-white tracking-tight">
+              <h2 className="font-cambria text-lg sm:text-xl font-black text-white tracking-tight">
                 {authMode === 'signin' ? 'Sign In to SurakshaDrishti' : 'Create an Account / Register'}
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
                 {authMode === 'signin' 
-                  ? 'Access real-time GIS intelligence, command logs, and emergency passes' 
-                  : 'Register for priority evacuation passes and official disaster consoles'}
+                  ? 'Access real-time GIS intelligence and emergency passes' 
+                  : 'Register for priority evacuation passes and official consoles'}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+              className="p-1.5 sm:p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0"
               aria-label="Close modal"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
           </div>
 
           {/* Dual Main Mode Selector: [Sign In] vs [Sign Up] */}
-          <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-950 border border-slate-800 mb-6">
+          <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-950 border border-slate-800 mb-4 sm:mb-6">
             <button
               type="button"
               onClick={() => {
                 setAuthMode('signin');
                 setMessage(null);
               }}
-              className={`py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+              className={`py-1.5 sm:py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 authMode === 'signin'
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-900/50'
                   : 'text-slate-400 hover:text-white'
@@ -213,25 +224,25 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                 setAuthMode('signup');
                 setMessage(null);
               }}
-              className={`py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-2 ${
+              className={`py-1.5 sm:py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 authMode === 'signup'
                   ? 'bg-blue-600 text-white shadow-md shadow-blue-900/50'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <UserPlus className="w-3.5 h-3.5" /> Sign Up / Register
+              <UserPlus className="w-3.5 h-3.5" /> Register
             </button>
           </div>
 
           {/* Status / Alert Message */}
           {message && (
-            <div className={`mb-5 p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
+            <div className={`mb-4 p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
               message.type === 'warning' ? 'bg-amber-950/80 border border-amber-800 text-amber-300' :
               message.type === 'error' ? 'bg-red-950/80 border border-red-800 text-red-300' :
               'bg-emerald-950/80 border border-emerald-800 text-emerald-300'
             }`}>
               <AlertTriangle className="w-4 h-4 shrink-0" />
-              {message.text}
+              <span>{message.text}</span>
             </div>
           )}
 
@@ -239,22 +250,22 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
           {authMode === 'signin' && (
             <div>
               {/* Role Toggle for Sign In */}
-              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 mb-5 text-xs font-bold">
+              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 mb-4 text-xs font-bold gap-1">
                 <button
                   type="button"
                   onClick={() => setLoginType('authority')}
-                  className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     loginType === 'authority'
                       ? 'bg-slate-800 text-white shadow-sm'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  <Shield className="w-3.5 h-3.5 text-blue-400" /> NDRF & SDMA Official
+                  <Shield className="w-3.5 h-3.5 text-blue-400" /> NDRF & SDMA
                 </button>
                 <button
                   type="button"
                   onClick={() => setLoginType('resident')}
-                  className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     loginType === 'resident'
                       ? 'bg-slate-800 text-white shadow-sm'
                       : 'text-slate-400 hover:text-white'
@@ -264,9 +275,9 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                 </button>
               </div>
 
-              <form onSubmit={handleSignIn} className="space-y-4">
+              <form onSubmit={handleSignIn} className="space-y-3.5 sm:space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">
+                  <label className="block text-xs font-bold text-slate-300 mb-1">
                     {loginType === 'authority' ? 'Official Gov Email / Service ID' : 'Mobile Number / Registered ID'}
                   </label>
                   <div className="relative">
@@ -276,14 +287,14 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder={loginType === 'authority' ? 'e.g. ndrf.command@mha.gov.in' : 'e.g. +91 98765 43210'}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                      placeholder={loginType === 'authority' ? 'ndrf.command@mha.gov.in' : '+91 98765 43210'}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 sm:py-2.5 pl-9 pr-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1.5">Password / Secure Passcode</label>
+                  <label className="block text-xs font-bold text-slate-300 mb-1">Password / Secure Passcode</label>
                   <div className="relative">
                     <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
                     <input
@@ -292,14 +303,14 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2.5 pl-9 pr-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 sm:py-2.5 pl-9 pr-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                     />
                   </div>
                 </div>
 
                 {/* 2FA Status + Trusted Device */}
-                <div className="flex items-center justify-between text-xs pt-1">
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-400 hover:text-slate-300">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">
+                  <label className="flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-300 text-[11px] sm:text-xs">
                     <input
                       type="checkbox"
                       checked={trustedDevice}
@@ -310,11 +321,11 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                   </label>
 
                   {locationStatus?.inRedZone ? (
-                    <span className="text-red-400 font-bold flex items-center gap-1">
+                    <span className="text-red-400 font-bold flex items-center gap-1 text-[11px]">
                       <CheckCircle2 className="w-3.5 h-3.5" /> 2FA Bypassed
                     </span>
                   ) : (
-                    <span className="text-emerald-400 font-semibold flex items-center gap-1">
+                    <span className="text-emerald-400 font-semibold flex items-center gap-1 text-[11px]">
                       <ShieldCheck className="w-3.5 h-3.5" /> 2FA Encrypted
                     </span>
                   )}
@@ -323,19 +334,19 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-900/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-900/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer btn-bottom-glow-blue"
                 >
                   {isLoading ? 'Authenticating...' : 'Sign In & Access Platform'}
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </form>
 
-              <div className="mt-5 text-center text-xs text-slate-400">
+              <div className="mt-4 text-center text-[11px] sm:text-xs text-slate-400">
                 Don't have an account yet?{' '}
                 <button
                   type="button"
                   onClick={() => setAuthMode('signup')}
-                  className="text-cyan-400 hover:underline font-bold"
+                  className="text-cyan-400 hover:underline font-bold cursor-pointer"
                 >
                   Sign Up / Register Here
                 </button>
@@ -345,16 +356,16 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
 
           {/* ================= MODE: SIGN UP / REGISTER ================= */}
           {authMode === 'signup' && (
-            <form onSubmit={handleSignUp} className="space-y-4">
+            <form onSubmit={handleSignUp} className="space-y-3 sm:space-y-3.5">
               
               {/* Role Selection */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1.5">Account Role</label>
-                <div className="grid grid-cols-3 gap-2 text-xs font-bold">
+                <label className="block text-xs font-bold text-slate-300 mb-1">Account Role</label>
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold">
                   <button
                     type="button"
                     onClick={() => setSignupRole('resident')}
-                    className={`p-2 rounded-xl border transition-all text-center ${
+                    className={`py-1.5 sm:py-2 px-1 rounded-xl border transition-all text-center cursor-pointer ${
                       signupRole === 'resident'
                         ? 'bg-blue-600 text-white border-blue-500 shadow-md'
                         : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
@@ -365,7 +376,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                   <button
                     type="button"
                     onClick={() => setSignupRole('ndrf')}
-                    className={`p-2 rounded-xl border transition-all text-center ${
+                    className={`py-1.5 sm:py-2 px-1 rounded-xl border transition-all text-center cursor-pointer ${
                       signupRole === 'ndrf'
                         ? 'bg-blue-600 text-white border-blue-500 shadow-md'
                         : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
@@ -376,7 +387,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                   <button
                     type="button"
                     onClick={() => setSignupRole('sdma')}
-                    className={`p-2 rounded-xl border transition-all text-center ${
+                    className={`py-1.5 sm:py-2 px-1 rounded-xl border transition-all text-center cursor-pointer ${
                       signupRole === 'sdma'
                         ? 'bg-blue-600 text-white border-blue-500 shadow-md'
                         : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
@@ -388,11 +399,11 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
               </div>
 
               {/* Full Name & Phone Number */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">Full Legal Name</label>
                   <div className="relative">
-                    <User className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                    <User className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
                     <input
                       type="text"
                       required
@@ -407,7 +418,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">Mobile (Aadhaar / OTP)</label>
                   <div className="relative">
-                    <Phone className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                    <Phone className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
                     <input
                       type="tel"
                       required
@@ -421,11 +432,11 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
               </div>
 
               {/* Email & District */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">Email Address</label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                    <Mail className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
                     <input
                       type="email"
                       required
@@ -440,7 +451,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                 <div>
                   <label className="block text-xs font-bold text-slate-300 mb-1">District & State</label>
                   <div className="relative">
-                    <Home className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                    <Home className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
                     <input
                       type="text"
                       required
@@ -454,19 +465,19 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
               </div>
 
               {/* Location GPS & Household Details */}
-              <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2.5">
+              <div className="p-2.5 sm:p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-300 flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-red-500" />
-                    Habitation GPS Geohash Coordinates:
+                  <span className="font-bold text-slate-300 flex items-center gap-1 text-[11px] sm:text-xs">
+                    <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                    Habitation GPS Geohash:
                   </span>
                   <button
                     type="button"
                     onClick={handleDetectGPS}
-                    className="text-[11px] font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
+                    className="text-[10px] sm:text-[11px] font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
                   >
                     <Crosshair className="w-3 h-3" />
-                    {isDetectingGPS ? 'Detecting...' : 'Auto-Detect GPS'}
+                    {isDetectingGPS ? 'Detecting...' : 'Auto-Detect'}
                   </button>
                 </div>
 
@@ -474,32 +485,32 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                   type="text"
                   value={detectedLoc || ''}
                   onChange={(e) => setDetectedLoc(e.target.value)}
-                  placeholder="e.g. 11.5583, 76.1384 (#tdv2n19z)"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white font-mono"
+                  placeholder="11.5583, 76.1384 (#tdv2n19z)"
+                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono"
                 />
 
-                <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                <div className="grid grid-cols-2 gap-2 text-xs pt-0.5">
                   <div>
-                    <label className="text-[11px] text-slate-400 block mb-1">Household Members</label>
+                    <label className="text-[10px] sm:text-[11px] text-slate-400 block mb-1">Household Count</label>
                     <input
                       type="number"
                       min="1"
                       max="20"
                       value={familyMembers}
                       onChange={(e) => setFamilyMembers(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-white"
+                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white"
                     />
                   </div>
 
                   <div className="flex items-end pb-1">
-                    <label className="flex items-center gap-1.5 cursor-pointer text-[11px] text-slate-300 hover:text-white">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-[10px] sm:text-[11px] text-slate-300 hover:text-white">
                       <input
                         type="checkbox"
                         checked={hasVulnerable}
                         onChange={(e) => setHasVulnerable(e.target.checked)}
                         className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-0"
                       />
-                      Elderly / Infant in Family
+                      <span>Elderly / Infant</span>
                     </label>
                   </div>
                 </div>
@@ -508,18 +519,18 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm shadow-lg shadow-blue-900/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full py-2.5 sm:py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-900/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer btn-bottom-glow-blue"
               >
                 {isLoading ? 'Registering Account...' : 'Complete Sign Up & Generate Pass'}
                 <ArrowRight className="w-4 h-4" />
               </button>
 
-              <div className="text-center text-xs text-slate-400 pt-1">
+              <div className="text-center text-[11px] sm:text-xs text-slate-400 pt-0.5">
                 Already have an account?{' '}
                 <button
                   type="button"
                   onClick={() => setAuthMode('signin')}
-                  className="text-cyan-400 hover:underline font-bold"
+                  className="text-cyan-400 hover:underline font-bold cursor-pointer"
                 >
                   Sign In Here
                 </button>

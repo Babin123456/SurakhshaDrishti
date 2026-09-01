@@ -32,7 +32,7 @@ export function useCountUp(target, duration = 1500) {
           const step = (currentTime) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            // ease-out cubic
+
             const easedProgress = 1 - Math.pow(1 - progress, 3);
             setValue(Math.floor(easedProgress * target));
 
