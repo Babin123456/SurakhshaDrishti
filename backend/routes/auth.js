@@ -71,14 +71,21 @@ router.post("/login", async (req, res, next) => {
         if (user) {
             const isMatch = await Compare_Pass(password, user.password);
             if (isMatch) {
-                // RED ZONE OVERRIDE: If user is in a Red Zone or trusted device, bypass 2FA to prevent delays during active disasters
-                if (redZoneBypass || trustedDevice || !process.env.EMAIL_USER) {
+                const userRole = (user.user_role || (loginType === 'authority' ? 'NDRF' : 'RESIDENT')).toUpperCase();
+                const isAuthority = ['NDRF', 'SDMA', 'FIRE_RESCUE', 'POLICE', 'AUTHORITY', 'GOVT_ADMIN'].includes(userRole) || loginType === 'authority';
+                const isResident = !isAuthority;
+
+                // CRITICAL SECURITY POLICY: 2FA bypass is ONLY permitted for RESIDENTS in emergency/red-zone situations.
+                // Authorities (NDRF, SDMA, Police) MUST ALWAYS go through full 2FA authentication due to high security sensitivity.
+                const canBypass2FA = isResident && (redZoneBypass || trustedDevice);
+
+                if (canBypass2FA) {
                     const token = jwt.sign(
                         { 
                             user_id: user.user_id, 
                             email: user.email, 
-                            role: user.user_role || 'RESIDENT',
-                            officer_mode: user.officer_mode || 'OFF_SITE' 
+                            role: 'RESIDENT',
+                            officer_mode: 'OFF_SITE' 
                         }, 
                         process.env.JWT_SECRET, 
                         { expiresIn: "24h" }
@@ -86,16 +93,16 @@ router.post("/login", async (req, res, next) => {
 
                     return res.json({
                         success: true,
-                        bypassed2FA: !!redZoneBypass,
+                        bypassed2FA: true,
                         token: token,
                         user: {
                             user_id: user.user_id,
                             name: user.full_name || user.user_id,
                             email: user.email,
-                            role: user.user_role || (loginType === 'authority' ? 'NDRF' : 'RESIDENT'),
-                            officer_mode: user.officer_mode || 'OFF_SITE',
+                            role: 'RESIDENT',
+                            officer_mode: 'OFF_SITE',
                             district: user.district || 'Wayanad, Kerala',
-                            zone: redZoneBypass ? 'Red Zone — Emergency Access' : 'Safe Zone'
+                            zone: 'Red Zone — Emergency Resident Override'
                         }
                     });
                 }
