@@ -85,6 +85,19 @@ export default function App() {
     setShowQuickSign(true);
   };
 
+  const handleLaunchAdminConsole = () => {
+    setUserSession({
+      user: {
+        user_id: 'ndrf_command_chief',
+        username: 'NDRF Command Chief',
+        name: 'NDRF Commander (Admin)',
+        role: 'NDRF',
+        officer_mode: 'OFF_SITE',
+        district: 'Wayanad Sector 4'
+      }
+    });
+  };
+
   if (userSession) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-200 font-sans">
@@ -142,7 +155,7 @@ export default function App() {
 
       <div className="relative z-10">
         <HeroSection
-          onExplore={() => handleOpenAuth('signup')}
+          onExplore={handleLaunchAdminConsole}
           onEmergencyAccess={() => setShowEmergency(true)}
           onSelectZone={handleSelectZoneFromHero}
         />
@@ -152,7 +165,7 @@ export default function App() {
         <HowItWorks />
 
         <CTASection
-          onExplore={() => handleOpenAuth('signin')}
+          onExplore={handleLaunchAdminConsole}
           onSignUp={() => handleOpenAuth('signup')}
           onEmergencyAccess={() => setShowEmergency(true)}
           onQuickSign={() => setShowQuickSign(true)}
