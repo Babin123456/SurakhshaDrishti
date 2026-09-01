@@ -51,7 +51,7 @@ async function initDB() {
             )
         `);
 
-        //Hazard Red/Yellow/Green Zones Table
+        // 2. Hazard Red/Yellow/Green Zones Table (with 16-Digit Access Keys & Resolution Tracking)
         await client.query(`
             CREATE TABLE IF NOT EXISTS hazard_zones (
                 zone_id TEXT PRIMARY KEY,
@@ -65,7 +65,26 @@ async function initDB() {
                 geohash TEXT NOT NULL,
                 population_risk INTEGER DEFAULT 0,
                 radius_meters INTEGER DEFAULT 3000,
+                access_key TEXT NOT NULL DEFAULT 'RZ-0000-0000-0000',
+                status TEXT NOT NULL DEFAULT 'ACTIVE_RED_ZONE',
+                resolution_votes_required INTEGER DEFAULT 2,
+                resolution_votes_cast INTEGER DEFAULT 0,
                 updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        // Zone Administrator Assignments & Resolution Voting Table
+        await client.query(`
+            CREATE TABLE IF NOT EXISTS zone_assignments (
+                assignment_id SERIAL PRIMARY KEY,
+                zone_id TEXT REFERENCES hazard_zones(zone_id) ON DELETE CASCADE,
+                user_id TEXT REFERENCES users(user_id) ON DELETE CASCADE,
+                officer_name TEXT,
+                department TEXT,
+                assigned_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+                vote_to_resolve BOOLEAN DEFAULT false,
+                voted_at TIMESTAMPTZ,
+                UNIQUE(zone_id, user_id)
             )
         `);
 
@@ -162,6 +181,27 @@ async function initDB() {
         for (const stmt of alterStatements) {
             try { await client.query(stmt); } catch (e) {}
         }
+
+        // Safely add missing columns to hazard_zones if already exists
+        const hazardAlterStatements = [
+            `ALTER TABLE hazard_zones ADD COLUMN IF NOT EXISTS access_key TEXT NOT NULL DEFAULT 'RZ-0000-0000-0000'`,
+            `ALTER TABLE hazard_zones ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'ACTIVE_RED_ZONE'`,
+            `ALTER TABLE hazard_zones ADD COLUMN IF NOT EXISTS resolution_votes_required INTEGER DEFAULT 2`,
+            `ALTER TABLE hazard_zones ADD COLUMN IF NOT EXISTS resolution_votes_cast INTEGER DEFAULT 0`
+        ];
+        for (const stmt of hazardAlterStatements) {
+            try { await client.query(stmt); } catch (e) {}
+        }
+
+        // Seed Default Red Zones with 16-Digit Access Keys
+        await client.query(`
+            INSERT INTO hazard_zones (zone_id, name, state, lat, lng, zone_type, hazard_type, risk_score, geohash, population_risk, radius_meters, access_key, status, resolution_votes_required)
+            VALUES 
+                ('RZ-WAYANAD-04', 'Wayanad Hill Slope (Sector 4)', 'Kerala', 11.6854, 76.1320, 'RED', 'LANDSLIDE', 94, 't1829abc', 1420, 3500, 'RZ-89A4-91F2-3B7C', 'ACTIVE_RED_ZONE', 2),
+                ('RZ-JOSHIMATH-02', 'Joshimath Slope Sector B', 'Uttarakhand', 30.5564, 79.5659, 'RED', 'SUBSIDENCE', 88, 't2912xyz', 2850, 4200, 'RZ-41C2-88E0-99A1', 'ACTIVE_RED_ZONE', 3),
+                ('RZ-TEESTA-07', 'Teesta Riverbank Sector 7', 'Sikkim', 27.0883, 88.2609, 'YELLOW', 'FLASH_FLOOD', 76, 't3819mno', 3100, 2800, 'RZ-73F9-22D4-55B8', 'ACTIVE_RED_ZONE', 2)
+            ON CONFLICT (zone_id) DO NOTHING
+        `);
 
         // Seed Default Command Center Accounts
         await client.query(`
