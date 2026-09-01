@@ -1,0 +1,291 @@
+@import "leaflet/dist/leaflet.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   SurakhshaDrishti — Design System (Dark Matte Theme)
+   AI-Driven Multi-Hazard Red Zone & Relocation DSS
+   ============================================================ */
+
+@layer base {
+  :root {
+    --color-navy-950: #050914;
+    --color-navy-900: #08111F;
+    --color-navy-800: #0D1A2D;
+    --color-navy-700: #12233B;
+    --color-navy-600: #1A2E4A;
+    --color-critical: #E53E3E;
+    --color-high: #F59E0B;
+    --color-caution: #ECC94B;
+    --color-safe: #38A169;
+    --color-info: #06B6D4;
+    --glass-bg: rgba(13, 26, 45, 0.75);
+    --glass-border: rgba(255, 255, 255, 0.08);
+  }
+
+  /* Matte Background with Light Grid Lines */
+  .bg-matte-grid {
+    background-color: #050914;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  /* Gradient Bottom-Edge Glow on Button Hover */
+  .btn-bottom-glow-blue:hover {
+    box-shadow: 0 12px 25px -4px rgba(37, 99, 235, 0.55), 0 4px 12px -2px rgba(6, 182, 212, 0.4);
+    transform: translateY(-2px);
+  }
+
+  .btn-bottom-glow-red:hover {
+    box-shadow: 0 12px 25px -4px rgba(220, 38, 38, 0.6), 0 4px 12px -2px rgba(245, 158, 11, 0.45);
+    transform: translateY(-2px);
+  }
+
+  .btn-bottom-glow-slate:hover {
+    box-shadow: 0 10px 20px -4px rgba(71, 85, 105, 0.4);
+    transform: translateY(-2px);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--color-navy-950);
+    color: #E2E8F0;
+    overflow-x: hidden;
+  }
+
+  .font-cambria {
+    font-family: "Cambria Math", Cambria, Georgia, serif;
+  }
+
+  .nav-scrolled {
+    background: rgba(5, 9, 20, 0.9) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 0 15px 1px rgba(6, 182, 212, 0.08) !important;
+    transform: translateY(0);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-navy-950);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-navy-600);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-navy-700);
+  }
+}
+
+/* ============================================================
+   Component Layer — Reusable Utilities
+   ============================================================ */
+
+@layer components {
+  /* Glassmorphism card */
+  .glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+  }
+
+  /* Topographic background pattern */
+  .topo-pattern {
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(6, 182, 212, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(229, 62, 62, 0.03) 0%, transparent 50%),
+      repeating-conic-gradient(
+        from 0deg at 50% 50%,
+        rgba(255,255,255,0.01) 0deg 2deg,
+        transparent 2deg 4deg
+      );
+  }
+
+  /* Contour lines overlay */
+  .contour-lines {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cpath d='M0 100 Q50 60 100 100 T200 100' fill='none' stroke='rgba(6,182,212,0.06)' stroke-width='1'/%3E%3Cpath d='M0 130 Q50 90 100 130 T200 130' fill='none' stroke='rgba(6,182,212,0.04)' stroke-width='1'/%3E%3Cpath d='M0 70 Q50 30 100 70 T200 70' fill='none' stroke='rgba(6,182,212,0.05)' stroke-width='1'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #ffffff 0%, #94A3B8 50%, #06B6D4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-danger {
+    background: linear-gradient(135deg, #E53E3E 0%, #F59E0B 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Hazard glow effects */
+  .glow-critical {
+    box-shadow: 0 0 20px rgba(229, 62, 62, 0.3), 0 0 60px rgba(229, 62, 62, 0.1);
+  }
+
+  .glow-info {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.25), 0 0 60px rgba(6, 182, 212, 0.08);
+  }
+
+  .glow-safe {
+    box-shadow: 0 0 20px rgba(56, 161, 105, 0.25);
+  }
+
+  /* Animated gradient border */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(229, 62, 62, 0.3), rgba(245, 158, 11, 0.3));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Button base styles */
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500
+           text-white font-bold rounded-xl text-sm transition-all duration-300
+           shadow-lg shadow-blue-900/30 hover:shadow-blue-800/50
+           active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-cyan-500/50;
+  }
+
+  .btn-danger {
+    @apply px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500
+           text-white font-extrabold rounded-xl text-sm transition-all duration-300
+           shadow-lg shadow-red-900/40 hover:shadow-red-800/60
+           active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-red-500/50;
+  }
+
+  .btn-ghost {
+    @apply px-5 py-2.5 bg-transparent border border-slate-700 hover:border-slate-500
+           text-slate-300 hover:text-white font-semibold rounded-xl text-sm transition-all duration-300
+           hover:bg-white/5 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-slate-500/50;
+  }
+
+  /* Scroll reveal states */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .reveal.revealed {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-32px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .reveal-left.revealed {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  .reveal-right {
+    opacity: 0;
+    transform: translateX(32px);
+    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+  }
+  .reveal-right.revealed {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Stat card hover */
+  .stat-card {
+    @apply transition-all duration-300;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px -10px var(--glow, rgba(6, 182, 212, 0.2));
+  }
+
+  /* Tactical Radar Sweep */
+  .radar-sweep-cone {
+    transform-origin: 200px 250px;
+    animation: radarSweep 6s linear infinite;
+  }
+
+  /* Animated Wayroute Line */
+  .animated-wayroute {
+    stroke-dasharray: 6 4;
+    animation: dashMove 1.5s linear infinite;
+  }
+
+  /* Glowing HUD elements */
+  .hud-badge {
+    background: rgba(13, 26, 45, 0.85);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+    backdrop-filter: blur(12px);
+  }
+
+  .neon-glow-red {
+    box-shadow: 0 0 25px rgba(229, 62, 62, 0.4), inset 0 0 15px rgba(229, 62, 62, 0.2);
+  }
+
+  .neon-glow-cyan {
+    box-shadow: 0 0 25px rgba(6, 182, 212, 0.35), inset 0 0 15px rgba(6, 182, 212, 0.15);
+  }
+}
+
+@keyframes radarSweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes dashMove {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -20; }
+}
+
+/* ============================================================
+   Reduced Motion Overrides
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .radar-ring {
+    animation: none !important;
+    opacity: 0.3 !important;
+  }
+
+  .topo-pattern {
+    background-image: none;
+  }
+
+  .stat-card:hover {
+    transform: none;
+  }
+}

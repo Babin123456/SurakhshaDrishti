@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const db = require("../handlers/dbHandler");
-const ikg = require("../handlers/ikg");
+const ikg = require("../handlers/aiAssistent");
 const crypto = require("crypto");
 const multer = require("multer");
 
