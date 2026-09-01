@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import Lenis from 'lenis';
 import Navbar from './components/Navbar';
 import HeroSection from './components/HeroSection';
 import LiveStatsStrip from './components/LiveStatsStrip';
@@ -23,9 +22,7 @@ export default function App() {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
-  const [showIntro, setShowIntro] = useState(() => {
-    return location.pathname === '/';
-  });
+  const [showIntro, setShowIntro] = useState(false);
   
   const [userSession, setUserSession] = useState(null);
   const [showAuth, setShowAuth] = useState(false);
@@ -35,39 +32,8 @@ export default function App() {
   const [quickSignLocation, setQuickSignLocation] = useState(null);
 
   useEffect(() => {
-    const lenis = new Lenis({
-      duration: 1.2,
-      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-      orientation: 'vertical',
-      gestureOrientation: 'vertical',
-      smoothWheel: true,
-      wheelMultiplier: 1,
-      touchMultiplier: 1.5,
-    });
-
-    window.__lenis = lenis;
-
-    if (showIntro) {
-      lenis.stop();
-      document.body.style.overflow = 'hidden';
-    } else {
-      lenis.start();
-      document.body.style.overflow = '';
-    }
-
-    function raf(time) {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    }
-
-    requestAnimationFrame(raf);
-
-    return () => {
-      window.__lenis = null;
-      document.body.style.overflow = '';
-      lenis.destroy();
-    };
-  }, [showIntro]);
+    document.body.style.overflow = '';
+  }, []);
 
   useEffect(() => {
     if (isHomePage) {
