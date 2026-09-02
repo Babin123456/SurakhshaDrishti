@@ -3,7 +3,7 @@
 <!-- Animated Header Wave -->
 <img src="https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=180&section=header&text=SurakshaDrishti%20Frontend&fontSize=42&fontColor=ffffff&fontAlignY=36" width="100%" alt="Frontend Header Wave"/>
 
-```
+```text
  ███████╗██╗   ██╗██████╗  █████╗ ██╗  ██╗███████╗██╗  ██╗ █████╗ ██████╗ ██████╗ ██╗███████╗██╗  ██╗████████╗██╗
  ██╔════╝██║   ██║██╔══██╗██╔══██╗██║ ██╔╝██╔════╝██║  ██║██╔══██╗██╔══██╗██╔══██╗██║██╔════╝██║  ██║╚══██╔══╝██║
  ███████╗██║   ██║██████╔╝███████║█████╔╝ ███████╗███████║███████║██║  ██║██████╔╝██║███████╗███████║   ██║   ██║
@@ -45,7 +45,7 @@ The frontend application features:
 ---
 
 ## ⚡ Core Frontend Capabilities
- 
+
 ```mermaid
 flowchart TD
     subgraph UI["🖥️ SurakshaDrishti Frontend System (Port 5173)"]
@@ -93,7 +93,7 @@ flowchart TD
 
 ## 🗂️ Component Directory Structure
 
-```
+```text
 frontend/
 ├── public/
 │   ├── favicon.webp                     # Browser tab emblem

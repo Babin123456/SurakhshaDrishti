@@ -250,7 +250,7 @@
 
 ## 6. Data Flow & Inter-Process Communication
 
-```
+```text
 [ISRO SAR / Sentinel Sensors] 
        │ (GeoTIFF / Thermal)
        ▼
