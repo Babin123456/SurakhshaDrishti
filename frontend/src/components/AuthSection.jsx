@@ -24,7 +24,6 @@ import { apiService, checkGeofenceRedZoneStatus } from '../utils/api';
 export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuccess }) {
   const [authMode, setAuthMode] = useState(initialMode); // 'signin' | 'signup'
   const [loginType, setLoginType] = useState('authority'); // 'authority' | 'resident'
-  
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -68,7 +67,8 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
         () => {
           setLocationStatus({ inRedZone: true, coords: { lat: 11.5583, lng: 76.1384 }, name: 'Wayanad Sector 4' });
           setDetectedLoc('11.5583, 76.1384');
-        }
+        },
+        { timeout: 5000 }
       );
     } else {
       setLocationStatus({ inRedZone: true, coords: { lat: 11.5583, lng: 76.1384 }, name: 'Wayanad Sector 4' });
@@ -81,10 +81,11 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
     setIsDetectingGPS(true);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        setDetectedLoc(`${pos.coords.latitude.toFixed(5)}, ${pos.coords.longitude.toFixed(5)}`);
+        setDetectedLoc(`${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)}`);
         setIsDetectingGPS(false);
       },
       () => {
+        setDetectedLoc('11.5583, 76.1384');
         setIsDetectingGPS(false);
       }
     );
@@ -95,19 +96,31 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
     setIsLoading(true);
     setMessage(null);
 
-    const isRedZone = locationStatus?.inRedZone;
-    const res = await apiService.login({ username, password, loginType, trustedDevice }, isRedZone);
+    const res = await apiService.login({
+      username,
+      password,
+      role: loginType,
+      trustedDevice,
+    });
 
     setIsLoading(false);
+
     if (res.success) {
-      if (res.bypassed2FA) {
-        setMessage({ type: 'warning', text: 'RED ZONE OVERRIDE: 2FA bypassed to prevent delay.' });
-      } else {
-        setMessage({ type: 'success', text: 'Authenticated via standard secure channel.' });
-      }
-      setTimeout(() => onAuthSuccess(res), 800);
+      setMessage({ type: 'success', text: 'Authentication Verified. Entering Command Platform...' });
+      setTimeout(() => {
+        onAuthSuccess({
+          token: res.token,
+          user: res.user || {
+            user_id: username.split('@')[0],
+            username: username,
+            name: username.split('@')[0].toUpperCase(),
+            role: loginType === 'authority' ? 'NDRF Tactical Command' : 'Resident Citizen',
+            department: loginType === 'authority' ? 'NDRF' : 'Civilian',
+          }
+        });
+      }, 700);
     } else {
-      setMessage({ type: 'error', text: res.message || 'Authentication failed' });
+      setMessage({ type: 'error', text: res.message || 'Invalid credentials. Please verify your details.' });
     }
   };
 
@@ -116,33 +129,34 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
     setIsLoading(true);
     setMessage(null);
 
-    const res = await apiService.quickSign({
-      name: fullName,
-      phone,
+    const res = await apiService.register({
+      fullName,
       email,
+      phone,
+      password: signupPassword,
       role: signupRole,
-      district: stateDistrict,
-      peopleCount: familyMembers,
+      stateDistrict,
+      familyMembers: parseInt(familyMembers) || 1,
+      hasVulnerable,
       coordinates: detectedLoc,
-      specialNeeds: hasVulnerable ? ['elderly/infant'] : [],
-      timestamp: new Date().toISOString()
     });
 
     setIsLoading(false);
+
     if (res.success) {
-      setMessage({ type: 'success', text: `Account Created Successfully! Assigned Shelter: ${res.assignedShelter}` });
+      setMessage({ type: 'success', text: 'Account registered successfully! Redirecting...' });
       setTimeout(() => {
         onAuthSuccess({
-          success: true,
           user: {
-            name: fullName || 'Registered Resident',
+            username: email || phone,
+            name: fullName,
             role: signupRole,
             district: stateDistrict,
             token: 'jwt_registered_' + Date.now(),
             emergencyId: res.emergencyId
           }
         });
-      }, 1000);
+      }, 800);
     } else {
       setMessage({ type: 'error', text: 'Registration failed. Please check your fields.' });
     }
@@ -150,7 +164,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
+      className="fixed inset-0 z-[100] bg-[#2C2A29]/60 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto"
       role="dialog"
       aria-modal="true"
       aria-label="Authentication portal"
@@ -159,43 +173,45 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
         
         {/* Red Zone Context Banner */}
         {locationStatus?.inRedZone && (
-          <div className="flex items-center justify-between gap-2 px-4 py-2 sm:p-3 rounded-t-2xl bg-red-950/90 border border-red-500/30 border-b-0 text-[11px] sm:text-xs shrink-0">
+          <div className="flex items-center justify-between gap-2 px-4 py-2.5 rounded-t-2xl bg-[#FFF5F2] border border-[#FADED4] border-b-0 text-[11px] sm:text-xs shrink-0">
             <div className="flex items-center gap-1.5 sm:gap-2 truncate">
-              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500 shrink-0" />
-              <span className="text-slate-300 truncate">
-                Red Zone: <span className="text-white font-bold">{locationStatus.name}</span>
+              <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#B85C38] shrink-0" />
+              <span className="text-[#5C544D] truncate">
+                Red Zone Vicinity: <span className="text-[#1A1A1A] font-bold">{locationStatus.name}</span>
               </span>
             </div>
-            <span className="px-2 py-0.5 rounded bg-red-600 text-white font-black text-[9px] sm:text-[10px] uppercase shrink-0">
-              2FA Bypass Active
+            <span className="px-2 py-0.5 rounded bg-[#B85C38] text-white font-bold text-[9px] sm:text-[10px] uppercase shrink-0">
+              Priority Pass Ready
             </span>
           </div>
         )}
 
         {/* Modal Card */}
-        <div className={`bg-slate-900/95 border border-slate-800 ${
+        <div className={`bg-white/95 border border-[#E8E1D5] ${
           locationStatus?.inRedZone ? 'rounded-b-2xl rounded-t-none' : 'rounded-2xl'
-        } p-4 sm:p-7 shadow-2xl backdrop-blur-xl overflow-y-auto max-h-[85vh] sm:max-h-[80vh]`}>
+        } p-6 sm:p-8 shadow-2xl backdrop-blur-xl overflow-y-auto max-h-[85vh] sm:max-h-[80vh]`}>
           
           {/* Top Header & Close */}
-          <div className="flex items-start justify-between gap-3 mb-4 sm:mb-5">
+          <div className="flex items-start justify-between gap-3 mb-5">
             <div>
-              <div className="flex items-center gap-1.5 mb-1">
-                <img src="/favicon.webp" alt="Logo" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
-                <span className="font-cambria text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-cyan-400">SurakshaDrishti Portal</span>
+              <div className="flex items-center gap-2 mb-1">
+                <Shield className="w-4 h-4 text-[#8B7355]" />
+                <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-[#8B7355]">
+                  SurakshaDrishti Security
+                </span>
               </div>
-              <h2 className="font-cambria text-lg sm:text-xl font-black text-white tracking-tight">
-                {authMode === 'signin' ? 'Sign In to SurakshaDrishti' : 'Create an Account / Register'}
+              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] tracking-tight">
+                {authMode === 'signin' ? 'Sign In to SurakshaDrishti' : 'Create an Account'}
               </h2>
-              <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-[#5C544D] mt-0.5">
                 {authMode === 'signin' 
-                  ? 'Access real-time GIS intelligence and emergency passes' 
+                  ? 'Access real-time GIS intelligence, zone management, and emergency passes' 
                   : 'Register for priority evacuation passes and official consoles'}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-1.5 sm:p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0"
+              className="p-2 rounded-xl bg-[#F6F4F0] hover:bg-[#E8E1D5] text-[#5C544D] hover:text-[#1A1A1A] transition-colors cursor-pointer shrink-0"
               aria-label="Close modal"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -203,17 +219,17 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
           </div>
 
           {/* Dual Main Mode Selector: [Sign In] vs [Sign Up] */}
-          <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-950 border border-slate-800 mb-4 sm:mb-6">
+          <div className="grid grid-cols-2 p-1 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] mb-5">
             <button
               type="button"
               onClick={() => {
                 setAuthMode('signin');
                 setMessage(null);
               }}
-              className={`py-1.5 sm:py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 authMode === 'signin'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-900/50'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#2C2A29] text-[#FDFBF7] shadow-sm'
+                  : 'text-[#5C544D] hover:text-[#1A1A1A]'
               }`}
             >
               <LogIn className="w-3.5 h-3.5" /> Sign In
@@ -224,10 +240,10 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                 setAuthMode('signup');
                 setMessage(null);
               }}
-              className={`py-1.5 sm:py-2 text-xs font-bold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+              className={`py-2 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                 authMode === 'signup'
-                  ? 'bg-blue-600 text-white shadow-md shadow-blue-900/50'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#2C2A29] text-[#FDFBF7] shadow-sm'
+                  : 'text-[#5C544D] hover:text-[#1A1A1A]'
               }`}
             >
               <UserPlus className="w-3.5 h-3.5" /> Register
@@ -237,9 +253,9 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
           {/* Status / Alert Message */}
           {message && (
             <div className={`mb-4 p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
-              message.type === 'warning' ? 'bg-amber-950/80 border border-amber-800 text-amber-300' :
-              message.type === 'error' ? 'bg-red-950/80 border border-red-800 text-red-300' :
-              'bg-emerald-950/80 border border-emerald-800 text-emerald-300'
+              message.type === 'warning' ? 'bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E]' :
+              message.type === 'error' ? 'bg-[#FFF5F2] border border-[#FADED4] text-[#B85C38]' :
+              'bg-[#F0FDF4] border border-[#BBF7D0] text-[#166534]'
             }`}>
               <AlertTriangle className="w-4 h-4 shrink-0" />
               <span>{message.text}</span>
@@ -250,82 +266,82 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
           {authMode === 'signin' && (
             <div>
               {/* Role Toggle for Sign In */}
-              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 mb-4 text-xs font-bold gap-1">
+              <div className="flex bg-[#F6F4F0] p-1 rounded-xl border border-[#E8E1D5] mb-4 text-xs font-semibold gap-1">
                 <button
                   type="button"
                   onClick={() => setLoginType('authority')}
                   className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     loginType === 'authority'
-                      ? 'bg-slate-800 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white text-[#1A1A1A] shadow-xs border border-[#E8E1D5]'
+                      : 'text-[#7A726A] hover:text-[#1A1A1A]'
                   }`}
                 >
-                  <Shield className="w-3.5 h-3.5 text-blue-400" /> NDRF & SDMA
+                  <Shield className="w-3.5 h-3.5 text-[#8B7355]" /> NDRF & SDMA
                 </button>
                 <button
                   type="button"
                   onClick={() => setLoginType('resident')}
                   className={`flex-1 py-1.5 rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
                     loginType === 'resident'
-                      ? 'bg-slate-800 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-white'
+                      ? 'bg-white text-[#1A1A1A] shadow-xs border border-[#E8E1D5]'
+                      : 'text-[#7A726A] hover:text-[#1A1A1A]'
                   }`}
                 >
-                  <Users className="w-3.5 h-3.5 text-emerald-400" /> Resident / Citizen
+                  <Users className="w-3.5 h-3.5 text-[#4A4238]" /> Resident / Citizen
                 </button>
               </div>
 
-              <form onSubmit={handleSignIn} className="space-y-3.5 sm:space-y-4">
+              <form onSubmit={handleSignIn} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">
+                  <label className="block text-xs font-semibold text-[#2C2A29] mb-1">
                     {loginType === 'authority' ? 'Official Gov Email / Service ID' : 'Mobile Number / Registered ID'}
                   </label>
                   <div className="relative">
-                    <User className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                    <User className="w-4 h-4 absolute left-3.5 top-3 text-[#7A726A]" />
                     <input
                       type="text"
                       required
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
                       placeholder={loginType === 'authority' ? 'ndrf.command@mha.gov.in' : '+91 98765 43210'}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 sm:py-2.5 pl-9 pr-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                      className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2.5 pl-10 pr-3 text-xs sm:text-sm text-[#1A1A1A] placeholder-[#8C847A] focus:outline-none focus:border-[#8B7355] transition-colors"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Password / Secure Passcode</label>
+                  <label className="block text-xs font-semibold text-[#2C2A29] mb-1">Password / Secure Passcode</label>
                   <div className="relative">
-                    <Lock className="w-4 h-4 absolute left-3 top-3 text-slate-500" />
+                    <Lock className="w-4 h-4 absolute left-3.5 top-3 text-[#7A726A]" />
                     <input
                       type="password"
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 sm:py-2.5 pl-9 pr-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                      className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2.5 pl-10 pr-3 text-xs sm:text-sm text-[#1A1A1A] placeholder-[#8C847A] focus:outline-none focus:border-[#8B7355] transition-colors"
                     />
                   </div>
                 </div>
 
                 {/* 2FA Status + Trusted Device */}
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">
-                  <label className="flex items-center gap-1.5 cursor-pointer text-slate-400 hover:text-slate-300 text-[11px] sm:text-xs">
+                  <label className="flex items-center gap-1.5 cursor-pointer text-[#5C544D] hover:text-[#1A1A1A] text-[11px] sm:text-xs">
                     <input
                       type="checkbox"
                       checked={trustedDevice}
                       onChange={(e) => setTrustedDevice(e.target.checked)}
-                      className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-0"
+                      className="w-3.5 h-3.5 rounded border-[#D9D0C1] text-[#2C2A29] focus:ring-0"
                     />
                     Remember this device (30 days)
                   </label>
 
                   {locationStatus?.inRedZone ? (
-                    <span className="text-red-400 font-bold flex items-center gap-1 text-[11px]">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> 2FA Bypassed
+                    <span className="text-[#B85C38] font-semibold flex items-center gap-1 text-[11px]">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> High Priority Bypass
                     </span>
                   ) : (
-                    <span className="text-emerald-400 font-semibold flex items-center gap-1 text-[11px]">
+                    <span className="text-[#2D7A4F] font-semibold flex items-center gap-1 text-[11px]">
                       <ShieldCheck className="w-3.5 h-3.5" /> 2FA Encrypted
                     </span>
                   )}
@@ -334,19 +350,19 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-900/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer btn-bottom-glow-blue"
+                  className="w-full py-3.5 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-medium text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer hover:-translate-y-0.5"
                 >
                   {isLoading ? 'Authenticating...' : 'Sign In & Access Platform'}
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-4 h-4 opacity-80" />
                 </button>
               </form>
 
-              <div className="mt-4 text-center text-[11px] sm:text-xs text-slate-400">
+              <div className="mt-5 text-center text-[11px] sm:text-xs text-[#7A726A]">
                 Don't have an account yet?{' '}
                 <button
                   type="button"
                   onClick={() => setAuthMode('signup')}
-                  className="text-cyan-400 hover:underline font-bold cursor-pointer"
+                  className="text-[#8B7355] hover:underline font-bold cursor-pointer"
                 >
                   Sign Up / Register Here
                 </button>
@@ -356,19 +372,19 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
 
           {/* ================= MODE: SIGN UP / REGISTER ================= */}
           {authMode === 'signup' && (
-            <form onSubmit={handleSignUp} className="space-y-3 sm:space-y-3.5">
+            <form onSubmit={handleSignUp} className="space-y-3.5">
               
               {/* Role Selection */}
               <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Account Role</label>
-                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold">
+                <label className="block text-xs font-semibold text-[#2C2A29] mb-1">Account Role</label>
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-semibold">
                   <button
                     type="button"
                     onClick={() => setSignupRole('resident')}
-                    className={`py-1.5 sm:py-2 px-1 rounded-xl border transition-all text-center cursor-pointer ${
+                    className={`py-2 px-1 rounded-xl border transition-all text-center cursor-pointer ${
                       signupRole === 'resident'
-                        ? 'bg-blue-600 text-white border-blue-500 shadow-md'
-                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                        ? 'bg-[#2C2A29] text-[#FDFBF7] border-[#2C2A29] shadow-xs'
+                        : 'bg-[#F6F4F0] text-[#5C544D] border-[#E8E1D5] hover:bg-[#E8E1D5]'
                     }`}
                   >
                     Resident
@@ -376,139 +392,145 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                   <button
                     type="button"
                     onClick={() => setSignupRole('ndrf')}
-                    className={`py-1.5 sm:py-2 px-1 rounded-xl border transition-all text-center cursor-pointer ${
+                    className={`py-2 px-1 rounded-xl border transition-all text-center cursor-pointer ${
                       signupRole === 'ndrf'
-                        ? 'bg-blue-600 text-white border-blue-500 shadow-md'
-                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                        ? 'bg-[#2C2A29] text-[#FDFBF7] border-[#2C2A29] shadow-xs'
+                        : 'bg-[#F6F4F0] text-[#5C544D] border-[#E8E1D5] hover:bg-[#E8E1D5]'
                     }`}
                   >
-                    NDRF Officer
+                    NDRF Battalion
                   </button>
                   <button
                     type="button"
                     onClick={() => setSignupRole('sdma')}
-                    className={`py-1.5 sm:py-2 px-1 rounded-xl border transition-all text-center cursor-pointer ${
+                    className={`py-2 px-1 rounded-xl border transition-all text-center cursor-pointer ${
                       signupRole === 'sdma'
-                        ? 'bg-blue-600 text-white border-blue-500 shadow-md'
-                        : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                        ? 'bg-[#2C2A29] text-[#FDFBF7] border-[#2C2A29] shadow-xs'
+                        : 'bg-[#F6F4F0] text-[#5C544D] border-[#E8E1D5] hover:bg-[#E8E1D5]'
                     }`}
                   >
-                    SDMA Admin
+                    State Authority
                   </button>
                 </div>
               </div>
 
-              {/* Full Name & Phone Number */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Full Legal Name</label>
-                  <div className="relative">
-                    <User className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
-                    <input
-                      type="text"
-                      required
-                      value={fullName}
-                      onChange={(e) => setFullName(e.target.value)}
-                      placeholder="e.g. Ramesh Kumar"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
-                </div>
+              {/* Full Name */}
+              <div>
+                <label className="block text-xs font-semibold text-[#2C2A29] mb-1">Full Legal Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Commander Rajesh Nair"
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2 px-3 text-xs sm:text-sm text-[#1A1A1A] placeholder-[#8C847A] focus:outline-none focus:border-[#8B7355]"
+                />
+              </div>
 
+              {/* Phone & Email */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Mobile (Aadhaar / OTP)</label>
+                  <label className="block text-xs font-semibold text-[#2C2A29] mb-1">Contact Phone</label>
                   <div className="relative">
-                    <Phone className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+                    <Phone className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#7A726A]" />
                     <input
                       type="tel"
                       required
+                      placeholder="+91 98765 43210"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+91 98765 43210"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2 pl-9 pr-3 text-xs text-[#1A1A1A] placeholder-[#8C847A] focus:outline-none focus:border-[#8B7355]"
                     />
                   </div>
                 </div>
-              </div>
-
-              {/* Email & District */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">Email Address</label>
+                  <label className="block text-xs font-semibold text-[#2C2A29] mb-1">Email Address</label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
+                    <Mail className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#7A726A]" />
                     <input
                       type="email"
                       required
+                      placeholder="officer@ndrf.gov.in"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="user@domain.com"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-300 mb-1">District & State</label>
-                  <div className="relative">
-                    <Home className="w-4 h-4 absolute left-3 top-2.5 text-slate-500" />
-                    <input
-                      type="text"
-                      required
-                      value={stateDistrict}
-                      onChange={(e) => setStateDistrict(e.target.value)}
-                      placeholder="e.g. Wayanad, Kerala"
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-9 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2 pl-9 pr-3 text-xs text-[#1A1A1A] placeholder-[#8C847A] focus:outline-none focus:border-[#8B7355]"
                     />
                   </div>
                 </div>
               </div>
 
-              {/* Location GPS & Household Details */}
-              <div className="p-2.5 sm:p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-bold text-slate-300 flex items-center gap-1 text-[11px] sm:text-xs">
-                    <MapPin className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                    Habitation GPS Geohash:
-                  </span>
-                  <button
-                    type="button"
-                    onClick={handleDetectGPS}
-                    className="text-[10px] sm:text-[11px] font-bold text-cyan-400 hover:text-cyan-300 flex items-center gap-1 cursor-pointer"
-                  >
-                    <Crosshair className="w-3 h-3" />
-                    {isDetectingGPS ? 'Detecting...' : 'Auto-Detect'}
-                  </button>
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold text-[#2C2A29] mb-1">Set Account Password</label>
+                <div className="relative">
+                  <Lock className="w-3.5 h-3.5 absolute left-3 top-2.5 text-[#7A726A]" />
+                  <input
+                    type="password"
+                    required
+                    placeholder="Create a strong password"
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
+                    className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2 pl-9 pr-3 text-xs text-[#1A1A1A] placeholder-[#8C847A] focus:outline-none focus:border-[#8B7355]"
+                  />
                 </div>
+              </div>
 
-                <input
-                  type="text"
-                  value={detectedLoc || ''}
-                  onChange={(e) => setDetectedLoc(e.target.value)}
-                  placeholder="11.5583, 76.1384 (#tdv2n19z)"
-                  className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white font-mono"
-                />
+              {/* District & Location */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <div>
+                  <label className="block text-xs font-semibold text-[#2C2A29] mb-1">District / Jurisdiction</label>
+                  <input
+                    type="text"
+                    value={stateDistrict}
+                    onChange={(e) => setStateDistrict(e.target.value)}
+                    className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2 px-3 text-xs text-[#1A1A1A] focus:outline-none focus:border-[#8B7355]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-[#2C2A29] mb-1 flex items-center justify-between">
+                    <span>GPS Coordinates</span>
+                    <button
+                      type="button"
+                      onClick={handleDetectGPS}
+                      className="text-[10px] text-[#8B7355] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <Crosshair className="w-2.5 h-2.5" /> Auto-GPS
+                    </button>
+                  </label>
+                  <input
+                    type="text"
+                    value={detectedLoc || 'Detecting GPS...'}
+                    onChange={(e) => setDetectedLoc(e.target.value)}
+                    className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2 px-3 text-xs font-mono text-[#5C544D] focus:outline-none focus:border-[#8B7355]"
+                  />
+                </div>
+              </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs pt-0.5">
+              {/* Resident Household Details */}
+              <div className="p-2.5 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] space-y-1.5">
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-[#2C2A29]">
+                  <Home className="w-3.5 h-3.5 text-[#8B7355]" />
+                  <span>Household Capacity Planning</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <label className="text-[10px] sm:text-[11px] text-slate-400 block mb-1">Household Count</label>
+                    <label className="text-[10px] text-[#5C544D]">Family Members:</label>
                     <input
                       type="number"
                       min="1"
-                      max="20"
                       value={familyMembers}
                       onChange={(e) => setFamilyMembers(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2 py-1 text-xs text-white"
+                      className="w-full bg-white border border-[#E8E1D5] rounded-lg px-2 py-1 text-xs text-[#1A1A1A]"
                     />
                   </div>
 
                   <div className="flex items-end pb-1">
-                    <label className="flex items-center gap-1.5 cursor-pointer text-[10px] sm:text-[11px] text-slate-300 hover:text-white">
+                    <label className="flex items-center gap-1.5 cursor-pointer text-[10px] sm:text-[11px] text-[#5C544D] hover:text-[#1A1A1A]">
                       <input
                         type="checkbox"
                         checked={hasVulnerable}
                         onChange={(e) => setHasVulnerable(e.target.checked)}
-                        className="w-3.5 h-3.5 rounded border-slate-700 bg-slate-900 text-blue-600 focus:ring-0"
+                        className="w-3.5 h-3.5 rounded border-[#D9D0C1] text-[#2C2A29] focus:ring-0"
                       />
                       <span>Elderly / Infant</span>
                     </label>
@@ -519,18 +541,18 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2.5 sm:py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-900/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer btn-bottom-glow-blue"
+                className="w-full py-3 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-medium text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer hover:-translate-y-0.5"
               >
                 {isLoading ? 'Registering Account...' : 'Complete Sign Up & Generate Pass'}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 opacity-80" />
               </button>
 
-              <div className="text-center text-[11px] sm:text-xs text-slate-400 pt-0.5">
+              <div className="text-center text-[11px] sm:text-xs text-[#7A726A] pt-0.5">
                 Already have an account?{' '}
                 <button
                   type="button"
                   onClick={() => setAuthMode('signin')}
-                  className="text-cyan-400 hover:underline font-bold cursor-pointer"
+                  className="text-[#8B7355] hover:underline font-bold cursor-pointer"
                 >
                   Sign In Here
                 </button>

@@ -8,9 +8,11 @@ import {
   Route, 
   Sparkles, 
   Compass, 
-  Activity
+  Activity,
+  ArrowUpRight
 } from 'lucide-react';
 import { useScrollReveal } from '../utils/useScrollReveal';
+import Interactive3DCard from './Interactive3DCard';
 
 const FEATURES = [
   {
@@ -18,187 +20,185 @@ const FEATURES = [
     num: '01',
     icon: Radio,
     image: '/feature_gsm_relay.webp',
-    title: 'GSM 3.4 Telecommunication Relay',
-    tagline: 'Resilient Offline Mesh & SMS Dispatch',
-    description: 'When cellular data towers and power grids collapse during severe landslides or cyclones, our GSM 3.4 low-bandwidth protocol broadcasts life-saving geohash evacuation alerts via localized cellular towers without requiring active internet.',
-    accent: 'from-cyan-500 to-blue-600',
-    color: 'text-cyan-400',
-    glowColor: 'rgba(6, 182, 212, 0.20)',
-    badge: 'Hardware & Protocol Ready',
-    interactivePreview: 'GSM 3.4 Active • Zero Internet Latency'
+    title: 'GSM 3.4 Telemetry Mesh',
+    tagline: 'Zero-Broadband Emergency Relay',
+    description: 'Broadcasts life-saving geohash evacuation alerts via localized cellular control channels without active internet.',
+    color: 'text-[#8B7355]',
+    glowColor: 'rgba(139, 115, 85, 0.12)',
+    badge: 'Hardware Ready',
+    spec: 'Sub-second SMS Packet Delivery'
   },
   {
     id: 'e2ee',
     num: '02',
     icon: Lock,
     image: '/feature_e2ee_lock.webp',
-    title: 'E2EE Interdepartmental Channels',
-    tagline: 'Zero-Knowledge Secured Operations',
-    description: 'End-to-End Encrypted (E2EE) cryptographic channels connecting NDRF battalions, State Disaster Management Authorities (SDMAs), and District Collectors. Guarantees authenticity of casualty reports and evacuation orders against tampering.',
-    accent: 'from-purple-500 to-indigo-600',
-    color: 'text-purple-400',
-    glowColor: 'rgba(168, 85, 247, 0.20)',
-    badge: 'AES-GCM-256 + ECDH Handshake',
-    interactivePreview: 'NDRF Battalion #04 ⇄ SDMA (Ed25519 Signed)'
+    title: 'E2EE Inter-Agency Rail',
+    tagline: 'Zero-Knowledge Operations',
+    description: 'Cryptographic channel connecting NDRF, SDMAs, and District Collectors with tamper-proof casualty & order authentication.',
+    color: 'text-[#4A4238]',
+    glowColor: 'rgba(74, 66, 56, 0.12)',
+    badge: 'AES-GCM-256',
+    spec: 'Ed25519 Signed Dispatch'
   },
   {
     id: 'geohash',
     num: '03',
     icon: Compass,
     image: '/feature_geohash_grid.webp',
-    title: 'GeoHashed Locatives for Accuracy',
-    tagline: 'High-Precision 8-Char Spatial Indexing',
-    description: 'Instead of ambiguous addresses or slow boundary queries, every habitation and hazard perimeter is indexed via hierarchical GeoHashes (e.g. #tdv2n19z). Enables sub-second spatial queries across millions of vulnerable citizens.',
-    accent: 'from-amber-500 to-red-600',
-    color: 'text-amber-400',
-    glowColor: 'rgba(245, 158, 11, 0.20)',
-    badge: 'Sub-Meter Resolution',
-    interactivePreview: 'Spatial Index: 8-Char Geohash Sub-Meter Precision'
+    title: '8-Char Spatial Index',
+    tagline: 'Sub-Meter Hazard Mapping',
+    description: 'Hierarchical GeoHashes index perimeters for sub-second spatial queries across millions of vulnerable residents.',
+    color: 'text-[#B85C38]',
+    glowColor: 'rgba(184, 92, 56, 0.12)',
+    badge: 'Sub-Meter Grid',
+    spec: '8-Character Precision (#tdv2n19z)'
   },
   {
     id: 'dual-role',
     num: '04',
     icon: Users,
     image: '/feature_dual_roles.webp',
-    title: 'Dual Role Integrations',
-    tagline: 'Citizen Portal & Administrator Console',
-    description: 'Seamless role-based privilege isolation. Citizens get emergency one-touch SOS passes, safe route directions, and shelter availability. Command officers gain GIS layer manipulation, carrying capacity overrides, and evacuation dispatch consoles.',
-    accent: 'from-emerald-500 to-teal-600',
-    color: 'text-emerald-400',
-    glowColor: 'rgba(168, 85, 129, 0.20)',
-    badge: 'RBAC + Dynamic Pass Generator',
-    interactivePreview: 'Active Sessions: 1,420 Citizens • 18 Incident Commanders'
+    title: 'Dual-Role Console',
+    tagline: 'Citizen SOS & Commander HUD',
+    description: 'Instant resident evacuation passes paired with incident commander GIS layer manipulation and consensus resolution.',
+    color: 'text-[#2D7A4F]',
+    glowColor: 'rgba(45, 122, 79, 0.12)',
+    badge: 'RBAC Security',
+    spec: 'Dynamic 30-Sec Emergency Pass'
   },
   {
     id: 'carrying-capacity',
     num: '05',
     icon: Layers,
     image: '/feature_carrying_capacity.webp',
-    title: 'Dynamic Safe Site Capacity Allocation',
-    tagline: 'Multi-Objective Spatial Relocation',
-    description: 'Relocation algorithm balances terrain safety, shelter bed volume, water supplies, transit road capacity, and slope stabilization to prevent bottlenecking or overburdening secondary transit hubs during rapid evacuations.',
-    accent: 'from-blue-500 to-cyan-600',
-    color: 'text-blue-400',
-    glowColor: 'rgba(59, 130, 246, 0.20)',
-    badge: 'Real-Time Capacity Balancing',
-    interactivePreview: 'Nilambur Base Camp: 82% Safe Capacity • Pipalkoti: 44%'
+    title: 'Safe Site Capacity AI',
+    tagline: 'Multi-Objective Spatial Balancing',
+    description: 'Balances terrain safety, shelter bed density, water logistics, and transit width to eliminate bottlenecking.',
+    color: 'text-[#3E6B89]',
+    glowColor: 'rgba(62, 107, 137, 0.12)',
+    badge: 'Load Balancing',
+    spec: 'Real-Time Shelter Occupancy'
   },
   {
     id: 'proactive-evac',
     num: '06',
     icon: Route,
     image: '/feature_proactive_evacuation.webp',
-    title: 'Prioritized Proactive Evacuation Orders',
-    tagline: 'Vulnerability-Indexed Dispatch Engine',
-    description: 'Calculates high-priority evacuation sequences by combining real-time slope shear indices with household vulnerability data (elderly, infants, critical medical requirements). Dispatches verified convoy routes with clear waypoints.',
-    accent: 'from-red-500 to-orange-600',
-    color: 'text-red-400',
-    glowColor: 'rgba(239, 68, 68, 0.20)',
-    badge: 'Zero-Bottleneck Routing',
-    interactivePreview: 'Evac Corridor #1: High Priority (Chooralmala ➔ Nilambur)'
+    title: 'Priority Evac Matrix',
+    tagline: 'Vulnerability-First Dispatch',
+    description: 'Combines slope shear indices with household demographics (elderly, infants) to sequence proactive convoy evacuations.',
+    color: 'text-[#B85C38]',
+    glowColor: 'rgba(184, 92, 56, 0.12)',
+    badge: '48hr Advance',
+    spec: 'Zero-Bottleneck Routing Corridors'
   }
 ];
 
 export default function FeaturesShowcase() {
   const [headerRef, headerRevealed] = useScrollReveal();
+  const [gridRef, gridRevealed] = useScrollReveal({ threshold: 0.1 });
 
   return (
     <section 
       id="features" 
-      className="relative py-20 bg-slate-950/40 scroll-mt-20 overflow-hidden"
+      className="relative py-24 bg-transparent scroll-mt-20 overflow-hidden"
       aria-labelledby="features-heading"
     >
-      {/* Background Ambient Glows */}
-      <div className="absolute top-1/3 left-0 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-10 right-0 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl pointer-events-none"></div>
-
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Section Header */}
+        {/* Punchy Section Header with Reduced Text */}
         <div 
           ref={headerRef}
-          className={`text-center max-w-3xl mx-auto mb-14 reveal ${headerRevealed ? 'revealed' : ''}`}
+          className={`text-center max-w-2xl mx-auto mb-16 reveal ${headerRevealed ? 'revealed' : ''}`}
         >
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/30 mb-4 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-            <span className="font-cambria text-xs sm:text-sm text-cyan-300 font-bold tracking-wide">
-              Cutting-Edge Disaster Intelligence Architecture
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/80 border border-[#E8E1D5] mb-4 shadow-xs backdrop-blur-md">
+            <Sparkles className="w-3.5 h-3.5 text-[#8B7355]" />
+            <span className="text-xs text-[#4A4238] font-bold uppercase tracking-wider">
+              Architecture & Capabilities
             </span>
           </div>
 
           <h2 
             id="features-heading"
-            className="font-cambria text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight"
+            className="text-4xl sm:text-6xl font-black text-[#1A1A1A] tracking-tight leading-[1.1]"
           >
-            Capabilities Engineered for High-Stress Operations
+            Engineered for <span className="text-[#8B7355]">Extreme Stress.</span>
           </h2>
 
-          <p className="font-cambria text-xs sm:text-sm text-slate-300 mt-3 leading-relaxed">
-            From zero-broadband GSM mesh alerts to cryptographic interdepartmental channels — every module is built to operate when civilian infrastructure fails.
+          <p className="text-sm sm:text-base text-[#5C544D] mt-4 leading-relaxed font-light">
+            When power grids and commercial cellular links fail, SurakshaDrishti's resilient stack activates.
           </p>
         </div>
 
-        {/* Features 6-Card Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Features 6-Card Grid with Apple-Style 3D Tilt & Staggered Scroll Parallax */}
+        <div 
+          ref={gridRef}
+          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 reveal ${gridRevealed ? 'revealed' : ''}`}
+        >
           {FEATURES.map((feature, idx) => {
             const Icon = feature.icon;
             return (
-              <div
-                key={feature.id}
-                className="group relative rounded-3xl p-6 sm:p-7 bg-slate-900/80 border border-slate-800 hover:border-slate-700/80 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-cyan-950/30 flex flex-col justify-between overflow-hidden cursor-default"
-              >
-                {/* Radial Glow on Hover */}
-                <div 
-                  className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
-                  style={{
-                    background: `radial-gradient(circle at 50% 10%, ${feature.glowColor} 0%, transparent 70%)`
-                  }}
-                />
-
-                <div className="relative z-10 space-y-4">
+              <div key={feature.id} style={{ transitionDelay: `${idx * 75}ms` }} className="h-full">
+                <Interactive3DCard 
+                  intensity={10}
+                  className="h-full"
+                >
+                <div className="h-full rounded-3xl p-7 bg-white/70 backdrop-blur-xl border border-[#E8E1D5] hover:border-[#8B7355]/60 transition-all duration-300 shadow-sm hover:shadow-xl flex flex-col justify-between overflow-hidden cursor-default group">
                   
-                  {/* Top Bar: Pure Floating 3D WebP Icon + Module Number */}
-                  <div className="flex items-center justify-between">
-                    {feature.image ? (
-                      <div className="w-14 h-14 flex items-center justify-center group-hover:scale-115 transition-transform duration-300 drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]">
-                        <img src={feature.image} alt={feature.title} className="w-full h-full object-contain" />
-                      </div>
-                    ) : (
-                      <div className={`p-3 rounded-2xl bg-slate-950/90 border border-slate-800 ${feature.color} shadow-sm group-hover:scale-110 transition-transform`}>
-                        <Icon className="w-6 h-6" />
-                      </div>
-                    )}
+                  {/* Subtle top corner ambient glow */}
+                  <div 
+                    className="absolute -top-16 -right-16 w-36 h-36 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                    style={{
+                      background: `radial-gradient(circle, ${feature.glowColor} 0%, transparent 70%)`
+                    }}
+                  />
+
+                  <div className="relative z-10 space-y-4">
                     
-                    <span className="font-mono text-xs font-bold text-slate-500 group-hover:text-cyan-400 transition-colors">
-                      MODULE • {feature.num}
-                    </span>
-                  </div>
+                    {/* Top Bar: Visual Asset + Module Code */}
+                    <div className="flex items-center justify-between">
+                      {feature.image ? (
+                        <div className="w-14 h-14 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">
+                          <img src={feature.image} alt={feature.title} className="w-full h-full object-contain" />
+                        </div>
+                      ) : (
+                        <div className="p-3 rounded-2xl bg-[#F6F4F0] border border-[#E8E1D5] transition-transform duration-300 group-hover:scale-110">
+                          <Icon className={`w-6 h-6 ${feature.color}`} />
+                        </div>
+                      )}
 
-                  {/* Title & Tagline */}
-                  <div>
-                    <h3 className="font-cambria text-base sm:text-lg font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug">
-                      {feature.title}
-                    </h3>
-                    <div className="font-cambria text-xs font-semibold text-slate-400 mt-1">
-                      {feature.tagline}
+                      <span className="text-[11px] font-mono font-bold text-[#8C847A] group-hover:text-[#4A4238] transition-colors bg-[#F6F4F0] border border-[#E8E1D5] px-2.5 py-0.5 rounded-full">
+                        MOD • {feature.num}
+                      </span>
                     </div>
+
+                    {/* Headline & Tagline */}
+                    <div>
+                      <h3 className="text-lg font-bold text-[#1A1A1A] group-hover:text-[#4A4238] transition-colors tracking-tight flex items-center justify-between">
+                        <span>{feature.title}</span>
+                        <ArrowUpRight className="w-4 h-4 text-[#8B7355] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                      </h3>
+                      <p className="text-xs font-semibold text-[#8B7355] mt-0.5">
+                        {feature.tagline}
+                      </p>
+                    </div>
+
+                    {/* Short Concise Description */}
+                    <p className="text-xs text-[#5C544D] leading-relaxed">
+                      {feature.description}
+                    </p>
                   </div>
 
-                  {/* Body Description */}
-                  <p className="font-cambria text-xs text-slate-300 leading-relaxed">
-                    {feature.description}
-                  </p>
-                </div>
+                  {/* Clean Bottom Metric Bar */}
+                  <div className="relative z-10 mt-6 pt-3.5 border-t border-[#E8E1D5] flex items-center justify-between text-[11px] font-mono text-[#7A726A]">
+                    <span className="font-bold text-[#4A4238]">{feature.badge}</span>
+                    <span className="text-[10px] text-[#8C847A]">{feature.spec}</span>
+                  </div>
 
-                {/* Bottom Interactive Telemetry Strip */}
-                <div className="relative z-10 mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-slate-950 border border-slate-800 text-slate-300 font-semibold">
-                    {feature.badge}
-                  </span>
-                  <div className="w-2 h-2 rounded-full bg-cyan-400/80 group-hover:scale-125 group-hover:bg-cyan-300 transition-all"></div>
                 </div>
-
-              </div>
+              </Interactive3DCard>
+            </div>
             );
           })}
         </div>

@@ -10,48 +10,49 @@ export default function TermsOfService() {
   }, []);
 
   const handleBack = () => {
-    navigate(-1);
+    navigate('/');
   };
 
   return (
-    <div className="min-h-screen bg-[#050914] text-slate-100 font-cambria py-6 sm:py-12 px-3.5 sm:px-6 lg:px-8 selection:bg-blue-500/30 selection:text-white">
-      <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2C2A29] font-sans py-8 sm:py-14 px-4 sm:px-6 lg:px-8 selection:bg-[#8B7355]/20 selection:text-[#1A1A1A] relative">
+      <div className="paper-texture"></div>
+      <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 relative z-20">
         
         {/* Top Return Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-[#E8E1D5]">
           <button
             onClick={handleBack}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer btn-bottom-glow-slate hover:-translate-y-0.5 font-sans shadow-md"
+            className="px-4 py-2 rounded-xl bg-white hover:bg-[#F6F4F0] text-[#5C544D] hover:text-[#1A1A1A] border border-[#E8E1D5] text-xs font-semibold transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-xs"
           >
-            <ArrowLeft className="w-4 h-4 text-blue-400" />
+            <ArrowLeft className="w-4 h-4 text-[#8B7355]" />
             <span>Back</span>
           </button>
 
-          <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono text-cyan-400">
-            <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
+          <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono text-[#5C544D]">
+            <span className="w-2 h-2 rounded-full bg-[#8B7355] animate-pulse"></span>
             <span>OPERATIONAL TERMS & CONDITIONS • SIH 26191</span>
           </div>
         </div>
 
-        {/* Title Header with Pure Floating 3D Compliance Shield WebP */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-slate-900/90 p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-800 shadow-2xl transition-all duration-300 hover:border-slate-700 hover:shadow-blue-950/20">
-          <div className="w-16 h-16 flex items-center justify-center shrink-0 drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]">
+        {/* Title Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5 bg-white/70 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-[#E8E1D5] shadow-xs">
+          <div className="w-16 h-16 flex items-center justify-center shrink-0 drop-shadow-sm">
             <img src="/legal_compliance_shield.webp" alt="Terms Shield" className="w-full h-full object-contain" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-3xl font-black text-white tracking-tight">Terms of Service</h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            <h1 className="text-2xl sm:text-4xl font-bold text-[#1A1A1A] tracking-tight">Terms of Service</h1>
+            <p className="text-xs sm:text-sm text-[#5C544D] mt-1">
               Operational Mandates, Legal Protocols & Civil Protection Governance
             </p>
           </div>
         </div>
 
-        {/* Terms Body with Rich Interactive Hover Effects */}
-        <div className="space-y-3.5 sm:space-y-4 text-xs sm:text-sm text-slate-300 leading-relaxed">
+        {/* Terms Body */}
+        <div className="space-y-4 text-xs sm:text-sm text-[#5C544D] leading-relaxed">
           
-          <section className="bg-slate-900/90 border border-slate-800 hover:border-blue-500/40 rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-blue-950/30">
-            <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 font-sans">
-              <Shield className="w-4 h-4 text-blue-400 shrink-0" />
+          <section className="bg-white/70 backdrop-blur-md border border-[#E8E1D5] rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs">
+            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2">
+              <Shield className="w-4 h-4 text-[#8B7355] shrink-0" />
               <span>1. Authorized Public Safety Scope & Prohibition of False Alarms</span>
             </h2>
             <p>
@@ -59,9 +60,9 @@ export default function TermsOfService() {
             </p>
           </section>
 
-          <section className="bg-slate-900/90 border border-slate-800 hover:border-amber-500/40 rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-amber-950/30">
-            <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 font-sans">
-              <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          <section className="bg-white/70 backdrop-blur-md border border-[#E8E1D5] rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs">
+            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-[#B85C38] shrink-0" />
               <span>2. Decision Support Systems (DSS) & Executive Command Hierarchy</span>
             </h2>
             <p>
@@ -69,9 +70,9 @@ export default function TermsOfService() {
             </p>
           </section>
 
-          <section className="bg-slate-900/90 border border-slate-800 hover:border-emerald-500/40 rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-emerald-950/30">
-            <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 font-sans">
-              <Radio className="w-4 h-4 text-emerald-400 shrink-0" />
+          <section className="bg-white/70 backdrop-blur-md border border-[#E8E1D5] rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs">
+            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2">
+              <Radio className="w-4 h-4 text-[#2D7A4F] shrink-0" />
               <span>3. Telecommunication Resiliency & GSM 3.4 Fallback</span>
             </h2>
             <p>
@@ -79,9 +80,9 @@ export default function TermsOfService() {
             </p>
           </section>
 
-          <section className="bg-slate-900/90 border border-slate-800 hover:border-cyan-500/40 rounded-2xl sm:rounded-3xl p-5 sm:p-7 space-y-2.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-cyan-950/30">
-            <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-2 font-sans">
-              <FileCheck2 className="w-4 h-4 text-cyan-400 shrink-0" />
+          <section className="bg-white/70 backdrop-blur-md border border-[#E8E1D5] rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs">
+            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2">
+              <FileCheck2 className="w-4 h-4 text-[#2E5B88] shrink-0" />
               <span>4. Safe Hub Allocations & Carrying Capacity Fair Use</span>
             </h2>
             <p>
@@ -92,7 +93,7 @@ export default function TermsOfService() {
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] sm:text-xs text-slate-500 font-mono pt-4 border-t border-slate-900 text-center sm:text-left">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] sm:text-xs text-[#7A726A] font-mono pt-4 border-t border-[#E8E1D5] text-center sm:text-left">
           <span>GOVERNING LAW: DISASTER MANAGEMENT ACT, 2005</span>
           <span>VERSION: 2.4 (2026)</span>
         </div>

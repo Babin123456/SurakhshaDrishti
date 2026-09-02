@@ -58,136 +58,44 @@ const HAZARD_ZONES = [
   }
 ];
 
-function getHaversineDistanceKm(lat1, lon1, lat2, lon2) {
-  const R = 6371;
-  const dLat = (lat2 - lat1) * (Math.PI / 180);
-  const dLon = (lon2 - lon1) * (Math.PI / 180);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
 export default function QuickSignModal({ locationStatus, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    peopleCount: '1',
+    familyCount: '1',
     specialNeeds: [],
+    zoneId: HAZARD_ZONES[0].id,
   });
-  
-  const [detectedLoc, setDetectedLoc] = useState(locationStatus || null);
-  const [isGpsLocating, setIsGpsLocating] = useState(false);
+
+  const [isLocating, setIsLocating] = useState(false);
+  const [detectedLoc, setDetectedLoc] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState(null);
 
   useEffect(() => {
-    if (!locationStatus && navigator.geolocation) {
-      setIsGpsLocating(true);
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude, accuracy } = position.coords;
-          let minDistance = Infinity;
-          let nearest = HAZARD_ZONES[0];
-
-          HAZARD_ZONES.forEach((zone) => {
-            const dist = getHaversineDistanceKm(latitude, longitude, zone.lat, zone.lng);
-            if (dist < minDistance) {
-              minDistance = dist;
-              nearest = zone;
-            }
-          });
-
-          const isInside = minDistance * 1000 <= nearest.radiusMeters;
-          const status = {
-            coords: { lat: latitude, lng: longitude },
-            accuracy: Math.round(accuracy),
-            inRedZone: isInside,
-            name: nearest.name,
-            shortName: nearest.shortName,
-            hazard: nearest.hazard,
-            zoneId: nearest.id,
-            distanceKm: minDistance.toFixed(1),
-            isAutoDetected: true
-          };
-
-          setDetectedLoc(status);
-          setIsGpsLocating(false);
-        },
-        () => {
-          setDetectedLoc({
-            coords: { lat: 11.5583, lng: 76.1384 },
-            accuracy: 50,
-            inRedZone: true,
-            name: 'Wayanad Sector 4 (Chooralmala - Meppadi)',
-            shortName: 'Wayanad Sector 4',
-            hazard: 'High Slope Landslide & Debris Flow',
-            zoneId: 'wayanad',
-            distanceKm: '0.0',
-            isAutoDetected: false
-          });
-          setIsGpsLocating(false);
-        },
-        { enableHighAccuracy: true, timeout: 6000 }
-      );
-    } else if (locationStatus) {
-      setDetectedLoc(locationStatus);
+    if (locationStatus?.coords) {
+      setDetectedLoc(locationStatus.coords);
     }
   }, [locationStatus]);
 
-  const handleManualZoneSelect = (zoneId) => {
-    const found = HAZARD_ZONES.find((z) => z.id === zoneId);
-    if (found) {
-      setDetectedLoc({
-        coords: { lat: found.lat, lng: found.lng },
-        accuracy: 10,
-        inRedZone: true,
-        name: found.name,
-        shortName: found.shortName,
-        hazard: found.hazard,
-        zoneId: found.id,
-        distanceKm: '0.0',
-        isAutoDetected: false
-      });
-    }
-  };
-
-  const handleRefreshGPS = () => {
+  const handleGetLocation = () => {
     if (!navigator.geolocation) return;
-    setIsGpsLocating(true);
+    setIsLocating(true);
+
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
-        let minDistance = Infinity;
-        let nearest = HAZARD_ZONES[0];
-
-        HAZARD_ZONES.forEach((zone) => {
-          const dist = getHaversineDistanceKm(latitude, longitude, zone.lat, zone.lng);
-          if (dist < minDistance) {
-            minDistance = dist;
-            nearest = zone;
-          }
-        });
-
-        const isInside = minDistance * 1000 <= nearest.radiusMeters;
+      (pos) => {
         setDetectedLoc({
-          coords: { lat: latitude, lng: longitude },
-          accuracy: Math.round(accuracy),
-          inRedZone: isInside,
-          name: nearest.name,
-          shortName: nearest.shortName,
-          hazard: nearest.hazard,
-          zoneId: nearest.id,
-          distanceKm: minDistance.toFixed(1),
-          isAutoDetected: true
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+          accuracy: Math.round(pos.coords.accuracy),
         });
-        setIsGpsLocating(false);
+        setIsLocating(false);
       },
       () => {
-        setIsGpsLocating(false);
-      }
+        setDetectedLoc({ lat: 11.5583, lng: 76.1384, accuracy: 25 });
+        setIsLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 6000 }
     );
   };
 
@@ -219,39 +127,39 @@ export default function QuickSignModal({ locationStatus, onClose, onSuccess }) {
   if (result) {
     return (
       <div
-        className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto font-sans"
+        className="fixed inset-0 z-[100] bg-[#2C2A29]/65 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4 overflow-y-auto font-sans"
         role="dialog"
         aria-modal="true"
       >
-        <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 text-center space-y-3.5 sm:space-y-4 animate-scale-in text-white shadow-2xl overflow-y-auto max-h-[85vh]">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 mx-auto rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-            <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-400" />
+        <div className="w-full max-w-md bg-white border border-[#E8E1D5] rounded-t-3xl sm:rounded-3xl p-6 sm:p-8 text-center space-y-4 animate-scale-in text-[#2C2A29] shadow-2xl overflow-y-auto max-h-[85vh]">
+          <div className="w-14 h-14 mx-auto rounded-full bg-[#EBF7EE] border border-[#2D7A4F]/30 flex items-center justify-center">
+            <CheckCircle2 className="w-8 h-8 text-[#2D7A4F]" />
           </div>
 
           <div>
-            <h3 className="text-lg sm:text-xl font-black text-white mb-0.5">Emergency ID Created</h3>
-            <div className="inline-block px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-xl sm:text-2xl font-mono font-black text-emerald-400 mt-1.5 shadow-inner">
+            <h3 className="text-xl font-bold text-[#1A1A1A] mb-0.5">Emergency Pass Verified</h3>
+            <div className="inline-block px-4 py-2 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] text-2xl font-mono font-bold text-[#B85C38] mt-2 shadow-xs">
               {result.emergencyId}
             </div>
           </div>
 
-          <div className="space-y-1.5 sm:space-y-2 text-left text-xs font-cambria">
-            <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-400">Assigned Shelter:</span>
-              <span className="text-white font-semibold">{result.assignedShelter}</span>
+          <div className="space-y-2 text-left text-xs">
+            <div className="p-3 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-between">
+              <span className="text-[#5C544D]">Assigned Shelter:</span>
+              <span className="text-[#1A1A1A] font-bold">{result.assignedShelter}</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-400">Shelter Capacity:</span>
-              <span className="text-emerald-400 font-semibold">{result.shelterCapacity}</span>
+            <div className="p-3 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-between">
+              <span className="text-[#5C544D]">Shelter Capacity:</span>
+              <span className="text-[#2D7A4F] font-bold">{result.shelterCapacity}</span>
             </div>
-            <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800 flex items-center justify-between">
-              <span className="text-slate-400">Evacuation Route:</span>
-              <span className="text-cyan-400 font-semibold">{result.evacuationRoute}</span>
+            <div className="p-3 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-between">
+              <span className="text-[#5C544D]">Evacuation Route:</span>
+              <span className="text-[#2E5B88] font-bold">{result.evacuationRoute}</span>
             </div>
           </div>
 
-          <p className="text-[10px] sm:text-[11px] text-slate-500">
-            Save your Emergency ID. This temporary pass will be validated upon arrival at the relief hub.
+          <p className="text-[11px] text-[#7A726A]">
+            Save your Emergency ID or keep this screen open. This pass will be validated upon arrival at the relief hub.
           </p>
 
           <button
@@ -261,9 +169,9 @@ export default function QuickSignModal({ locationStatus, onClose, onSuccess }) {
               guestId: result.emergencyId,
               status: 'QUICKSIGN_EMERGENCY',
             })}
-            className="w-full py-2.5 sm:py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs tracking-wide shadow-md transition-all btn-bottom-glow-blue cursor-pointer"
+            className="w-full py-3.5 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-medium text-xs tracking-wide shadow-md transition-all cursor-pointer hover:-translate-y-0.5"
           >
-            Access Emergency Dashboard
+            Access Emergency Command Dashboard
           </button>
         </div>
       </div>
@@ -283,7 +191,7 @@ export default function QuickSignModal({ locationStatus, onClose, onSuccess }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto font-sans"
+      className="fixed inset-0 z-[100] bg-[#2C2A29]/65 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto font-sans"
       role="dialog"
       aria-modal="true"
       aria-label="Emergency quick registration"
@@ -291,169 +199,155 @@ export default function QuickSignModal({ locationStatus, onClose, onSuccess }) {
       <div className="w-full max-w-md my-auto animate-scale-in max-h-[90vh] flex flex-col justify-center">
         
         {/* Header */}
-        <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-t-2xl sm:rounded-t-3xl bg-amber-500/15 border border-amber-500/30 border-b-0 shrink-0">
-          <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-400" />
-            <span className="text-xs sm:text-sm font-bold text-white">QuickSign — 30-Sec Emergency Pass</span>
+        <div className="flex items-center justify-between p-4 rounded-t-2xl sm:rounded-t-3xl bg-[#FFF5F2] border border-[#FADED4] border-b-0 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-xl bg-[#B85C38]/15 text-[#B85C38]">
+              <Zap className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="text-[10px] font-mono font-bold text-[#B85C38] uppercase">
+                30-Second Priority Pass
+              </div>
+              <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A]">
+                QuickSign Emergency Pass
+              </h2>
+            </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg hover:bg-white/10 transition-colors cursor-pointer text-slate-400 hover:text-white"
-            aria-label="Close registration"
+            className="p-1.5 rounded-xl bg-white border border-[#E8E1D5] hover:bg-[#F6F4F0] text-[#5C544D] hover:text-[#1A1A1A] transition-colors cursor-pointer"
+            aria-label="Close"
           >
-            <X className="w-4 h-4" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
 
-        {/* Form */}
+        {/* Content Form */}
         <form
           onSubmit={handleSubmit}
-          className="bg-slate-900 rounded-b-none sm:rounded-b-3xl rounded-t-none p-4 sm:p-6 space-y-3 sm:space-y-4 border border-slate-800 border-t-0 shadow-2xl overflow-y-auto max-h-[85vh] sm:max-h-[80vh]"
+          className="bg-white border border-[#E8E1D5] border-t-0 rounded-b-2xl sm:rounded-b-3xl p-5 sm:p-7 space-y-4 shadow-2xl overflow-y-auto max-h-[85vh] sm:max-h-[80vh]"
         >
-          {/* Real-time Location Indicator */}
-          <div className="flex items-center gap-2 p-2.5 sm:p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs">
-            {isGpsLocating ? (
-              <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-cyan-400 animate-spin shrink-0" />
-            ) : (
-              <Crosshair className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center justify-between">
-                <span>{isGpsLocating ? 'Detecting GPS...' : 'Location Locked'}</span>
-                <button
-                  type="button"
-                  onClick={handleRefreshGPS}
-                  className="text-[9px] text-cyan-400 hover:underline cursor-pointer"
-                >
-                  Refresh
-                </button>
-              </div>
-              <div className="text-[11px] sm:text-xs text-white font-bold truncate">
-                {detectedLoc?.name || 'Acquiring Nearest Sector...'}
-              </div>
-            </div>
-          </div>
-
-          {/* Sector Fallback Selector */}
+          {/* Target Zone Selector */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-400 mb-1">
-              Select/Verify Your Sector:
+            <label className="block text-xs font-semibold text-[#2C2A29] mb-1">
+              Active Hazard Zone
             </label>
             <select
-              value={detectedLoc?.zoneId || 'wayanad'}
-              onChange={(e) => handleManualZoneSelect(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 sm:py-2 text-xs text-white outline-none cursor-pointer hover:border-cyan-500 transition-colors"
+              value={formData.zoneId}
+              onChange={(e) => setFormData({ ...formData, zoneId: e.target.value })}
+              className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2 px-3 text-xs sm:text-sm text-[#1A1A1A] focus:outline-none focus:border-[#8B7355]"
             >
-              {HAZARD_ZONES.map((zone) => (
-                <option key={zone.id} value={zone.id}>
-                  {zone.shortName} ({zone.hazard})
+              {HAZARD_ZONES.map((z) => (
+                <option key={z.id} value={z.id}>
+                  {z.name}
                 </option>
               ))}
             </select>
           </div>
 
           {/* Name & Phone */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-[#2C2A29] mb-1">Full Name</label>
+            <div className="relative">
+              <User className="w-3.5 h-3.5 absolute left-3.5 top-3 text-[#7A726A]" />
+              <input
+                type="text"
+                required
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Head of Household Name"
+                className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2.5 pl-9 pr-3 text-xs sm:text-sm text-[#1A1A1A] placeholder-[#8C847A] focus:outline-none focus:border-[#8B7355]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-[#2C2A29] mb-1">Mobile Contact</label>
+            <div className="relative">
+              <Phone className="w-3.5 h-3.5 absolute left-3.5 top-3 text-[#7A726A]" />
+              <input
+                type="tel"
+                required
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="+91 98765 43210"
+                className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2.5 pl-9 pr-3 text-xs sm:text-sm text-[#1A1A1A] placeholder-[#8C847A] focus:outline-none focus:border-[#8B7355]"
+              />
+            </div>
+          </div>
+
+          {/* Family Count & GPS */}
+          <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[11px] font-bold text-slate-300 mb-1">Full Name</label>
+              <label className="block text-xs font-semibold text-[#2C2A29] mb-1">Total Family</label>
               <div className="relative">
-                <User className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
+                <Users className="w-3.5 h-3.5 absolute left-3.5 top-3 text-[#7A726A]" />
                 <input
-                  type="text"
+                  type="number"
+                  min="1"
+                  max="30"
                   required
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Resident Name"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-8 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
+                  value={formData.familyCount}
+                  onChange={(e) => setFormData({ ...formData, familyCount: e.target.value })}
+                  className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2.5 pl-9 pr-3 text-xs sm:text-sm text-[#1A1A1A] focus:outline-none focus:border-[#8B7355]"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-300 mb-1">Mobile Number</label>
-              <div className="relative">
-                <Phone className="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-500" />
-                <input
-                  type="tel"
-                  required
-                  value={formData.phone}
-                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  placeholder="+91 98765 43210"
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl py-2 pl-8 pr-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-500"
-                />
-              </div>
+              <label className="block text-xs font-semibold text-[#2C2A29] mb-1">GPS Location</label>
+              <button
+                type="button"
+                onClick={handleGetLocation}
+                disabled={isLocating}
+                className="w-full py-2.5 px-2 rounded-xl bg-[#F6F4F0] hover:bg-[#E8E1D5] border border-[#E8E1D5] text-xs font-semibold text-[#4A4238] flex items-center justify-center gap-1.5 transition-colors cursor-pointer truncate"
+              >
+                {isLocating ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span>Locating...</span>
+                  </>
+                ) : (
+                  <>
+                    <Crosshair className="w-3 h-3 text-[#8B7355]" />
+                    <span className="truncate">
+                      {detectedLoc ? `${detectedLoc.lat?.toFixed(3)}°N` : 'Acquire GPS'}
+                    </span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
 
-          {/* People count */}
+          {/* Special Requirements */}
           <div>
-            <label className="block text-[11px] font-bold text-slate-300 mb-1">
-              Total Family Members with you
+            <label className="block text-xs font-semibold text-[#2C2A29] mb-1.5">
+              Special Assistance Needs
             </label>
-            <div className="grid grid-cols-5 gap-1.5">
-              {['1', '2', '3', '4', '5+'].map((count) => (
+            <div className="flex flex-wrap gap-1.5 text-xs">
+              {['Wheelchair Required', 'Infant Care', 'Medical Oxygen', 'Stretcher / Critical'].map((need) => (
                 <button
-                  key={count}
+                  key={need}
                   type="button"
-                  onClick={() => setFormData({ ...formData, peopleCount: count })}
-                  className={`py-1.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
-                    formData.peopleCount === count
-                      ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-sm font-black'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
+                  onClick={() => toggleSpecialNeed(need)}
+                  className={`px-3 py-1.5 rounded-xl border text-[11px] font-semibold transition-all cursor-pointer ${
+                    formData.specialNeeds.includes(need)
+                      ? 'bg-[#B85C38] text-white border-[#B85C38] shadow-xs'
+                      : 'bg-[#F6F4F0] text-[#5C544D] border-[#E8E1D5] hover:bg-[#E8E1D5]'
                   }`}
                 >
-                  {count}
+                  {need}
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Special needs */}
-          <div>
-            <label className="block text-[11px] font-bold text-slate-300 mb-1.5">
-              Special Assistance Required (Prioritized Evac)
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { key: 'elderly', label: 'Elderly / Senior' },
-                { key: 'infant', label: 'Infant / Child' },
-                { key: 'medical', label: 'Medical / Oxygen' },
-                { key: 'mobility', label: 'Wheelchair / Injured' },
-              ].map((need) => (
-                <button
-                  key={need.key}
-                  type="button"
-                  onClick={() => toggleSpecialNeed(need.key)}
-                  className={`p-2 rounded-xl border text-[11px] font-medium transition-all text-left flex items-center gap-1.5 cursor-pointer ${
-                    formData.specialNeeds.includes(need.key)
-                      ? 'bg-red-950/80 border-red-500 text-red-300'
-                      : 'bg-slate-950 border-slate-800 text-slate-400 hover:text-white'
-                  }`}
-                >
-                  <Heart className={`w-3.5 h-3.5 shrink-0 ${formData.specialNeeds.includes(need.key) ? 'text-red-400 fill-red-400' : 'text-slate-500'}`} />
-                  <span className="truncate">{need.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-1"
+            className="w-full py-3.5 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-medium text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 hover:-translate-y-0.5"
           >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
-                <span>Allocating Shelter & Encrypting Pass...</span>
-              </>
-            ) : (
-              <>
-                <Zap className="w-4 h-4 fill-slate-950 text-slate-950" />
-                <span>Generate Instant Emergency Pass</span>
-              </>
-            )}
+            {isSubmitting ? 'Generating Emergency Pass...' : 'Issue Emergency Relocation Pass'}
           </button>
         </form>
 

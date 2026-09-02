@@ -18,7 +18,8 @@ import {
   UserCheck,
   Navigation,
   MapPin,
-  RefreshCw
+  RefreshCw,
+  Shield
 } from 'lucide-react';
 import RealGoogleMap from './RealGoogleMap';
 
@@ -95,7 +96,7 @@ export default function Dashboard({ user, onLogout }) {
     o => o.user_id === (user?.user_id || user?.username || 'ndrf_admin') && o.vote_to_resolve
   );
 
-  // Simulated Residents Trapped in Red Zone (Blue Pulsing Markers)
+  // Simulated Residents Trapped in Red Zone
   const trappedCitizens = [
     { id: 'SOS-901', name: 'Citizen #104 (Elderly)', lat: activeZone.lat + 0.0012, lng: activeZone.lng + 0.0015, type: 'CRITICAL', specialNeeds: 'Wheelchair Assistance' },
     { id: 'SOS-902', name: 'Citizen #105 (Infant Family)', lat: activeZone.lat - 0.0018, lng: activeZone.lng - 0.0008, type: 'URGENT', specialNeeds: 'Medical Supplies' },
@@ -116,7 +117,6 @@ export default function Dashboard({ user, onLogout }) {
           setIsGpsLoading(false);
         },
         () => {
-          // Fallback to default command location
           setOfficerLocation({ lat: 11.6854, lng: 76.1320, accuracy: 12 });
           setIsGpsLoading(false);
         }
@@ -132,7 +132,6 @@ export default function Dashboard({ user, onLogout }) {
     setAssignSuccessMsg(null);
     setAssignErrorMsg(null);
 
-    // Verify key if user typed one
     if (inputKey.trim() && inputKey.trim().toUpperCase() !== activeZone.access_key.toUpperCase()) {
       setAssignErrorMsg(`Invalid 16-Digit Access Key for ${activeZone.name}. Required format: RZ-XXXX-XXXX-XXXX`);
       return;
@@ -186,46 +185,50 @@ export default function Dashboard({ user, onLogout }) {
   };
 
   const stats = [
-    { title: 'Active Red Zones', value: `${zones.filter(z=>z.status==='ACTIVE_RED_ZONE').length} Sectors`, change: '16-Digit Encrypted Keys', color: 'text-red-400', bg: 'bg-red-950/40 border-red-900/60' },
-    { title: 'Trapped Citizens Monitored', value: `${trappedCitizens.length * 710}`, change: 'Blue GPS Telemetry Pulses', color: 'text-amber-400', bg: 'bg-amber-950/40 border-amber-900/60' },
-    { title: 'Assigned Command Officers', value: `${activeZone.assigned_officers.length} Officers`, change: `${activeZone.assigned_officers.map(o=>o.department).join(', ') || 'Awaiting Assignment'}`, color: 'text-emerald-400', bg: 'bg-emerald-950/40 border-emerald-900/60' },
-    { title: 'Sector Resolution Status', value: activeZone.status === 'SITUATION_UNDER_CONTROL' ? 'SAFE — UNDER CONTROL' : 'ACTIVE EMERGENCY', change: `Consensus: ${activeZone.resolution_votes_cast}/${activeZone.resolution_votes_required} Votes`, color: activeZone.status === 'SITUATION_UNDER_CONTROL' ? 'text-emerald-400' : 'text-cyan-400', bg: 'bg-cyan-950/40 border-cyan-900/60' },
+    { title: 'Active Red Zones', value: `${zones.filter(z=>z.status==='ACTIVE_RED_ZONE').length} Sectors`, change: '16-Digit Encrypted Keys', color: 'text-[#B85C38]', bg: 'bg-white/70 border-[#FADED4]' },
+    { title: 'Trapped Citizens Monitored', value: `${trappedCitizens.length * 710}`, change: 'Blue GPS Telemetry Pulses', color: 'text-[#C05621]', bg: 'bg-white/70 border-[#FEEBC8]' },
+    { title: 'Assigned Command Officers', value: `${activeZone.assigned_officers.length} Officers`, change: `${activeZone.assigned_officers.map(o=>o.department).join(', ') || 'Awaiting Assignment'}`, color: 'text-[#2D7A4F]', bg: 'bg-white/70 border-[#D4EDDA]' },
+    { title: 'Sector Resolution Status', value: activeZone.status === 'SITUATION_UNDER_CONTROL' ? 'SAFE — RESOLVED' : 'ACTIVE EMERGENCY', change: `Consensus: ${activeZone.resolution_votes_cast}/${activeZone.resolution_votes_required} Votes`, color: activeZone.status === 'SITUATION_UNDER_CONTROL' ? 'text-[#2D7A4F]' : 'text-[#8B7355]', bg: 'bg-white/70 border-[#E8E1D5]' },
   ];
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 md:p-6 space-y-6">
       
       {/* Header Bar with Live Geolocation Status */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-xl bg-slate-900/90 border border-slate-800 backdrop-blur-glass shadow-xl">
-        <div className="flex items-center gap-3">
-          <div className="p-2.5 rounded-lg bg-gradient-to-br from-red-600 to-amber-600 text-white shadow-md shadow-red-950">
-            <ShieldAlert className="w-6 h-6" />
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 rounded-2xl bg-white/80 border border-[#E8E1D5] backdrop-blur-md shadow-sm">
+        <div className="flex items-center gap-3.5">
+          <div className="p-3 rounded-xl bg-[#2C2A29] text-[#FDFBF7] shadow-sm">
+            <Shield className="w-6 h-6" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="font-cambria text-xl font-bold text-white tracking-tight">SurakshaDrishti — Administrator Command Console</h1>
-              <span className="px-2 py-0.5 text-[10px] font-extrabold bg-red-600 text-white rounded-full">SIH 26191</span>
+              <h1 className="text-xl font-bold text-[#1A1A1A] tracking-tight">
+                Suraksha<span className="text-[#8B7355]">Drishti</span> — Command Console
+              </h1>
+              <span className="px-2.5 py-0.5 text-[10px] font-bold bg-[#B85C38] text-white rounded-full">
+                SIH 26191
+              </span>
             </div>
-            <p className="font-cambria text-xs text-slate-400">
-              Officer: <span className="text-white font-medium">{user?.name || user?.username || 'NDRF Commander Chief'}</span> | Department: <span className="text-cyan-400 font-medium">{user?.role || 'NDRF Tactical Command'}</span>
+            <p className="text-xs text-[#5C544D] mt-0.5">
+              Officer: <span className="text-[#1A1A1A] font-semibold">{user?.name || user?.username || 'NDRF Commander Chief'}</span> | Department: <span className="text-[#8B7355] font-semibold">{user?.role || 'NDRF Tactical Command'}</span>
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
           {/* Automatic Browser Geolocation Display */}
-          <div className="px-3 py-1.5 rounded-lg bg-slate-950 border border-slate-800 text-xs text-slate-300 flex items-center gap-2">
-            <Navigation className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+          <div className="px-3.5 py-2 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] text-xs text-[#5C544D] flex items-center gap-2">
+            <Navigation className="w-3.5 h-3.5 text-[#8B7355] animate-spin" />
             {isGpsLoading ? (
               <span>Locating Browser GPS...</span>
             ) : (
-              <span>GPS: <strong className="text-white">{officerLocation?.lat.toFixed(4)}° N, {officerLocation?.lng.toFixed(4)}° E</strong> (±{officerLocation?.accuracy}m)</span>
+              <span>GPS: <strong className="text-[#1A1A1A]">{officerLocation?.lat.toFixed(4)}° N, {officerLocation?.lng.toFixed(4)}° E</strong> (±{officerLocation?.accuracy}m)</span>
             )}
           </div>
 
           <button 
             onClick={onLogout}
-            className="px-3 py-1.5 rounded-lg bg-red-950/60 hover:bg-red-900/80 border border-red-800 text-xs font-semibold text-red-300 transition-all flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-transparent hover:bg-[#FFF5F2] border border-[#D9D0C1] hover:border-[#B85C38] text-xs font-semibold text-[#B85C38] transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
           >
             <LogOut className="w-3.5 h-3.5" /> Sign Out
           </button>
@@ -235,34 +238,34 @@ export default function Dashboard({ user, onLogout }) {
       {/* Stats Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((s, idx) => (
-          <div key={idx} className={`p-4 rounded-xl border ${s.bg} backdrop-blur-glass transition-all hover:scale-[1.01]`}>
-            <div className="font-cambria text-xs text-slate-400 font-semibold">{s.title}</div>
-            <div className={`font-cambria text-xl font-black mt-1 ${s.color}`}>{s.value}</div>
-            <div className="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
-              <Activity className="w-3 h-3 text-slate-500" /> {s.change}
+          <div key={idx} className={`p-4 rounded-2xl border ${s.bg} backdrop-blur-md transition-all hover:scale-[1.01] shadow-xs`}>
+            <div className="text-xs text-[#5C544D] font-semibold">{s.title}</div>
+            <div className={`text-2xl font-bold mt-1 tracking-tight ${s.color}`}>{s.value}</div>
+            <div className="text-[11px] text-[#7A726A] mt-1 flex items-center gap-1">
+              <Activity className="w-3 h-3 text-[#8C847A]" /> {s.change}
             </div>
           </div>
         ))}
       </div>
 
-      {/* Main Grid: Left GIS Viewport with Blue Pulsing Trapped Resident Markers | Right Assignment & Resolution Controls */}
+      {/* Main Grid: Left GIS Viewport with Trapped Citizen Telemetry | Right Controls */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left Column: Interactive GIS Map & Trapped Citizen Telemetry (8 Cols) */}
+        {/* Left Column: Interactive GIS Map */}
         <div className="lg:col-span-8 space-y-4">
           
-          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 flex flex-col justify-between min-h-[480px] relative overflow-hidden backdrop-blur-glass">
+          <div className="bg-white/80 border border-[#E8E1D5] rounded-3xl p-4 flex flex-col justify-between min-h-[480px] relative overflow-hidden backdrop-blur-md shadow-sm">
             
             {/* Map Header & Zone Selector */}
-            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-black/70 p-3 rounded-lg border border-slate-800">
-              <div className="flex items-center gap-2 text-xs font-bold text-white">
-                <Map className="w-4 h-4 text-cyan-400" /> 
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F6F4F0] p-3 rounded-2xl border border-[#E8E1D5]">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#1A1A1A]">
+                <Map className="w-4 h-4 text-[#8B7355]" /> 
                 <span>Active GIS Red Zone Viewport</span>
               </div>
 
               {/* Zone Dropdown Selector */}
               <div className="flex items-center gap-2">
-                <label className="text-[11px] text-slate-400 font-bold uppercase">Sector:</label>
+                <label className="text-[11px] text-[#7A726A] font-bold uppercase">Sector:</label>
                 <select
                   value={selectedZoneId}
                   onChange={(e) => {
@@ -270,7 +273,7 @@ export default function Dashboard({ user, onLogout }) {
                     setAssignSuccessMsg(null);
                     setAssignErrorMsg(null);
                   }}
-                  className="bg-slate-950 text-white font-cambria text-xs font-bold px-3 py-1.5 rounded-md border border-slate-700 focus:outline-none focus:border-cyan-500"
+                  className="bg-white text-[#1A1A1A] text-xs font-bold px-3 py-1.5 rounded-lg border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] cursor-pointer"
                 >
                   {zones.map(z => (
                     <option key={z.zone_id} value={z.zone_id}>
@@ -281,71 +284,67 @@ export default function Dashboard({ user, onLogout }) {
               </div>
             </div>
 
-            {/* Interactive Real Map with Blue Pulsing Trapped Resident Telemetry */}
-            <div className="relative z-10 my-4 rounded-xl overflow-hidden border border-slate-800 h-[380px]">
+            {/* Interactive Real Map */}
+            <div className="relative z-10 my-4 rounded-2xl overflow-hidden border border-[#E8E1D5] h-[400px]">
               <RealGoogleMap
                 center={[activeZone.lat, activeZone.lng]}
                 zoom={14}
                 interactive={true}
               />
 
-              {/* Overlay Legend: Blue Pulsing Circles = Citizens Trapped inside Red Zone */}
-              <div className="absolute bottom-3 left-3 z-[1000] bg-slate-950/90 border border-slate-800 p-2.5 rounded-lg text-xs backdrop-blur-md space-y-1.5">
-                <div className="font-bold text-white text-[11px] uppercase tracking-wider flex items-center gap-1.5">
-                  <Radio className="w-3.5 h-3.5 text-cyan-400" /> GIS Telemetry Legend
+              {/* Overlay Legend */}
+              <div className="absolute bottom-3 left-3 z-[1000] bg-white/90 border border-[#E8E1D5] p-2.5 rounded-xl text-xs backdrop-blur-md space-y-1 shadow-sm">
+                <div className="font-bold text-[#1A1A1A] text-[11px] uppercase tracking-wider flex items-center gap-1.5">
+                  <Radio className="w-3.5 h-3.5 text-[#8B7355]" /> GIS Telemetry Legend
                 </div>
-                <div className="flex items-center gap-2 text-[11px] text-slate-300">
-                  <span className="w-3 h-3 rounded-full bg-blue-500 animate-ping inline-block"></span>
-                  <span>Blue Pulses = Residents Trapped in Red Zone ({trappedCitizens.length} Active)</span>
-                </div>
-                <div className="flex items-center gap-2 text-[11px] text-slate-300">
-                  <span className="w-3 h-3 rounded-full bg-red-600 inline-block"></span>
-                  <span>Red Circle = High-Slope Hazard Perimeter</span>
+                <div className="flex items-center gap-2 text-[11px] text-[#5C544D]">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#B85C38] inline-block"></span>
+                  <span>Active Red Zone Hazard Perimeter</span>
                 </div>
               </div>
             </div>
 
             {/* Selected Zone Footer Bar */}
-            <div className="relative z-10 flex flex-wrap items-center justify-between text-xs text-slate-400 bg-black/60 p-2.5 rounded-lg border border-slate-800 gap-2">
+            <div className="relative z-10 flex flex-wrap items-center justify-between text-xs text-[#5C544D] bg-[#F6F4F0] p-3 rounded-xl border border-[#E8E1D5] gap-2">
               <span className="flex items-center gap-1.5">
-                <MapPin className="w-3.5 h-3.5 text-red-400" />
-                Center: <strong>{activeZone.lat}° N, {activeZone.lng}° E</strong>
+                <MapPin className="w-3.5 h-3.5 text-[#B85C38]" />
+                Center: <strong className="text-[#1A1A1A]">{activeZone.lat}° N, {activeZone.lng}° E</strong>
               </span>
-              <span className="font-mono text-cyan-400 font-bold">
-                16-Digit Key: <code className="bg-slate-950 px-2 py-0.5 rounded border border-cyan-900 text-cyan-300">{activeZone.access_key}</code>
+              <span className="font-mono text-[#4A4238] font-bold">
+                16-Digit Key: <code className="bg-white px-2 py-0.5 rounded border border-[#E8E1D5] text-[#B85C38]">{activeZone.access_key}</code>
               </span>
             </div>
           </div>
         </div>
 
-        {/* Right Column: Administrator Assignment & Resolution Voting Panel (4 Cols) */}
+        {/* Right Column: Controls */}
         <div className="lg:col-span-4 space-y-4">
           
           {/* Card 1: 16-Digit Key Assignment */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 backdrop-blur-glass space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <h3 className="font-cambria text-sm font-bold text-white flex items-center gap-2">
-                <Key className="w-4 h-4 text-cyan-400" /> Assign Self to Red Zone
+          <div className="bg-white/80 border border-[#E8E1D5] rounded-3xl p-5 backdrop-blur-md space-y-3 shadow-sm">
+            <div className="flex items-center justify-between pb-2.5 border-b border-[#E8E1D5]">
+              <h3 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-2">
+                <Key className="w-4 h-4 text-[#8B7355]" /> Assign Self to Red Zone
               </h3>
-              <span className="text-[10px] font-mono font-bold bg-cyan-950 text-cyan-400 px-2 py-0.5 rounded border border-cyan-800">
-                16-DIGIT KEY REQUIRED
+              <span className="text-[10px] font-mono font-bold bg-[#F6F4F0] text-[#4A4238] px-2 py-0.5 rounded border border-[#E8E1D5]">
+                16-DIGIT KEY
               </span>
             </div>
 
-            <div className="text-xs text-slate-300 leading-relaxed">
-              To operate in <strong className="text-white">{activeZone.name}</strong>, enter the 16-digit security key assigned to this zone:
+            <div className="text-xs text-[#5C544D] leading-relaxed">
+              To operate in <strong className="text-[#1A1A1A]">{activeZone.name}</strong>, enter the 16-digit security key assigned to this zone:
             </div>
 
             {assignSuccessMsg && (
-              <div className="p-2.5 rounded-lg bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div className="p-2.5 rounded-xl bg-[#EBF7EE] border border-[#2D7A4F]/30 text-[#2D7A4F] text-xs flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#2D7A4F] shrink-0" />
                 <span>{assignSuccessMsg}</span>
               </div>
             )}
 
             {assignErrorMsg && (
-              <div className="p-2.5 rounded-lg bg-red-950/60 border border-red-800 text-red-300 text-xs flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-400 shrink-0" />
+              <div className="p-2.5 rounded-xl bg-[#FFF5F2] border border-[#FADED4] text-[#B85C38] text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-[#B85C38] shrink-0" />
                 <span>{assignErrorMsg}</span>
               </div>
             )}
@@ -358,22 +357,22 @@ export default function Dashboard({ user, onLogout }) {
                   value={inputKey}
                   onChange={(e) => setInputKey(e.target.value)}
                   disabled={isOfficerAssigned}
-                  className="w-full bg-slate-950 text-white font-mono text-xs px-3 py-2 rounded-lg border border-slate-700 focus:outline-none focus:border-cyan-500 disabled:opacity-50"
+                  className="w-full bg-[#FDFBF7] text-[#1A1A1A] font-mono text-xs px-3 py-2.5 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] disabled:opacity-50"
                 />
               </div>
 
               <button
                 onClick={handleAssignSelf}
                 disabled={isOfficerAssigned}
-                className={`w-full py-2.5 rounded-lg font-bold text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer ${
+                className={`w-full py-3 rounded-xl font-medium text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
                   isOfficerAssigned
-                    ? 'bg-emerald-950 border border-emerald-800 text-emerald-300 opacity-90'
-                    : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white'
+                    ? 'bg-[#EBF7EE] border border-[#2D7A4F] text-[#2D7A4F] opacity-90'
+                    : 'bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7]'
                 }`}
               >
                 {isOfficerAssigned ? (
                   <>
-                    <UserCheck className="w-4 h-4 text-emerald-400" />
+                    <UserCheck className="w-4 h-4 text-[#2D7A4F]" />
                     <span>Assigned to Sector</span>
                   </>
                 ) : (
@@ -387,34 +386,34 @@ export default function Dashboard({ user, onLogout }) {
           </div>
 
           {/* Card 2: Inter-Departmental Assigned Officers Roster */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 backdrop-blur-glass space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <h3 className="font-cambria text-sm font-bold text-white flex items-center gap-2">
-                <Users className="w-4 h-4 text-cyan-400" /> Assigned Inter-Agency Team
+          <div className="bg-white/80 border border-[#E8E1D5] rounded-3xl p-5 backdrop-blur-md space-y-3 shadow-sm">
+            <div className="flex items-center justify-between pb-2.5 border-b border-[#E8E1D5]">
+              <h3 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-2">
+                <Users className="w-4 h-4 text-[#8B7355]" /> Assigned Inter-Agency Team
               </h3>
-              <span className="text-xs text-slate-400 font-mono">
-                {activeZone.assigned_officers.length} Officers Active
+              <span className="text-xs text-[#7A726A] font-mono">
+                {activeZone.assigned_officers.length} Active
               </span>
             </div>
 
             <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
               {activeZone.assigned_officers.length === 0 ? (
-                <div className="text-xs text-slate-500 italic py-2 text-center">
+                <div className="text-xs text-[#8C847A] italic py-2 text-center">
                   No officers assigned to this zone yet. Use the key assignment above to join.
                 </div>
               ) : (
                 activeZone.assigned_officers.map((officer, idx) => (
-                  <div key={idx} className="p-2 rounded-lg bg-slate-950 border border-slate-800 flex items-center justify-between text-xs">
+                  <div key={idx} className="p-2.5 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-between text-xs">
                     <div>
-                      <div className="font-bold text-white">{officer.officer_name}</div>
-                      <div className="text-[10px] text-cyan-400 font-mono">{officer.department}</div>
+                      <div className="font-bold text-[#1A1A1A]">{officer.officer_name}</div>
+                      <div className="text-[10px] text-[#8B7355] font-mono">{officer.department}</div>
                     </div>
                     {officer.vote_to_resolve ? (
-                      <span className="px-2 py-0.5 bg-emerald-950 text-emerald-400 text-[10px] font-extrabold rounded border border-emerald-800">
+                      <span className="px-2 py-0.5 bg-[#EBF7EE] text-[#2D7A4F] text-[10px] font-bold rounded border border-[#2D7A4F]/30">
                         VOTED SAFE
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 bg-slate-800 text-slate-400 text-[10px] rounded">
+                      <span className="px-2 py-0.5 bg-white text-[#7A726A] text-[10px] rounded border border-[#E8E1D5]">
                         ON DUTY
                       </span>
                     )}
@@ -425,33 +424,33 @@ export default function Dashboard({ user, onLogout }) {
           </div>
 
           {/* Card 3: Consensus Resolution Voting Panel */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-xl p-4 backdrop-blur-glass space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-              <h3 className="font-cambria text-sm font-bold text-white flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" /> Sector Resolution Vote
+          <div className="bg-white/80 border border-[#E8E1D5] rounded-3xl p-5 backdrop-blur-md space-y-3 shadow-sm">
+            <div className="flex items-center justify-between pb-2.5 border-b border-[#E8E1D5]">
+              <h3 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#2D7A4F]" /> Sector Resolution Vote
               </h3>
-              <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+              <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                 activeZone.status === 'SITUATION_UNDER_CONTROL' 
-                  ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' 
-                  : 'bg-red-950 text-red-400 border border-red-800'
+                  ? 'bg-[#EBF7EE] text-[#2D7A4F] border border-[#2D7A4F]/30' 
+                  : 'bg-[#FFF5F2] text-[#B85C38] border border-[#FADED4]'
               }`}>
                 {activeZone.status === 'SITUATION_UNDER_CONTROL' ? 'RESOLVED SAFE' : 'ACTIVE RED ZONE'}
               </span>
             </div>
 
-            <p className="text-xs text-slate-300 leading-relaxed">
-              A Red Zone transitions to <strong className="text-emerald-400">Situation Under Control</strong> only when assigned administrators reach majority consensus.
+            <p className="text-xs text-[#5C544D] leading-relaxed">
+              A Red Zone transitions to <strong className="text-[#2D7A4F]">Situation Under Control</strong> only when assigned administrators reach consensus.
             </p>
 
             {/* Resolution Progress Bar */}
             <div className="space-y-1">
-              <div className="flex justify-between text-xs text-slate-400 font-mono">
+              <div className="flex justify-between text-xs text-[#7A726A] font-mono">
                 <span>Consensus Votes:</span>
-                <span className="text-white font-bold">{activeZone.resolution_votes_cast} / {activeZone.resolution_votes_required} Required</span>
+                <span className="text-[#1A1A1A] font-bold">{activeZone.resolution_votes_cast} / {activeZone.resolution_votes_required} Required</span>
               </div>
-              <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden border border-slate-800">
+              <div className="w-full bg-[#E8E1D5] rounded-full h-2 overflow-hidden">
                 <div 
-                  className="bg-emerald-500 h-full transition-all duration-500"
+                  className="bg-[#2D7A4F] h-full transition-all duration-500"
                   style={{ width: `${Math.min(100, (activeZone.resolution_votes_cast / activeZone.resolution_votes_required) * 100)}%` }}
                 ></div>
               </div>
@@ -460,24 +459,24 @@ export default function Dashboard({ user, onLogout }) {
             <button
               onClick={handleVoteResolve}
               disabled={!isOfficerAssigned || hasOfficerVoted || activeZone.status === 'SITUATION_UNDER_CONTROL'}
-              className={`w-full py-2.5 rounded-lg font-bold text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer ${
+              className={`w-full py-3 rounded-xl font-medium text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
                 activeZone.status === 'SITUATION_UNDER_CONTROL'
-                  ? 'bg-emerald-900 text-emerald-200 border border-emerald-700 cursor-default'
+                  ? 'bg-[#EBF7EE] text-[#2D7A4F] border border-[#2D7A4F] cursor-default'
                   : hasOfficerVoted
-                  ? 'bg-slate-800 text-slate-400 cursor-default'
+                  ? 'bg-[#F6F4F0] text-[#7A726A] cursor-default'
                   : !isOfficerAssigned
-                  ? 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-60'
-                  : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white'
+                  ? 'bg-[#F6F4F0] text-[#8C847A] cursor-not-allowed opacity-70'
+                  : 'bg-[#2D7A4F] hover:bg-[#256842] text-white'
               }`}
             >
               {activeZone.status === 'SITUATION_UNDER_CONTROL' ? (
                 <>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle2 className="w-4 h-4 text-[#2D7A4F]" />
                   <span>Situation Under Control (Resolved)</span>
                 </>
               ) : hasOfficerVoted ? (
                 <>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle2 className="w-4 h-4 text-[#2D7A4F]" />
                   <span>Vote Cast — Awaiting Team Consensus</span>
                 </>
               ) : !isOfficerAssigned ? (

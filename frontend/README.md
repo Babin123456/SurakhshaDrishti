@@ -1,23 +1,29 @@
-# 🌊 SurakshaDrishti — Frontend Architecture & Intelligence Console
-
 <div align="center">
 
+<!-- Animated Header Wave -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=180&section=header&text=SurakshaDrishti%20Frontend&fontSize=42&fontColor=ffffff&fontAlignY=36" width="100%" alt="Frontend Header Wave"/>
+
 ```
-   ███████╗██╗   ██╗██████╗  █████╗ ██╗  ██╗███████╗██╗  ██╗ █████╗ 
-   ██╔════╝██║   ██║██╔══██╗██╔══██╗██║ ██╔╝██╔════╝██║  ██║██╔══██╗
-   ███████╗██║   ██║██████╔╝███████║█████╔╝ ███████╗███████║███████║
-   ╚════██║██║   ██║██╔══██╗██╔══██║██╔═██╗ ╚════██║██╔══██║██╔══██║
-   ███████║╚██████╔╝██║  ██║██║  ██║██║  ██╗███████║██║  ██║██║  ██║
-   ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝
+ ███████╗██╗   ██╗██████╗  █████╗ ██╗  ██╗███████╗██╗  ██╗ █████╗ ██████╗ ██████╗ ██╗███████╗██╗  ██╗████████╗██╗
+ ██╔════╝██║   ██║██╔══██╗██╔══██╗██║ ██╔╝██╔════╝██║  ██║██╔══██╗██╔══██╗██╔══██╗██║██╔════╝██║  ██║╚══██╔══╝██║
+ ███████╗██║   ██║██████╔╝███████║█████╔╝ ███████╗███████║███████║██║  ██║██████╔╝██║███████╗███████║   ██║   ██║
+ ╚════██║██║   ██║██╔══██╗██╔══██║██╔═██╗ ╚════██║██╔══██║██╔══██║██║  ██║██╔══██╗██║╚════██║██╔══██║   ██║   ██║
+ ███████║╚██████╔╝██║  ██║██║  ██║██║  ██╗███████║██║  ██║██║  ██║██████╔╝██║  ██║██║███████║██║  ██║   ██║   ██║
+ ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚═╝
 ```
 
 ### 🛰️ Next-Gen GIS Multi-Hazard Red Zone Identification & Relocation Decision Platform
 
+<!-- Animated Dynamic Typing Banner -->
+<img src="https://readme-typing-svg.demolab.com?font=Outfit&weight=800&size=20&duration=3000&pause=1000&color=D4AF37&center=true&vCenter=true&width=650&lines=SIH+2026+Problem+Statement+26191;ADAMAS+University+SurakshaDrishti+Team;Interactive+3D+Physical+Tilt+%26+Parallax+Reveals" alt="Frontend Typing Subtitle" />
+
+<br/>
+
 [![Vite Version](https://img.shields.io/badge/Vite-5.4-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![React Version](https://img.shields.io/badge/React-18.2-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://reactjs.org/)
-[![React Router](https://img.shields.io/badge/React_Router-v6-CA4245?style=for-the-badge&logo=react-router&logoColor=white)](https://reactrouter.com/)
+[![React Router](https://img.shields.io/badge/React_Router-v7-CA4245?style=for-the-badge&logo=react-router&logoColor=white)](https://reactrouter.com/)
 [![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Leaflet GIS](https://img.shields.io/badge/Leaflet-1.9-199900?style=for-the-badge&logo=leaflet&logoColor=white)](https://leafletjs.com/)
+[![GIS Engine](https://img.shields.io/badge/Spatial_GIS-Open_Telemetry_Layers-199900?style=for-the-badge)](https://leafletjs.com/)
 [![Lenis Scroll](https://img.shields.io/badge/Lenis-Smooth_Scroll-000000?style=for-the-badge)](https://lenis.darkroom.engineering/)
 
 </div>
@@ -26,70 +32,73 @@
 
 ## 🧭 Executive Overview
 
-**SurakshaDrishti** (*Protection Vision*) is an enterprise-grade geospatial decision-support platform engineered for the **National Disaster Response Force (NDRF)** and **State Disaster Management Authorities (SDMAs)** (Smart India Hackathon Problem Statement 26191).
+**SurakshaDrishti** (*Protection Vision*) is an enterprise-grade geospatial decision-support platform engineered for the **National Disaster Response Force (NDRF)** and **State Disaster Management Authorities (SDMAs)** under Smart India Hackathon **Problem Statement 26191**.
 
-The frontend client delivers:
-- **Split-Screen Tactical Hero:** Textual briefings at left alongside a 3D DEM holographic terrain visualization at right.
-- **Zero Google Maps API Key Dependency:** Native Leaflet.js GIS map engine powered by public OpenStreetMap, CARTO Dark Matter, and Esri World Imagery tiles.
-- **Pure Floating 3D WebP Assets:** High-performance background-less WebP components for live gauges, capabilities, and pipeline phases.
-- **Responsive Mobile Ecosystem:** Slide-over navigation drawer, bottom-sheet modal docking, centered dialogs, and background scroll locking.
-- **Full Subpage Routing with Scroll Position Preservation:** Dedicated routes for `/documentation`, `/faqs`, `/privacy`, and `/terms` with exact pixel-scroll restoration upon return.
-
----
-
-## ⚡ Core Frontend Features
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                            SURAKSHADRISHTI CLIENT                           │
-├────────────────────────┬─────────────────────────┬──────────────────────────┤
-│ 🗺️ Open GIS Canvas     │ 🛰️ 3D Tactical Terrain  │ 🌊 Lenis Smooth Scroll   │
-│ Leaflet + Satellite,   │ ISRO Synthetic Radar    │ Inertia momentum scroll  │
-│ Dark & Street Layers   │ & DEM elevation model   │ with scroll preservation │
-├────────────────────────┼─────────────────────────┼──────────────────────────┤
-│ 🔐 Centered Modals     │ ⚡ 30-Sec QuickSign     │ 📱 Mobile Drawer & HUD   │
-│ Scroll-locked dialogs  │ Instant emergency pass  │ Slide-over mobile drawer │
-│ with role-based auth   │ with shelter allocation │ & responsive map chassis │
-└────────────────────────┴─────────────────────────┴──────────────────────────┘
-```
-
-### 1. 💻 Interactive macOS Frame GIS Canvas
-- Housed inside a responsive macOS bezel with window controls, encrypted URL address capsule (`surakshadrishti.mha.gov.in`), and live GIS telemetry indicators.
-- **Open Tile Engines:**
-  - **Map View:** High-speed OpenStreetMap road networks.
-  - **Satellite View:** Esri World Imagery high-resolution orbital captures.
-  - **Terrain:** CARTO Dark Matter vector tile sets.
-- **Interactive Layers:** Toggleable perimeters for **Active Red Zones**, **Verified Relief Shelters**, and **Convoy Evacuation Routes**.
-
-### 2. 🎯 Exact GPS Location & Hazard Geofencing
-- Direct integration with browser `navigator.geolocation` (`enableHighAccuracy: true`).
-- Drops an animated pulsing GPS pin with an accuracy buffer ($\pm\text{meters}$).
-- Computes Haversine geodesic distances to all national hazard hotspots (Wayanad, Joshimath, Teesta, Puri) and delivers an automated **Safe / Immediate Evacuation Advisory**.
-
-### 3. 🌀 Satellite Radar Calibration Telemetry Loader
-- Full-screen initialization sequence featuring rotating radar scanner rings, glowing central emblem, and smooth progress tracking through 5 operational milestones.
-- Can be replayed anytime via session reset or the dedicated button in the footer.
-
-### 4. 📱 Full-Screen Mobile Drawer & Centered Modals
-- **Mobile Navigation:** Smooth slide-over drawer with backdrop blur, scroll locking, touchable targets, and cross-route transitions.
-- **Centered Dialogs:** Auth, Emergency SOS, and QuickSign modals open centered on all screen sizes with background page scroll locking.
-
-### 5. 📚 Dedicated Multi-Page Routing
-- **System Documentation (`/documentation`):** Interactive chapter navigation with smooth anchor tracking, architecture blueprints, and API specifications.
-- **Frequently Asked Questions (`/faqs`):** 10 technical Q&A modules with holographic visual headers.
-- **Legal Compliance (`/privacy` & `/terms`):** Detailed clauses aligned with the Disaster Management Act, 2005.
+The frontend application features:
+- **Floating Shrinking Capsule Navbar:** Docked at top (`z-[9995]`), dynamically shrinking into a compact pill (`w-[94%] max-w-4xl`, `backdrop-blur-2xl`) on scroll past 40px, and automatically unmounting during modal dialogs.
+- **Interactive 3D Physical Tilt Engine:** Cards track mouse coordinates with physical perspective, dynamic rotation (`rotateX`, `rotateY`), and moving specular light glare.
+- **Cinematic Scroll Parallax Reveals:** Sections unmask sequentially on scroll with directional transitions (left-tilt, drop, rise, right-tilt) and dynamic count-up statistics that re-animate on every scroll.
+- **Subtle iOS-Grade Mobile Drawer:** Animated three-line hamburger toggle smoothly morphing into an "X" with lens-blur frosted glass backdrop dissolution.
+- **Zero Google Maps API Key Dependency:** Native open GIS viewport powered by public OpenStreetMap, CARTO Dark, and Esri Satellite tile sets.
+- **Sub-Page Navigation with Scroll Restoration:** Seamless routing between `/`, `/documentation`, `/faqs`, `/privacy`, and `/terms`.
 
 ---
 
-## 🗂️ Component Architecture
+## ⚡ Core Frontend Capabilities
+ 
+```mermaid
+flowchart TD
+    subgraph UI["🖥️ SurakshaDrishti Frontend System (Port 5173)"]
+        direction TB
+
+        subgraph F1["🗺️ Open GIS Engine"]
+            M1["OpenStreetMap + CARTO + Esri Layers"]
+            M2["Zero Google Maps API Key Dependency"]
+            M3["Live Red Zone Hazard Perimeters"]
+        end
+
+        subgraph F2["🛰️ 3D Tactical Cards"]
+            T1["Mouse-Tracking Physical Tilt Engine"]
+            T2["Specular Light Glare Reflections"]
+            T3["Floating 3D WebP Elevation Models"]
+        end
+
+        subgraph F3["🌊 Directional Parallax"]
+            P1["Sequential Scroll Reveals (Tilt / Drop / Rise)"]
+            P2["Replaying IntersectionObserver"]
+            P3["Animated Continuous Metric Count-Ups"]
+        end
+
+        subgraph F4["📱 Shrinking Capsule Dock"]
+            N1["Floating Navbar (z-index 9995)"]
+            N2["Dynamic Pill Compression on Scroll"]
+            N3["Subtle Mobile Morph & Frosted Glass Blur"]
+        end
+
+        subgraph F5["⚡ 30-Sec QuickSign"]
+            Q1["Instant Civilian Evacuation Pass"]
+            Q2["Carrying-Capacity Safe Shelter Allocation"]
+            Q3["Bypasses 2FA Bottlenecks During Disasters"]
+        end
+
+        subgraph F6["🔒 Full Modal Isolation"]
+            D1["Auto-Hiding Navbar on Dialog Open"]
+            D2["Background Page Scroll Locking"]
+            D3["Sub-Page Routing with Scroll Offset Restoration"]
+        end
+    end
+```
+
+---
+
+## 🗂️ Component Directory Structure
 
 ```
 frontend/
 ├── public/
-│   ├── favicon.webp                     # Glowing brand logo
-│   ├── hero_tactical_ai.webp            # 3D Himalayan DEM elevation visual
-│   ├── stat_hazard_gauge.webp           # Active Red Zones gauge
-│   ├── stat_high_risk_radar.webp        # High-Risk Areas radar
+│   ├── favicon.webp                     # Browser tab emblem
+│   ├── stat_hazard_gauge.webp           # Active Red Zones metric gauge
+│   ├── stat_high_risk_radar.webp        # High-Risk Habitations radar
 │   ├── stat_biometric_shield.webp       # Protected Population shield
 │   ├── stat_shelter_bunker.webp         # Shelter Capacity bunker
 │   ├── stat_critical_bell.webp          # Active Alerts bell
@@ -98,104 +107,93 @@ frontend/
 │   ├── feature_geohash_grid.webp        # Geohash spatial index
 │   ├── feature_dual_roles.webp          # Dual role privilege module
 │   ├── feature_carrying_capacity.webp   # Capacity balance allocator
-│   ├── feature_proactive_evacuation.webp# Priority dispatch corridor
-│   ├── pipeline_satellite.webp          # Stage 1: Data Ingestion
-│   ├── pipeline_ai_core.webp            # Stage 2: AI Risk Engine
-│   ├── pipeline_vulnerability.webp      # Stage 3: Vulnerability Analysis
-│   ├── pipeline_rescue_drone.webp       # Stage 4: Relocation & Dispatch
-│   ├── cta_emergency_pass.webp          # QuickSign 3D emergency pass
-│   ├── doc_architecture_blueprint.webp # Documentation blueprint
-│   ├── faq_holographic_orb.webp         # FAQs holographic orb
-│   └── legal_compliance_shield.webp     # Legal & Privacy shield
-│
+│   ├── feature_proactive_evacuation.webp# Relocation corridor router
+│   ├── pipeline_satellite.webp          # Stage 01: ISRO SAR ingestion
+│   ├── pipeline_ai_core.webp            # Stage 02: Hazard scoring neural net
+│   ├── pipeline_vulnerability.webp      # Stage 03: Sub-meter demographics
+│   ├── pipeline_rescue_drone.webp       # Stage 04: Safe haven dispatch
+│   ├── doc_architecture_blueprint.webp # Documentation blueprint header
+│   ├── faq_holographic_orb.webp         # FAQ holographic orb header
+│   ├── legal_compliance_shield.webp     # Legal compliance shield header
+│   └── cta_emergency_pass.webp          # QuickSign modal emblem
 ├── src/
-│   ├── App.jsx                          # Root router, Lenis scroll & scroll restoration
-│   ├── main.jsx                         # React 18 DOM mount point
-│   ├── index.css                        # Design system tokens, matte grid & glow utilities
-│   │
 │   ├── components/
-│   │   ├── Navbar.jsx                   # Desktop navigation & mobile slide-over drawer
-│   │   ├── HeroSection.jsx              # Split-screen headline, dual CTA & 3D DEM visual
-│   │   ├── RealGoogleMap.jsx            # Responsive Leaflet GIS engine in macOS bezel
-│   │   ├── LiveStatsStrip.jsx           # 5 KPI telemetry cards with lower-edge glow
-│   │   ├── FeaturesShowcase.jsx         # 6 core capability module cards
-│   │   ├── HowItWorks.jsx               # 4-stage AI pipeline cards
-│   │   ├── CTASection.jsx               # Floating emergency pass registration CTA
-│   │   ├── AuthSection.jsx              # Centered Sign In & Sign Up modal with scroll-lock
-│   │   ├── EmergencyMode.jsx            # Instant civilian SOS modal with hotline dock
-│   │   ├── QuickSignModal.jsx           # 30-sec rapid evacuation pass generator
-│   │   ├── IntroSequence.jsx            # Radar calibration telemetry loader
-│   │   ├── Dashboard.jsx                # Post-authentication command console
-│   │   ├── Footer.jsx                   # Legal navigation & scroll-offset persistence
-│   │   │
-│   │   └── pages/
-│   │       ├── Documentation.jsx        # Dedicated Developer & Architecture manual
-│   │       ├── Faqs.jsx                 # Dedicated 10-module technical FAQ page
-│   │       ├── PrivacyPolicy.jsx        # Dedicated data governance policy page
-│   │       └── TermsOfService.jsx       # Dedicated statutory civil defense terms page
-│   │
-│   └── utils/
-│       ├── api.js                       # Centralized REST API client & geofencing utilities
-│       ├── useCountUp.js                # Animated numeric telemetry counter hook
-│       └── useScrollReveal.js           # Intersection Observer scroll trigger hook
-│
-├── index.html                           # HTML5 entry with metadata & font preloads
-├── package.json                         # Project dependencies & build scripts
-├── tailwind.config.js                   # TailwindCSS configuration & color tokens
-└── vite.config.js                       # Vite development server & build bundle settings
+│   │   ├── Navbar.jsx                   # Floating shrinking capsule dock
+│   │   ├── GovernmentLanding.jsx        # Minimalist government hero presentation
+│   │   ├── LiveStatsStrip.jsx           # Live geospatial telemetry count-up strip
+│   │   ├── FeaturesShowcase.jsx         # 6-card 3D architecture showcase
+│   │   ├── HowItWorks.jsx               # Directional animated pipeline sequence
+│   │   ├── CTASection.jsx               # One-tap operational mobilization
+│   │   ├── Footer.jsx                   # Official authorities & legal links
+│   │   ├── Interactive3DCard.jsx        # Mouse coordinate 3D tilt & glare engine
+│   │   ├── IntroSequence.jsx            # Crossfade initialization loader
+│   │   ├── Dashboard.jsx                # Official command console
+│   │   ├── AuthSection.jsx              # Official authentication modal
+│   │   ├── EmergencyMode.jsx            # Emergency civilian SOS console
+│   │   ├── QuickSignModal.jsx           # 30-second rapid evacuation pass
+│   │   └── pages/                       # Multi-page subpage views
+│   │       ├── Documentation.jsx
+│   │       ├── Faqs.jsx
+│   │       ├── PrivacyPolicy.jsx
+│   │       └── TermsOfService.jsx
+│   ├── utils/
+│   │   ├── useScrollReveal.js           # Replaying scroll intersection observer
+│   │   └── useCountUp.js                # Continuous telemetry metric counter
+│   ├── App.jsx                          # Main routing & state coordinator
+│   └── index.css                        # Modern design system & typography tokens
 ```
-
----
-
-## 🚀 Quick Start & Development
-
-### 1. Prerequisites
-- **Node.js**: `v18.0.0` or higher
-- **npm**: `v9.0.0` or higher
-
-### 2. Installation
-```bash
-# Navigate to the frontend directory
-cd frontend
-
-# Install dependencies (React, Vite, React Router, Leaflet, Lucide, Lenis, TailwindCSS)
-npm install
-```
-
-### 3. Running Development Server
-```bash
-npm run dev
-```
-> ⚡ Local Development Server launches on: **`http://localhost:3000`** (or `http://localhost:5173`)
-
-### 4. Production Build & Verification
-```bash
-npm run build
-```
-Generates minified, production-ready bundles in `frontend/dist/`.
 
 ---
 
 ## 🎨 Design System & Typography
 
-| Font Family | Style / Role | Implementation Example |
+| Font Family | Style / Role | Implementation |
 | :--- | :--- | :--- |
-| **System Sans** | Primary UI buttons, navigation links, and headings | `font-sans text-sm font-bold` |
-| **Cambria Math** | Technical disaster descriptions and analytical copy | `font-cambria text-xs text-slate-300` |
-| **Monospace** | GPS coordinates, Geohash codes, and timestamps | `font-mono text-xs text-cyan-400` |
+| **Outfit** | Primary Headlines & Bold Display Titles | `font-display` / `h1-h6` (`-0.025em` tracking) |
+| **Plus Jakarta Sans** | Body Copy, Navigation, and Tactical Descriptions | `font-sans` (`-0.011em` tracking) |
+| **Space Grotesk** | Monospace GPS, Geohashes, Badges, and Telemetry | `font-mono` |
 
-### Color Palette (Matte Dark Theme)
-- **Background:** Solid Matte Slate `#050914` with subtle grid lines (`bg-matte-grid`)
-- **Primary Action:** Royal Blue (`#2563eb` / `#3b82f6`) with lower-edge laser glow (`btn-bottom-glow-blue`)
-- **Emergency Critical:** Crimson Red (`#dc2626` / `#ef4444`) with pulsing glow (`btn-bottom-glow-red`)
-- **Telemetry Cyan:** Neon Cyan (`#06b6d4` / `#22d3ee`) for satellite radar feeds
-- **Safe Relocation:** Emerald Green (`#059669` / `#10b981`) for shelter bed capacity
+### Color Palette
+- **Canvas Background:** Warm Ivory Cream `#FDFBF7` with subtle texture (`paper-texture`)
+- **Charcoal Typography:** Deep Carbon `#1A1A1A` and Soft Charcoal `#2C2A29`
+- **Government Bronze / Gold:** Antique Gold `#8B7355` (Primary accents and badges)
+- **Crisis Terracotta:** Rust Orange `#B85C38` (Red zone and emergency warnings)
+- **Safe Relief Haven:** Forest Emerald `#2D7A4F` (Shelters and controlled indicators)
+
+---
+
+## 🚀 Quick Start & Local Development
+
+### 1. Prerequisites
+- **Node.js**: `v18.0.0` or higher (v20+ recommended)
+- **npm**: `v9.0.0` or higher
+
+### 2. Installation
+```bash
+cd frontend
+npm install
+```
+
+### 3. Running Locally
+```bash
+npm run dev
+```
+> ⚡ Local Development Server launches on: **`http://localhost:5173`**
+
+### 4. Production Build
+```bash
+npm run build
+```
+Generates minified production bundle in `frontend/dist/`.
 
 ---
 
 <div align="center">
 
-**SurakshaDrishti** — Zero Compromise Multi-Hazard Decision Platform  
-*Smart India Hackathon 2026 • Problem Statement #26191 • NDRF & SDMA Mission Platform*
+<!-- Animated Footer Wave -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=120&section=footer" width="100%" alt="Frontend Footer Wave"/>
+
+**SurakshaDrishti** — Prepared for Crisis. Engineered for Survival. 🇮🇳  
+*Smart India Hackathon 2026 • Problem Statement #26191 • Developed by ADAMAS University Team*
 
 </div>

@@ -9,58 +9,63 @@
 
 @layer base {
   :root {
-    --color-navy-950: #050914;
-    --color-navy-900: #08111F;
-    --color-navy-800: #0D1A2D;
-    --color-navy-700: #12233B;
-    --color-navy-600: #1A2E4A;
-    --color-critical: #E53E3E;
-    --color-high: #F59E0B;
-    --color-caution: #ECC94B;
-    --color-safe: #38A169;
-    --color-info: #06B6D4;
-    --glass-bg: rgba(13, 26, 45, 0.75);
-    --glass-border: rgba(255, 255, 255, 0.08);
+    --color-creme-bg: #FDFBF7;
+    --color-sand-border: #E8E1D5;
+    --color-sand-muted: #F2EDE4;
+    --color-taupe-dark: #2C2A29;
+    --color-taupe-charcoal: #1A1A1A;
+    --color-taupe-text: #5C544D;
+    --color-gold-accent: #8B7355;
+    --color-rust-accent: #B85C38;
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(232, 225, 213, 0.8);
   }
 
-  /* Matte Background with Light Grid Lines */
-  .bg-matte-grid {
-    background-color: #050914;
+  /* Paper Noise Texture */
+  .paper-texture {
+    position: absolute;
+    inset: 0;
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Subtle Warm Creme Mesh Gradient */
+  .bg-creme-mesh {
     background-image: 
-      linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-    background-size: 32px 32px;
+      radial-gradient(at 0% 0%, hsla(30, 40%, 94%, 1) 0, transparent 50%), 
+      radial-gradient(at 100% 0%, hsla(45, 30%, 96%, 1) 0, transparent 50%);
   }
 
   /* Gradient Bottom-Edge Glow on Button Hover */
-  .btn-bottom-glow-blue:hover {
-    box-shadow: 0 12px 25px -4px rgba(37, 99, 235, 0.55), 0 4px 12px -2px rgba(6, 182, 212, 0.4);
+  .btn-bottom-glow-dark:hover {
+    box-shadow: 0 10px 25px -4px rgba(44, 42, 41, 0.35);
     transform: translateY(-2px);
   }
 
-  .btn-bottom-glow-red:hover {
-    box-shadow: 0 12px 25px -4px rgba(220, 38, 38, 0.6), 0 4px 12px -2px rgba(245, 158, 11, 0.45);
-    transform: translateY(-2px);
-  }
-
-  .btn-bottom-glow-slate:hover {
-    box-shadow: 0 10px 20px -4px rgba(71, 85, 105, 0.4);
+  .btn-bottom-glow-rust:hover {
+    box-shadow: 0 10px 25px -4px rgba(184, 92, 56, 0.35);
     transform: translateY(-2px);
   }
 
   html {
     scroll-behavior: smooth;
-    color-scheme: dark;
+    color-scheme: light;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   }
 
   body {
-    background: var(--color-navy-950);
-    color: #E2E8F0;
+    background: #FDFBF7;
+    color: #2C2A29;
     overflow-x: hidden;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.011em;
   }
 
-  .font-cambria {
-    font-family: "Cambria Math", Cambria, Georgia, serif;
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.025em;
   }
 
   .nav-scrolled {
@@ -76,14 +81,14 @@
     width: 6px;
   }
   ::-webkit-scrollbar-track {
-    background: var(--color-navy-950);
+    background: #F2EDE4;
   }
   ::-webkit-scrollbar-thumb {
-    background: var(--color-navy-600);
+    background: #D9D0C1;
     border-radius: 999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-navy-700);
+    background: #B8AFA0;
   }
 }
 
@@ -92,12 +97,13 @@
    ============================================================ */
 
 @layer components {
-  /* Glassmorphism card */
+  /* Glassmorphism card for creme background */
   .glass-card {
-    background: var(--glass-bg);
+    background: rgba(255, 255, 255, 0.65);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--glass-border);
+    border: 1px solid rgba(232, 225, 213, 0.8);
+    box-shadow: 0 4px 20px -2px rgba(217, 208, 193, 0.25);
   }
 
   /* Topographic background pattern */
@@ -185,33 +191,126 @@
            hover:bg-white/5 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-slate-500/50;
   }
 
-  /* Scroll reveal states */
+  /* Cinematic Scroll Reveal & Parallax States */
   .reveal {
     opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transform: translateY(40px) scale(0.97);
+    filter: blur(8px);
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
   }
   .reveal.revealed {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+    filter: blur(0);
   }
   .reveal-left {
     opacity: 0;
-    transform: translateX(-32px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transform: translateX(-50px) scale(0.97);
+    filter: blur(8px);
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
   }
   .reveal-left.revealed {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
+    filter: blur(0);
   }
   .reveal-right {
     opacity: 0;
-    transform: translateX(32px);
-    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    transform: translateX(50px) scale(0.97);
+    filter: blur(8px);
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
   }
   .reveal-right.revealed {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+
+  /* Directional Cinematic Scroll Parallax Variants */
+  .reveal-tilt-left {
+    opacity: 0;
+    transform: translateY(45px) translateX(-30px) rotate(-4deg) scale(0.94);
+    filter: blur(10px);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal-tilt-left.revealed {
+    opacity: 1;
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    filter: blur(0);
+  }
+
+  .reveal-tilt-right {
+    opacity: 0;
+    transform: translateY(45px) translateX(30px) rotate(4deg) scale(0.94);
+    filter: blur(10px);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal-tilt-right.revealed {
+    opacity: 1;
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    filter: blur(0);
+  }
+
+  .reveal-drop {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.95);
+    filter: blur(8px);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal-drop.revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+
+  /* Pipeline Connecting Arrow Pulse Animation */
+  @keyframes arrowPulse {
+    0%, 100% {
+      opacity: 0.35;
+      transform: translateX(0) scale(0.95);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(6px) scale(1.1);
+    }
+  }
+  /* Mobile Drawer Subtle Frosted Morph Animation */
+  @keyframes mobileBackdropFade {
+    from {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+    }
+    to {
+      opacity: 1;
+      backdrop-filter: blur(12px);
+    }
+  }
+
+  @keyframes mobileMenuSlide {
+    from {
+      opacity: 0;
+      transform: translateX(18px) scale(0.98);
+      filter: blur(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      filter: blur(0);
+    }
+  }
+
+  .animate-mobile-backdrop {
+    animation: mobileBackdropFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-mobile-menu {
+    animation: mobileMenuSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
 
   /* Stat card hover */
@@ -260,6 +359,30 @@
 @keyframes dashMove {
   0% { stroke-dashoffset: 0; }
   100% { stroke-dashoffset: -20; }
+}
+
+/* Smooth Cinematic Blur Fade Transition into Landing Page */
+@keyframes landingBlurReveal {
+  0% {
+    filter: blur(20px);
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  50% {
+    filter: blur(8px);
+    opacity: 0.7;
+    transform: scale(0.99);
+  }
+  100% {
+    filter: blur(0px);
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-blur-reveal {
+  animation: landingBlurReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: filter, opacity, transform;
 }
 
 /* ============================================================
