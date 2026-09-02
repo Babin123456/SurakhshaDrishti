@@ -144,13 +144,13 @@ For granular architectural diagrams, file-by-file working principles, and subsys
 
 | Document | Description |
 | :--- | :--- |
-| 📖 [**INSTRUCTIONS.md**](file:///d:/Projects/SurakshaDrishti/INSTRUCTIONS.md) | Comprehensive file-by-file breakdown explaining the exact working principle, inputs, and outputs of every component, handler, route, and utility. |
-| 🏗️ [**ARCHITECTURE.md**](file:///d:/Projects/SurakshaDrishti/ARCHITECTURE.md) | In-depth Mermaid sequence and flow diagrams detailing high-level topology, multi-agency consensus resolution voting, and shelter carrying capacity balancing. |
-| 🧠 [**AI Prediction Architecture**](file:///d:/Projects/SurakshaDrishti/ai_prediction_architecture.md) | Deep learning specifications for time-series ConvLSTM, ViViT spatio-temporal modeling, and H3/S2 geohash anomaly heatmaps. |
-| 🗄️ [**Detailed Backend Architecture**](file:///d:/Projects/SurakshaDrishti/BACKEND_ARCHITECTURE.md) | Line-by-line breakdown of Express route handlers, PostgreSQL DDL migrations, transaction integrity, and Socket.io channel topology. |
-| 🖥️ [**Frontend README**](file:///d:/Projects/SurakshaDrishti/frontend/README.md) | Client-side architecture, 3D tilt engine, shrinking capsule navbar, design system tokens, and component directory tree. |
-| ⚙️ [**Backend README**](file:///d:/Projects/SurakshaDrishti/backend/README.md) | Server-side command engine, Socket.io event channels, PostgreSQL schema matrix, and REST API route registry. |
-| ⚖️ [**LICENSE**](file:///d:/Projects/SurakshaDrishti/LICENSE) | Official Open-Source MIT License attributed to ADAMAS University (SIH 2026). |
+| 📖 [**INSTRUCTIONS.md**](./INSTRUCTIONS.md) | Comprehensive file-by-file breakdown explaining the exact working principle, inputs, and outputs of every component, handler, route, and utility. |
+| 🏗️ [**ARCHITECTURE.md**](./ARCHITECTURE.md) | In-depth Mermaid sequence and flow diagrams detailing high-level topology, multi-agency consensus resolution voting, and shelter carrying capacity balancing. |
+| 🧠 [**AI Prediction Architecture**](./ai_prediction_architecture.md) | Deep learning specifications for time-series ConvLSTM, ViViT spatio-temporal modeling, and H3/S2 geohash anomaly heatmaps. |
+| 🗄️ [**Detailed Backend Architecture**](./BACKEND_ARCHITECTURE.md) | Line-by-line breakdown of Express route handlers, PostgreSQL DDL migrations, transaction integrity, and Socket.io channel topology. |
+| 🖥️ [**Frontend README**](./frontend/README.md) | Client-side architecture, 3D tilt engine, shrinking capsule navbar, design system tokens, and component directory tree. |
+| ⚙️ [**Backend README**](./backend/README.md) | Server-side command engine, Socket.io event channels, PostgreSQL schema matrix, and REST API route registry. |
+| ⚖️ [**LICENSE**](./LICENSE) | Official Open-Source MIT License attributed to ADAMAS University (SIH 2026). |
 
 ---
 
@@ -159,7 +159,7 @@ For granular architectural diagrams, file-by-file working principles, and subsys
 * **Hackathon**: Developed for Smart India Hackathon (SIH 2026) under Problem Statement **26191**.
 * **Institution**: **ADAMAS University** — SurakshaDrishti Team.
 * **Governing Body**: Ministry of Home Affairs (MHA), National Disaster Response Force (NDRF), and State Disaster Management Authorities (SDMA).
-* **License**: Released under the permissive [MIT License](file:///d:/Projects/SurakshaDrishti/LICENSE).
+* **License**: Released under the permissive [MIT License](./LICENSE).
 
 <br/>
 
