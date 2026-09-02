@@ -79,51 +79,52 @@ export default function Faqs() {
   }, []);
 
   const handleBack = () => {
-    navigate(-1);
+    navigate('/');
   };
 
   return (
-    <div className="min-h-screen bg-[#050914] text-slate-100 font-cambria py-6 sm:py-12 px-3.5 sm:px-6 lg:px-8 selection:bg-amber-500/30 selection:text-white">
-      <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8">
+    <div className="min-h-screen bg-[#FDFBF7] text-[#2C2A29] font-sans py-8 sm:py-14 px-4 sm:px-6 lg:px-8 selection:bg-[#8B7355]/20 selection:text-[#1A1A1A] relative">
+      <div className="paper-texture"></div>
+      <div className="max-w-4xl mx-auto space-y-6 sm:space-y-8 relative z-20">
         
         {/* Top Return Header */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-4 sm:pb-6 border-b border-[#E8E1D5]">
           <button
             onClick={handleBack}
-            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all duration-300 flex items-center gap-2 cursor-pointer btn-bottom-glow-slate hover:-translate-y-0.5 font-sans shadow-md"
+            className="px-4 py-2 rounded-xl bg-white hover:bg-[#F6F4F0] text-[#5C544D] hover:text-[#1A1A1A] border border-[#E8E1D5] text-xs font-semibold transition-all duration-300 flex items-center gap-2 cursor-pointer shadow-xs"
           >
-            <ArrowLeft className="w-4 h-4 text-amber-400" />
+            <ArrowLeft className="w-4 h-4 text-[#8B7355]" />
             <span>Back</span>
           </button>
 
-          <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono text-cyan-400">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <div className="flex items-center gap-2 text-[10px] sm:text-xs font-mono text-[#5C544D]">
+            <span className="w-2 h-2 rounded-full bg-[#8B7355] animate-pulse"></span>
             <span>KNOWLEDGE BASE (10 FAQ MODULES) • SIH 26191</span>
           </div>
         </div>
 
-        {/* Title Header with Pure Floating 3D Holographic Orb WebP */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4 bg-slate-900/90 p-5 sm:p-8 rounded-2xl sm:rounded-3xl border border-slate-800 shadow-2xl transition-all duration-300 hover:border-slate-700 hover:shadow-amber-950/20">
-          <div className="w-16 h-16 flex items-center justify-center shrink-0 drop-shadow-[0_4px_16px_rgba(0,0,0,0.6)]">
+        {/* Title Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-5 bg-white/70 backdrop-blur-md p-6 sm:p-8 rounded-3xl border border-[#E8E1D5] shadow-xs">
+          <div className="w-16 h-16 flex items-center justify-center shrink-0 drop-shadow-sm">
             <img src="/faq_holographic_orb.webp" alt="FAQs Orb" className="w-full h-full object-contain" />
           </div>
           <div>
-            <h1 className="text-xl sm:text-3xl font-black text-white tracking-tight">Frequently Asked Questions</h1>
-            <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            <h1 className="text-2xl sm:text-4xl font-bold text-[#1A1A1A] tracking-tight">Frequently Asked Questions</h1>
+            <p className="text-xs sm:text-sm text-[#5C544D] mt-1">
               Comprehensive Technical Answers on GIS Telemetry, AI Scoring, GSM Mesh, and Carrying Capacity
             </p>
           </div>
         </div>
 
         {/* 10 FAQ Accordion Items */}
-        <div className="space-y-3 sm:space-y-3.5">
+        <div className="space-y-3">
           {FAQS_DATA.map((item, idx) => {
             const isOpen = openIdx === idx;
             return (
               <div
                 key={idx}
-                className={`bg-slate-900/90 border rounded-2xl overflow-hidden transition-all duration-300 shadow-lg ${
-                  isOpen ? 'border-cyan-500/60 shadow-cyan-950/40 bg-slate-900' : 'border-slate-800 hover:border-slate-700 hover:bg-slate-900/95'
+                className={`bg-white/80 border rounded-2xl overflow-hidden transition-all duration-300 shadow-xs ${
+                  isOpen ? 'border-[#8B7355]/60 bg-white' : 'border-[#E8E1D5] hover:border-[#8B7355]/40 hover:bg-white'
                 }`}
               >
                 <button
@@ -133,17 +134,17 @@ export default function Faqs() {
                   aria-expanded={isOpen}
                 >
                   <div className="flex-1">
-                    <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase tracking-wider block mb-1">
+                    <span className="text-[10px] font-mono text-[#8B7355] font-bold uppercase tracking-wider block mb-1">
                       {item.category}
                     </span>
                     <h3 className={`font-bold text-xs sm:text-base transition-colors leading-snug ${
-                      isOpen ? 'text-cyan-300' : 'text-white hover:text-cyan-200'
+                      isOpen ? 'text-[#1A1A1A]' : 'text-[#2C2A29] hover:text-[#1A1A1A]'
                     }`}>
                       {item.q}
                     </h3>
                   </div>
                   <div className={`p-1.5 sm:p-2 rounded-xl border transition-all duration-300 shrink-0 mt-0.5 sm:mt-0 ${
-                    isOpen ? 'bg-cyan-500/20 border-cyan-500/40 text-cyan-400 rotate-180' : 'bg-slate-800 border-slate-700 text-slate-400 rotate-0'
+                    isOpen ? 'bg-[#F6F4F0] border-[#8B7355] text-[#8B7355] rotate-180' : 'bg-[#F6F4F0] border-[#E8E1D5] text-[#7A726A] rotate-0'
                   }`}>
                     <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
@@ -156,7 +157,7 @@ export default function Faqs() {
                   }`}
                 >
                   <div className="overflow-hidden">
-                    <div className="px-4 pb-4 sm:px-6 sm:pb-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-slate-800/80 pt-3.5 bg-slate-950/60">
+                    <div className="px-4 pb-4 sm:px-6 sm:pb-5 text-xs sm:text-sm text-[#5C544D] leading-relaxed border-t border-[#E8E1D5] pt-3.5 bg-[#FDFBF7]/60">
                       {item.a}
                     </div>
                   </div>
@@ -168,7 +169,7 @@ export default function Faqs() {
         </div>
 
         {/* Footer */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] sm:text-xs text-slate-500 font-mono pt-4 border-t border-slate-900 text-center sm:text-left">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] sm:text-xs text-[#7A726A] font-mono pt-4 border-t border-[#E8E1D5] text-center sm:text-left">
           <span>EMERGENCY HELPLINE: 1078 / 112</span>
           <span>SIH 26191 • SURAKSHADRISHTI DSS</span>
         </div>
