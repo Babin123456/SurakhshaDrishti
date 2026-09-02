@@ -132,7 +132,7 @@ export default function Documentation() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white/70 backdrop-blur-md p-6 sm:p-7 rounded-3xl border border-[#E8E1D5] shadow-xs">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 flex items-center justify-center shrink-0 drop-shadow-sm">
-              <img src="/doc_architecture_blueprint.webp" alt="Documentation Blueprint" className="w-full h-full object-contain" />
+              <img src="/documentation.webp" alt="Documentation Blueprint" className="w-full h-full object-contain" />
             </div>
             <div>
               <h1 className="text-2xl sm:text-4xl font-bold text-[#1A1A1A] tracking-tight">System Documentation</h1>
