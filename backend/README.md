@@ -3,7 +3,7 @@
 <!-- Animated Header Wave -->
 <img src="https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=180&section=header&text=SurakshaDrishti%20Backend&fontSize=42&fontColor=ffffff&fontAlignY=36" width="100%" alt="Backend Header Wave"/>
 
-```
+```text
  ███████╗██╗   ██╗██████╗  █████╗ ██╗  ██╗███████╗██╗  ██╗ █████╗ ██████╗ ██████╗ ██╗███████╗██╗  ██╗████████╗██╗
  ██╔════╝██║   ██║██╔══██╗██╔══██╗██║ ██╔╝██╔════╝██║  ██║██╔══██╗██╔══██╗██╔══██╗██║██╔════╝██║  ██║╚══██╔══╝██║
  ███████╗██║   ██║██████╔╝███████║█████╔╝ ███████╗███████║███████║██║  ██║██████╔╝██║███████╗███████║   ██║   ██║
@@ -106,7 +106,7 @@ flowchart TD
 
 The data tier maintains 11 relational tables connected via an SSL connection pool:
 
-```
+```text
 backend/
 ├── handlers/
 │   ├── dbHandler.js             # PostgreSQL connection pool & spatial queries

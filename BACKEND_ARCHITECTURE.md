@@ -19,7 +19,8 @@
 
 The **SurakshaDrishti Backend Engine** is built using **Node.js, Express.js, PostgreSQL (Supabase Cloud), and Socket.io**. It handles real-time disaster alerts, AI satellite telemetry ingestion, cryptographic 16-digit Red Zone security key validation, multi-agency consensus voting, low-bandwidth GSM pings, and role-based authentication.
 
-### Core Stack Components:
+### Core Stack Components
+
 - **Runtime & Web Framework**: Node.js v20+ with Express.js (`http://localhost:5000`).
 - **Database Engine**: PostgreSQL 17.6 hosted on Supabase Cloud (`postgres://...supabase.co:5432/postgres`) with native SSL connection pooling via node-postgres (`pg`).
 - **Real-Time Telemetry**: Socket.io WebSocket server (`cors: origin: '*'`) bound to Node HTTP server instance.
@@ -29,7 +30,7 @@ The **SurakshaDrishti Backend Engine** is built using **Node.js, Express.js, Pos
 
 ## 2. Directory & Component Layout
 
-```
+```text
 backend/
 ├── .env                       # Database credentials, JWT Secret, Mailer tokens
 ├── package.json               # Dependencies (express, pg, socket.io, jwt, bcrypt)

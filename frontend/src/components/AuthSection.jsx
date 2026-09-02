@@ -487,7 +487,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-[#2C2A29] mb-1 flex items-center justify-between">
+                  <label className="text-xs font-semibold text-[#2C2A29] mb-1 flex items-center justify-between">
                     <span>GPS Coordinates</span>
                     <button
                       type="button"
