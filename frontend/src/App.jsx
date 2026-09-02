@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 
-// Pages & Sections
+import Navbar from './components/Navbar';
 import GovernmentLanding from './components/GovernmentLanding';
 import LiveStatsStrip from './components/LiveStatsStrip';
 import FeaturesShowcase from './components/FeaturesShowcase';
@@ -24,7 +24,23 @@ export default function App() {
   const location = useLocation();
   const isHomePage = location.pathname === '/';
 
-  const [showIntro, setShowIntro] = useState(false);
+  // Always show intro loader when on home page
+  const [showIntro, setShowIntro] = useState(isHomePage);
+  const [isBlurTransitioning, setIsBlurTransitioning] = useState(false);
+
+  // Restore scroll position when navigating back to home
+  useEffect(() => {
+    if (isHomePage) {
+      const savedPos = sessionStorage.getItem('landing_scroll_pos');
+      if (savedPos) {
+        const top = parseInt(savedPos, 10);
+        setTimeout(() => {
+          window.scrollTo({ top, behavior: 'smooth' });
+          if (window.__lenis) window.__lenis.scrollTo(top, { immediate: false });
+        }, 80);
+      }
+    }
+  }, [isHomePage]);
   
   const [userSession, setUserSession] = useState(null);
   const [showAuth, setShowAuth] = useState(false);
@@ -56,7 +72,8 @@ export default function App() {
   // If user is logged in, show dashboard
   if (userSession) {
     return (
-      <div className="min-h-screen bg-slate-950 text-slate-200 font-sans">
+      <div className="min-h-screen bg-[#FDFBF7] text-[#2C2A29] font-sans relative">
+        <div className="paper-texture"></div>
         <Dashboard
           user={userSession.user || userSession}
           onLogout={handleLogout}
@@ -75,37 +92,54 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FDFBF7] text-stone-900 font-sans selection:bg-stone-800/20 selection:text-stone-900 relative overflow-x-hidden">
       
+      {/* 1. Intro Sequence Loader */}
       {showIntro && (
         <IntroSequence
           onComplete={() => {
-            sessionStorage.setItem('intro_shown', 'true');
             window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
             if (window.__lenis) window.__lenis.scrollTo(0, { immediate: true });
-            setShowIntro(false);
+            // Start the landing page blur reveal immediately
+            setIsBlurTransitioning(true);
+            // Delay removing the loader from the DOM until its 1000ms CSS fade-out finishes
+            setTimeout(() => {
+              setShowIntro(false);
+            }, 1000);
           }}
         />
       )}
 
-      {/* Hero Section (Government Style) */}
-      <GovernmentLanding 
-        onSignIn={() => handleOpenAuth('signin')}
-        onEmergencyAccess={() => setShowEmergency(true)}
-      />
-
-      {/* Restoring the scrolling features for "bragging" */}
-      <div className="relative z-10 bg-[#FDFBF7]">
-        <LiveStatsStrip />
-        <FeaturesShowcase />
-        <HowItWorks />
-
-        <CTASection
-          onExplore={() => handleOpenAuth('signin')}
+      {/* 2. Floating Apple-Style Shrinking Navbar (Hidden when Modals are open) */}
+      {!showAuth && !showEmergency && !showQuickSign && (
+        <Navbar 
+          onSignIn={() => handleOpenAuth('signin')}
           onSignUp={() => handleOpenAuth('signup')}
           onEmergencyAccess={() => setShowEmergency(true)}
-          onQuickSign={() => setShowQuickSign(true)}
+        />
+      )}
+
+      {/* 3. Main Landing Page Content with Smooth Blur Reveal */}
+      <div className={isBlurTransitioning ? 'animate-blur-reveal' : ''}>
+        {/* Hero Section (Government Style) */}
+        <GovernmentLanding 
+          onSignIn={() => handleOpenAuth('signin')}
+          onEmergencyAccess={() => setShowEmergency(true)}
         />
 
-        <Footer />
+        {/* Restoring the scrolling features for "bragging" */}
+        <div className="relative z-10 bg-[#FDFBF7]">
+          <LiveStatsStrip />
+          <FeaturesShowcase />
+          <HowItWorks />
+
+          <CTASection
+            onExplore={() => handleOpenAuth('signin')}
+            onSignUp={() => handleOpenAuth('signup')}
+            onEmergencyAccess={() => setShowEmergency(true)}
+            onQuickSign={() => setShowQuickSign(true)}
+          />
+
+          <Footer />
+        </div>
       </div>
 
       {/* Modals for Auth and Emergency */}
