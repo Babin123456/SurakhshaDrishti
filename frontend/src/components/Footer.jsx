@@ -26,36 +26,36 @@ export default function Footer({ onReplayIntro }) {
             </div>
           </div>
 
-          {/* Center Column: Privacy, Terms, FAQs, Documentation */}
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs font-medium text-[#5C544D]">
+          {/* Center Column: Privacy, Terms, FAQs, Documentation (Single Line) */}
+          <div className="flex items-center justify-center gap-2.5 sm:gap-3 text-xs font-medium text-[#5C544D] whitespace-nowrap overflow-x-auto">
             <Link
               to="/privacy"
               onClick={handleSaveScroll}
-              className="hover:text-[#1A1A1A] transition-colors cursor-pointer"
+              className="hover:text-[#1A1A1A] transition-colors cursor-pointer shrink-0"
             >
               Privacy Policy
             </Link>
-            <span className="text-[#D9D0C1]">•</span>
+            <span className="text-[#D9D0C1] select-none">•</span>
             <Link
               to="/terms"
               onClick={handleSaveScroll}
-              className="hover:text-[#1A1A1A] transition-colors cursor-pointer"
+              className="hover:text-[#1A1A1A] transition-colors cursor-pointer shrink-0"
             >
               Terms of Service
             </Link>
-            <span className="text-[#D9D0C1]">•</span>
+            <span className="text-[#D9D0C1] select-none">•</span>
             <Link
               to="/faqs"
               onClick={handleSaveScroll}
-              className="hover:text-[#1A1A1A] transition-colors cursor-pointer"
+              className="hover:text-[#1A1A1A] transition-colors cursor-pointer shrink-0"
             >
               FAQs
             </Link>
-            <span className="text-[#D9D0C1]">•</span>
+            <span className="text-[#D9D0C1] select-none">•</span>
             <Link
               to="/documentation"
               onClick={handleSaveScroll}
-              className="hover:text-[#1A1A1A] transition-colors cursor-pointer"
+              className="hover:text-[#1A1A1A] transition-colors cursor-pointer shrink-0"
             >
               Documentation
             </Link>
@@ -69,8 +69,36 @@ export default function Footer({ onReplayIntro }) {
 
         </div>
 
-        {/* Row 2: Attributive Banner */}
-        <div className="border-t border-[#E8E1D5]/80 pt-6 flex justify-center items-center w-full">
+        {/* Row 2: Cinematic Monumental Typography "SURAKSHADRISHTI" - Guaranteed Single Line, Glass-Type with Wave Shimmer */}
+        <div className="border-t border-[#E8E1D5]/80 pt-10 pb-4 text-center select-none overflow-hidden">
+          <p className="text-[10px] font-mono tracking-[0.35em] text-[#8C847A] uppercase mb-5 opacity-75">
+            National Red Zone Defense Matrix
+          </p>
+
+          <div className="flex flex-nowrap justify-between items-center w-full max-w-6xl mx-auto px-2 font-serif">
+            {"SURAKSHADRISHTI".split("").map((letter, i) => (
+              <span
+                key={i}
+                className="letter-wave-glow inline-block text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black transition-all duration-300 ease-out cursor-pointer select-none shrink-0 hover:!scale-125 hover:!-translate-y-4 hover:!text-[#D4AF37]"
+                style={{
+                  animationDelay: `${(i * 0.24).toFixed(2)}s`,
+                  transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = '#D4AF37';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = '';
+                }}
+              >
+                {letter}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* Row 3: Attributive Banner */}
+        <div className="border-t border-[#E8E1D5]/60 pt-6 flex justify-center items-center w-full">
           <div className="inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-center px-6 py-2 rounded-full bg-white/70 border border-[#E8E1D5] shadow-xs">
             <span className="text-xs font-semibold text-[#5C544D]">
               Smart India Hackathon 2026
