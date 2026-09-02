@@ -1,7 +1,20 @@
-# SIH 191: Red Zone Predictive AI Architecture
+<div align="center">
+
+<!-- Animated Header Wave -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=180&section=header&text=SurakshaDrishti%20AI%20Engine&fontSize=40&fontColor=ffffff&fontAlignY=36" width="100%" alt="AI Header Wave"/>
+
+<!-- Animated Dynamic Typing Banner -->
+<img src="https://readme-typing-svg.demolab.com?font=Outfit&weight=800&size=20&duration=3000&pause=1000&color=EE4C2C&center=true&vCenter=true&width=650&lines=SIH+2026+Problem+Statement+26191;ADAMAS+University+SurakshaDrishti+Team;PyTorch+ConvLSTM+%2B+ViViT+Spatio-Temporal+Prediction" alt="AI Typing Subtitle" />
+
+</div>
+
+<br/>
+
+> **SIH 2026 Problem Statement 26191**: Intelligent Identification of Hazard-Based Red Zones, Dynamic Carrying Capacity Assessment of Safer Relocation Sites, and Immediate Prioritization of Vulnerable Habitations.  
+> **Team**: ADAMAS University  
 
 ## Overview
-This document outlines the technical architecture for the predictive AI component of our disaster management solution (SIH Problem Statement 191). The goal is to shift from reactive anomaly detection to **proactive prediction** by analyzing time-series satellite imagery to forecast disaster zones (Red/Yellow Zones) before they occur.
+This document outlines the technical architecture for the predictive AI component of our disaster management solution (SIH Problem Statement **26191**). The goal is to shift from reactive anomaly detection to **proactive prediction** by analyzing time-series satellite imagery to forecast disaster zones (Red/Yellow Zones) before they occur.
 
 ## 1. System Architecture
 The application uses a microservices architecture to separate the heavy AI workloads from the high-concurrency user traffic.
@@ -56,3 +69,15 @@ To build a convincing prototype for the judges:
 2. **Simulation Script:** Write a Python script that streams this historical dataset at 5-10 FPS into your FastAPI server to simulate a live data feed.
 3. **Pre-trained Weights:** Do not train from scratch. Look for pre-trained ConvLSTM models on datasets like `EarthNet2021` or weather prediction datasets, and fine-tune them minimally if necessary.
 4. **The "Wow" Factor:** Ensure the Administrator Dashboard visually plots the AI's predictive trajectory (e.g., drawing the projected path of the storm *before* the time-lapse reaches that point in time).
+
+<br/>
+
+<div align="center">
+
+<!-- Animated Footer Wave -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=120&section=footer" width="100%" alt="AI Footer Wave"/>
+
+**SurakshaDrishti Predictive AI Architecture**  
+*SIH 2026 Problem Statement 26191 • Developed by ADAMAS University Team*
+
+</div>
