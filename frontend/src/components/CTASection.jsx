@@ -19,9 +19,17 @@ export default function CTASection({ onExplore, onEmergencyAccess, onSignUp, onQ
             {/* Ambient warm glow */}
             <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#E8E1D5]/40 rounded-full blur-3xl pointer-events-none"></div>
 
-            {/* Floating 3D Emergency Pass Graphic */}
-            <div className="w-20 h-20 mx-auto mb-5 flex items-center justify-center animate-bounce-slow drop-shadow-md">
-              <img src="/cta_emergency_pass.webp" alt="Emergency Pass" className="w-full h-full object-contain" />
+            {/* Floating Animated Shield Graphic (No Background) */}
+            <div className="w-24 h-24 sm:w-28 sm:h-28 mx-auto mb-5 flex items-center justify-center select-none pointer-events-none">
+              <img 
+                src="/shield_transparent.gif" 
+                alt="Command Protocol Shield" 
+                className="w-full h-full object-contain"
+                style={{
+                  animation: 'float 5s ease-in-out infinite',
+                  filter: 'drop-shadow(0 15px 25px rgba(139, 115, 85, 0.2))'
+                }}
+              />
             </div>
 
             {/* Minimal Badge */}
@@ -33,8 +41,9 @@ export default function CTASection({ onExplore, onEmergencyAccess, onSignUp, onQ
             </div>
 
             {/* High-Impact Headline */}
-            <h2 className="text-3xl sm:text-5xl font-black text-[#1A1A1A] tracking-tight mb-3 relative z-10 leading-[1.1]">
-              Deploy Rapid Safety Intelligence.
+            <h2 className="text-3xl sm:text-5xl font-black tracking-tight mb-3 relative z-10 leading-[1.1]">
+              <span className="gradient-text-stone">Deploy Rapid </span>
+              <span className="gradient-text-gold">Safety Intelligence.</span>
             </h2>
 
             {/* Reduced Description */}
