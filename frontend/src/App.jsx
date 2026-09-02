@@ -3,6 +3,12 @@ import { useLocation } from 'react-router-dom';
 
 // Pages & Sections
 import GovernmentLanding from './components/GovernmentLanding';
+import LiveStatsStrip from './components/LiveStatsStrip';
+import FeaturesShowcase from './components/FeaturesShowcase';
+import HowItWorks from './components/HowItWorks';
+import CTASection from './components/CTASection';
+import Footer from './components/Footer';
+
 import AuthSection from './components/AuthSection';
 import EmergencyMode from './components/EmergencyMode';
 import QuickSignModal from './components/QuickSignModal';
@@ -67,7 +73,7 @@ export default function App() {
 
   // Main Landing Page
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-600/40 selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#FDFBF7] text-stone-900 font-sans selection:bg-stone-800/20 selection:text-stone-900 relative overflow-x-hidden">
       
       {showIntro && (
         <IntroSequence
@@ -80,11 +86,27 @@ export default function App() {
         />
       )}
 
-      {/* New Government Style Landing Page */}
+      {/* Hero Section (Government Style) */}
       <GovernmentLanding 
         onSignIn={() => handleOpenAuth('signin')}
         onEmergencyAccess={() => setShowEmergency(true)}
       />
+
+      {/* Restoring the scrolling features for "bragging" */}
+      <div className="relative z-10 bg-[#FDFBF7]">
+        <LiveStatsStrip />
+        <FeaturesShowcase />
+        <HowItWorks />
+
+        <CTASection
+          onExplore={() => handleOpenAuth('signin')}
+          onSignUp={() => handleOpenAuth('signup')}
+          onEmergencyAccess={() => setShowEmergency(true)}
+          onQuickSign={() => setShowQuickSign(true)}
+        />
+
+        <Footer />
+      </div>
 
       {/* Modals for Auth and Emergency */}
       {showAuth && (
