@@ -76,6 +76,7 @@ flowchart TD
 ## 💎 Core System Capabilities
 
 ### 🎖️ 1. Official Command & Consensus Console (NDRF / SDMA)
+
 * 🔐 **16-Digit Cryptographic Zone Passkeys**: Each active red zone generates an isolated 16-character access key (e.g. `RZ-89A4-91F2-3B7C`) required for authorized battalion officers to join incident dispatch.
 * 🗳️ **Inter-Agency Consensus Voting**: Red Zones transition to **"Situation Controlled"** only when all assigned multi-agency commanders (NDRF, SDMA, Fire, Police) cast an authenticated consensus vote.
 * 🗺️ **Multi-Layer Tactical GIS HUD**: Open-source GIS rendering (OpenStreetMap, CARTO Dark, Esri Satellite) plotting red hazard perimeters alongside real-time civilian SOS coordinates.
@@ -84,6 +85,7 @@ flowchart TD
 ---
 
 ### 🚨 2. Resident Emergency & Evacuation Ecosystem
+
 * ⚡ **QuickSign 30-Second Emergency Pass**: Generates authenticated digital evacuation passes instantly without standard 2FA bottlenecks during landslides or flash floods.
 * 📡 **GSM 3.4 Offline Telemetry Mesh**: Dispatches low-bandwidth geohash SMS alerts through local towers when broadband/cellular internet grids collapse.
 * 🏕️ **Dynamic Shelter Carrying Capacity**: Multi-objective spatial algorithms allocate residents across safe sites to avoid road bottlenecks or overloaded relief camps.
@@ -111,29 +113,35 @@ The relational data backbone operates on **Supabase PostgreSQL 17.6** across 11 
 ## 🚀 Quick Start & Local Development
 
 ### Prerequisites
+
 - **Node.js**: v18.0.0 or higher (v20+ recommended)
 - **npm**: v9.0.0+
 
 ### 1️⃣ Clone the Repository
+
 ```bash
 git clone https://github.com/Babin123456/SurakshaDrishti.git
 cd SurakshaDrishti
 ```
 
 ### 2️⃣ Backend Configuration
+
 ```bash
 cd backend
 npm install
 node src/main.js
 ```
+
 > Server starts on port `5000` (or `process.env.PORT`) with active WebSocket listener.
 
 ### 3️⃣ Frontend Configuration
+
 ```bash
 cd ../frontend
 npm install
 npm run dev
 ```
+
 > 🌐 Access the live web interface at `http://localhost:5173`
 
 ---

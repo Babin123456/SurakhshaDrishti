@@ -154,6 +154,7 @@ frontend/
 | **Space Grotesk** | Monospace GPS, Geohashes, Badges, and Telemetry | `font-mono` |
 
 ### Color Palette
+
 - **Canvas Background:** Warm Ivory Cream `#FDFBF7` with subtle texture (`paper-texture`)
 - **Charcoal Typography:** Deep Carbon `#1A1A1A` and Soft Charcoal `#2C2A29`
 - **Government Bronze / Gold:** Antique Gold `#8B7355` (Primary accents and badges)
@@ -165,25 +166,31 @@ frontend/
 ## 🚀 Quick Start & Local Development
 
 ### 1. Prerequisites
+
 - **Node.js**: `v18.0.0` or higher (v20+ recommended)
 - **npm**: `v9.0.0` or higher
 
 ### 2. Installation
+
 ```bash
 cd frontend
 npm install
 ```
 
 ### 3. Running Locally
+
 ```bash
 npm run dev
 ```
+
 > ⚡ Local Development Server launches on: **`http://localhost:5173`**
 
 ### 4. Production Build
+
 ```bash
 npm run build
 ```
+
 Generates minified production bundle in `frontend/dist/`.
 
 ---

@@ -85,18 +85,21 @@ flowchart TD
 ```
 
 ### 1. Authentication Routes (`backend/routes/auth.js`)
+
 - `POST /api/auth/register` — Role-based account creation (`RESIDENT`, `NDRF`, `SDMA`, `POLICE`).
 - `POST /api/auth/login` — Issues signed JWT tokens with 7-day expiration.
 - `POST /api/auth/quick-sign` — Rapid civilian evacuation pass generator with zero 2FA friction.
 - `POST /api/auth/verify-otp` — SMTP / SMS one-time verification code validator.
 
 ### 2. Hazard Zone Routes (`backend/routes/zones.js`)
+
 - `GET /api/zones` — Returns all active red zones, boundary GeoJSON perimeters, and assigned battalions.
 - `POST /api/zones/verify-key` — Validates the 16-character passkey (`RZ-XXXX-XXXX-XXXX`) for officer incident enrollment.
 - `POST /api/zones/consensus-vote` — Submits an officer's vote; resolves zone to safe status upon majority consensus.
 - `POST /api/zones/ai-satellite-detect` — Webhook endpoint for automated deep learning hazard polygon detection.
 
 ### 3. Encrypted Dispatch Channels (`backend/routes/chat.js`)
+
 - `GET /api/chat/conversations` — Retrieves agency-scoped encrypted chat rooms.
 - `POST /api/chat/messages` — Stores encrypted message payloads and emits real-time WebSocket signals.
 
@@ -127,12 +130,15 @@ backend/
 ## 🚀 Quick Start & Local Development
 
 ### 1. Prerequisites
+
 - **Node.js**: `v18.0.0` or higher (v20+ recommended)
 - **npm**: `v9.0.0` or higher
 - **PostgreSQL**: PostgreSQL 16+ or active Supabase project credentials
 
 ### 2. Environment Configuration
+
 Create a `.env` file inside `backend/`:
+
 ```ini
 PORT=5000
 DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/postgres
@@ -144,16 +150,22 @@ SMTP_PASS=your_app_password
 ```
 
 ### 3. Installation & Run
+
 ```bash
+
 # Navigate to the backend directory
+
 cd backend
 
 # Install dependencies
+
 npm install
 
 # Start the server
+
 node src/main.js
 ```
+
 > ⚡ API Server and WebSocket listener launch on: **`http://localhost:5000`**
 
 ---
