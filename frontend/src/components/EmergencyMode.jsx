@@ -88,7 +88,7 @@ export default function EmergencyMode({ onClose, onAuthSuccess }) {
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto font-sans"
+      className="fixed inset-0 z-[100] bg-[#2C2A29]/65 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto font-sans"
       role="dialog"
       aria-modal="true"
       aria-label="Emergency Mode"
@@ -96,23 +96,23 @@ export default function EmergencyMode({ onClose, onAuthSuccess }) {
       <div className="w-full max-w-lg my-auto animate-scale-in max-h-[90vh] flex flex-col justify-center">
         
         {/* Header alert bar */}
-        <div className="flex items-center justify-between p-3.5 sm:p-4 rounded-t-2xl sm:rounded-t-3xl bg-red-950/80 border border-red-500/40 border-b-0 shrink-0">
-          <div className="flex items-center gap-2.5 sm:gap-3 truncate">
-            <div className="p-1.5 sm:p-2 rounded-xl bg-red-500/20 text-red-400 animate-pulse shrink-0">
-              <Radio className="w-4 h-4 sm:w-5 sm:h-5" />
+        <div className="flex items-center justify-between p-4 rounded-t-2xl bg-[#FFF5F2] border border-[#FADED4] border-b-0 shrink-0">
+          <div className="flex items-center gap-3 truncate">
+            <div className="p-2 rounded-xl bg-[#B85C38]/15 text-[#B85C38] shrink-0">
+              <Radio className="w-5 h-5" />
             </div>
             <div className="truncate">
-              <div className="text-[10px] sm:text-xs font-mono font-bold text-red-400 uppercase tracking-wider truncate">
-                ● High Alert • Priority 1 Civil Defense
+              <div className="text-[10px] sm:text-xs font-mono font-bold text-[#B85C38] uppercase tracking-wider truncate">
+                ● Priority 1 Civil Defense Alert
               </div>
-              <h2 className="text-xs sm:text-sm font-black text-white truncate">
-                SurakshaDrishti SOS Console
+              <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] truncate">
+                SurakshaDrishti Civilian SOS Console
               </h2>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0 ml-2"
+            className="p-1.5 rounded-xl bg-white border border-[#E8E1D5] hover:bg-[#F6F4F0] text-[#5C544D] hover:text-[#1A1A1A] transition-colors cursor-pointer shrink-0 ml-2"
             aria-label="Close emergency mode"
           >
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -120,107 +120,107 @@ export default function EmergencyMode({ onClose, onAuthSuccess }) {
         </div>
 
         {/* Content */}
-        <div className="bg-slate-900 border border-slate-800 border-t-0 rounded-b-none sm:rounded-b-3xl rounded-t-none p-4 sm:p-6 space-y-3.5 sm:space-y-4 shadow-2xl overflow-y-auto max-h-[85vh] sm:max-h-[80vh]">
+        <div className="bg-white border border-[#E8E1D5] border-t-0 rounded-b-2xl p-5 sm:p-7 space-y-4 shadow-2xl overflow-y-auto max-h-[85vh] sm:max-h-[80vh]">
           
           {/* Location alert card */}
-          <div className="p-3 sm:p-4 rounded-2xl bg-red-950/40 border border-red-500/30 space-y-1.5 sm:space-y-2">
-            <div className="flex items-center gap-1.5 sm:gap-2 text-[11px] sm:text-xs font-bold text-red-400 truncate">
-              <MapPin className="w-3.5 h-3.5 shrink-0" />
+          <div className="p-4 rounded-2xl bg-[#FFF5F2] border border-[#FADED4] space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-[#B85C38] truncate">
+              <MapPin className="w-4 h-4 shrink-0" />
               <span className="truncate">{isDetecting ? 'Querying GPS satellites...' : locationStatus?.name}</span>
             </div>
 
-            <div className="flex items-start gap-2.5 sm:gap-3">
-              <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-400 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-[#B85C38] shrink-0 mt-0.5" />
               <div>
-                <h3 className="text-xs sm:text-sm font-bold text-white mb-0.5 leading-snug">
-                  Civil Alert — Active Hazard in Your Vicinity!
+                <h3 className="text-sm font-bold text-[#1A1A1A] mb-0.5 leading-snug">
+                  Active Hazard Warning Detected
                 </h3>
-                <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed font-cambria">
-                  Extreme slope runoff & geological instability detected. Proceed immediately to designated shelters or broadcast your rescue beacon.
+                <p className="text-xs text-[#5C544D] leading-relaxed">
+                  Extreme slope runoff & geological instability detected in this coordinate perimeter. Proceed immediately to designated shelters or broadcast your rescue beacon.
                 </p>
               </div>
             </div>
           </div>
 
-          {/* Interactive Emergency Action Buttons (Responsive 3-Column / Stack) */}
-          <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+          {/* Interactive Emergency Action Buttons */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3">
             
             {/* 1. Find Shelter */}
             <button
               onClick={() => setActiveModalAction(activeModalAction === 'shelter' ? null : 'shelter')}
-              className={`flex flex-col items-center text-center gap-1 sm:gap-1.5 p-2.5 sm:p-3.5 rounded-2xl border transition-all group cursor-pointer shadow-sm ${
+              className={`flex flex-col items-center text-center gap-1.5 p-3 rounded-2xl border transition-all group cursor-pointer shadow-xs ${
                 activeModalAction === 'shelter'
-                  ? 'bg-emerald-950/90 border-emerald-400 shadow-emerald-950/50'
-                  : 'bg-emerald-950/40 border-emerald-500/40 hover:border-emerald-400 hover:bg-emerald-950/70'
+                  ? 'bg-[#EBF7EE] border-[#2D7A4F] text-[#2D7A4F]'
+                  : 'bg-[#F6F4F0] border-[#E8E1D5] hover:border-[#2D7A4F] hover:bg-[#EBF7EE]/50'
               }`}
             >
-              <div className="p-1.5 sm:p-2 rounded-xl bg-emerald-500/20 text-emerald-400 group-hover:scale-110 transition-transform">
+              <div className="p-2 rounded-xl bg-white border border-[#E8E1D5] text-[#2D7A4F] group-hover:scale-110 transition-transform">
                 <Home className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[11px] sm:text-xs font-bold text-white leading-tight">Find Shelter</span>
-              <span className="text-[9px] sm:text-[11px] font-mono text-emerald-400 font-bold">3.2km</span>
+              <span className="text-xs font-bold text-[#1A1A1A] leading-tight">Find Shelter</span>
+              <span className="text-[10px] sm:text-xs font-mono text-[#2D7A4F] font-bold">3.2km</span>
             </button>
 
             {/* 2. Request Help */}
             <button
               onClick={() => setActiveModalAction(activeModalAction === 'help' ? null : 'help')}
-              className={`flex flex-col items-center text-center gap-1 sm:gap-1.5 p-2.5 sm:p-3.5 rounded-2xl border transition-all group cursor-pointer shadow-sm ${
+              className={`flex flex-col items-center text-center gap-1.5 p-3 rounded-2xl border transition-all group cursor-pointer shadow-xs ${
                 activeModalAction === 'help'
-                  ? 'bg-red-950/90 border-red-400 shadow-red-950/50'
-                  : 'bg-red-950/40 border-red-500/40 hover:border-red-400 hover:bg-red-950/70'
+                  ? 'bg-[#FFF5F2] border-[#B85C38] text-[#B85C38]'
+                  : 'bg-[#F6F4F0] border-[#E8E1D5] hover:border-[#B85C38] hover:bg-[#FFF5F2]/50'
               }`}
             >
-              <div className="p-1.5 sm:p-2 rounded-xl bg-red-500/20 text-red-400 group-hover:scale-110 transition-transform">
+              <div className="p-2 rounded-xl bg-white border border-[#E8E1D5] text-[#B85C38] group-hover:scale-110 transition-transform">
                 <Siren className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[11px] sm:text-xs font-bold text-white leading-tight">Request Help</span>
-              <span className="text-[9px] sm:text-[11px] font-mono text-red-400 font-bold">NDRF Alert</span>
+              <span className="text-xs font-bold text-[#1A1A1A] leading-tight">Request Help</span>
+              <span className="text-[10px] sm:text-xs font-mono text-[#B85C38] font-bold">NDRF Alert</span>
             </button>
 
             {/* 3. Evacuate Now */}
             <button
               onClick={() => setActiveModalAction(activeModalAction === 'evacuate' ? null : 'evacuate')}
-              className={`flex flex-col items-center text-center gap-1 sm:gap-1.5 p-2.5 sm:p-3.5 rounded-2xl border transition-all group cursor-pointer shadow-sm ${
+              className={`flex flex-col items-center text-center gap-1.5 p-3 rounded-2xl border transition-all group cursor-pointer shadow-xs ${
                 activeModalAction === 'evacuate'
-                  ? 'bg-cyan-950/90 border-cyan-400 shadow-cyan-950/50'
-                  : 'bg-cyan-950/40 border-cyan-500/40 hover:border-cyan-400 hover:bg-cyan-950/70'
+                  ? 'bg-[#F0F7FD] border-[#2E5B88] text-[#2E5B88]'
+                  : 'bg-[#F6F4F0] border-[#E8E1D5] hover:border-[#2E5B88] hover:bg-[#F0F7FD]/50'
               }`}
             >
-              <div className="p-1.5 sm:p-2 rounded-xl bg-cyan-500/20 text-cyan-400 group-hover:scale-110 transition-transform">
+              <div className="p-2 rounded-xl bg-white border border-[#E8E1D5] text-[#2E5B88] group-hover:scale-110 transition-transform">
                 <Compass className="w-4 h-4 sm:w-5 sm:h-5" />
               </div>
-              <span className="text-[11px] sm:text-xs font-bold text-white leading-tight">Evacuate Now</span>
-              <span className="text-[9px] sm:text-[11px] font-mono text-cyan-400 font-bold">Routes</span>
+              <span className="text-xs font-bold text-[#1A1A1A] leading-tight">Evacuate Now</span>
+              <span className="text-[10px] sm:text-xs font-mono text-[#2E5B88] font-bold">Routes</span>
             </button>
 
           </div>
 
           {/* Action Modals / Expanding Overlays */}
           {activeModalAction === 'shelter' && (
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950 border border-emerald-500/40 space-y-2.5 sm:space-y-3 animate-fade-in text-xs font-cambria">
+            <div className="p-4 rounded-2xl bg-[#F6F4F0] border border-[#E8E1D5] space-y-3 animate-fade-in text-xs">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-bold text-emerald-400 font-sans text-xs sm:text-sm">
+                <div className="flex items-center gap-2 font-bold text-[#2D7A4F] text-xs sm:text-sm">
                   <Home className="w-4 h-4" />
                   <span>Available Evacuation Shelters</span>
                 </div>
                 <button 
                   onClick={() => setActiveModalAction(null)}
-                  className="text-slate-400 hover:text-white text-xs cursor-pointer"
+                  className="text-[#7A726A] hover:text-[#1A1A1A] text-xs cursor-pointer font-bold"
                 >
                   ✕ Close
                 </button>
               </div>
 
-              <div className="space-y-1.5 sm:space-y-2">
+              <div className="space-y-2">
                 {SHELTERS.map((s, idx) => (
-                  <div key={idx} className="p-2 sm:p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-2">
+                  <div key={idx} className="p-2.5 rounded-xl bg-white border border-[#E8E1D5] flex items-center justify-between gap-2 shadow-xs">
                     <div className="truncate">
-                      <div className="font-bold text-white text-[11px] sm:text-xs truncate">{s.name}</div>
-                      <div className="text-[10px] text-slate-400 truncate">{s.route}</div>
+                      <div className="font-bold text-[#1A1A1A] text-xs truncate">{s.name}</div>
+                      <div className="text-[10px] text-[#7A726A] truncate">{s.route}</div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-emerald-400 font-bold font-mono text-xs">{s.dist}</div>
-                      <div className="text-[9px] text-slate-500">{s.cap}</div>
+                      <div className="text-[#2D7A4F] font-bold font-mono text-xs">{s.dist}</div>
+                      <div className="text-[9px] text-[#7A726A]">{s.cap}</div>
                     </div>
                   </div>
                 ))}
@@ -228,131 +228,96 @@ export default function EmergencyMode({ onClose, onAuthSuccess }) {
 
               <button
                 onClick={() => { setActiveModalAction(null); setShowQuickSign(true); }}
-                className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer font-sans"
+                className="w-full py-2.5 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-medium text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Reserve Bed & Get QR Pass</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>Reserve Bed & Get QuickPass</span>
+                <ArrowRight className="w-3.5 h-3.5 opacity-80" />
               </button>
             </div>
           )}
 
           {activeModalAction === 'help' && (
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950 border border-red-500/40 space-y-2.5 sm:space-y-3 animate-fade-in text-xs font-cambria">
+            <div className="p-4 rounded-2xl bg-[#FFF5F2] border border-[#FADED4] space-y-3 animate-fade-in text-xs">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1.5 sm:gap-2 font-bold text-red-400 font-sans text-xs sm:text-sm truncate">
+                <div className="flex items-center gap-2 font-bold text-[#B85C38] text-xs sm:text-sm truncate">
                   <ShieldAlert className="w-4 h-4 shrink-0" />
-                  <span className="truncate">Transmit Priority SOS to NDRF</span>
+                  <span className="truncate">Priority SOS Broadcast to NDRF</span>
                 </div>
                 <button 
                   onClick={() => setActiveModalAction(null)}
-                  className="text-slate-400 hover:text-white text-xs cursor-pointer shrink-0 ml-1"
+                  className="text-[#7A726A] hover:text-[#1A1A1A] text-xs cursor-pointer shrink-0 ml-1 font-bold"
                 >
                   ✕ Close
                 </button>
               </div>
 
               {helpRequested ? (
-                <div className="p-3 rounded-xl bg-emerald-950/60 border border-emerald-500/40 text-center space-y-1">
-                  <CheckCircle2 className="w-6 h-6 text-emerald-400 mx-auto" />
-                  <div className="font-bold text-white font-sans text-xs sm:text-sm">SOS Beacon Broadcasted!</div>
-                  <div className="text-[10px] sm:text-[11px] text-slate-300">NDRF Control Room #04 & District Collector dispatched alert token #NDRF-SOS-9821. Stay on high ground.</div>
+                <div className="p-3 rounded-xl bg-white border border-[#D4EDDA] text-center space-y-1">
+                  <CheckCircle2 className="w-6 h-6 text-[#2D7A4F] mx-auto" />
+                  <div className="font-bold text-[#1A1A1A] text-xs sm:text-sm">SOS Beacon Broadcasted!</div>
+                  <div className="text-[11px] text-[#5C544D]">NDRF Control Room #04 dispatched alert token #NDRF-SOS-9821. Stay on high ground.</div>
                 </div>
               ) : (
-                <>
-                  <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed">
-                    Broadcasts your real-time GPS telemetry directly to the nearest NDRF Quick Response Team (QRT) and State Emergency Ops Center (SEOC).
+                <div className="space-y-2">
+                  <p className="text-[#5C544D] text-xs leading-relaxed">
+                    Broadcasts your real-time GPS telemetry directly to NDRF field units and District EOC emergency dispatchers.
                   </p>
                   <button
                     onClick={() => setHelpRequested(true)}
-                    className="w-full py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer btn-bottom-glow-red font-sans shadow-lg"
+                    className="w-full py-2.5 rounded-xl bg-[#B85C38] hover:bg-[#A34B29] text-white font-medium text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <Siren className="w-4 h-4 text-white" />
-                    <span>Broadcast Immediate Rescue SOS Beacon</span>
+                    <Siren className="w-4 h-4" />
+                    <span>Broadcast Emergency SOS Beacon</span>
                   </button>
-                </>
+                </div>
               )}
             </div>
           )}
 
           {activeModalAction === 'evacuate' && (
-            <div className="p-3.5 sm:p-4 rounded-2xl bg-slate-950 border border-cyan-500/40 space-y-2.5 sm:space-y-3 animate-fade-in text-xs font-cambria">
+            <div className="p-4 rounded-2xl bg-[#F6F4F0] border border-[#E8E1D5] space-y-3 animate-fade-in text-xs">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 font-bold text-cyan-400 font-sans text-xs sm:text-sm">
-                  <Navigation className="w-4 h-4" />
-                  <span>Prioritized Evacuation Route Guidance</span>
+                <div className="flex items-center gap-2 font-bold text-[#2E5B88] text-xs sm:text-sm">
+                  <Compass className="w-4 h-4" />
+                  <span>Assigned Evacuation Corridors</span>
                 </div>
                 <button 
                   onClick={() => setActiveModalAction(null)}
-                  className="text-slate-400 hover:text-white text-xs cursor-pointer"
+                  className="text-[#7A726A] hover:text-[#1A1A1A] text-xs cursor-pointer font-bold"
                 >
                   ✕ Close
                 </button>
               </div>
 
-              <div className="space-y-2 text-[11px] sm:text-xs">
-                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                  <div className="font-bold text-cyan-300">Primary Corridor: Chooralmala ➔ Nilambur (SH-28)</div>
-                  <div className="text-[10px] sm:text-[11px] text-slate-300 mt-0.5">Highland bypass clear of debris. Estimated transit: 38 mins.</div>
+              <div className="p-3 rounded-xl bg-white border border-[#E8E1D5] space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-[#1A1A1A]">Corridor Alpha: SH-28 South</span>
+                  <span className="text-emerald-700 font-bold font-mono text-[11px]">OPEN (42 mins)</span>
                 </div>
-                <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
-                  <div className="font-bold text-amber-400">Caution: Avoid Lowland River Bridge</div>
-                  <div className="text-[10px] sm:text-[11px] text-slate-300 mt-0.5">Submerged under 1.4m runoff. Heavy machinery deployed.</div>
-                </div>
+                <p className="text-[11px] text-[#5C544D]">
+                  Cleared by SDMA road maintenance team. Proceed toward Nilambur Foothill Base.
+                </p>
               </div>
 
               <button
                 onClick={() => { setActiveModalAction(null); setShowQuickSign(true); }}
-                className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs tracking-wide shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer font-sans"
+                className="w-full py-2.5 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-medium text-xs shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Generate Evacuation Pass</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <span>Generate Pass for Evacuation Convoy</span>
+                <ArrowRight className="w-3.5 h-3.5 opacity-80" />
               </button>
             </div>
           )}
 
-          {/* Quick Registration Button */}
-          <div className="pt-1">
+          {/* Direct 30-Sec QuickPass Button */}
+          <div className="pt-2">
             <button
               onClick={() => setShowQuickSign(true)}
-              className="w-full py-3 sm:py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2 cursor-pointer"
+              className="w-full py-3.5 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-medium text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5"
             >
-              <Zap className="w-4 h-4 text-slate-950 fill-slate-950" />
-              <span>QuickSign — 30-Sec Emergency Pass</span>
-              <ArrowRight className="w-4 h-4" />
+              <Zap className="w-4 h-4 text-[#8B7355]" />
+              <span>Generate 30-Second Emergency Pass (QuickSign)</span>
             </button>
-            <p className="text-[10px] sm:text-[11px] text-slate-400 text-center mt-2 font-mono">
-              Zero typing required • Instant shelter bed allocation & offline routing
-            </p>
-          </div>
-
-          {/* Emergency contacts */}
-          <div className="pt-2 border-t border-slate-800/80">
-            <div className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider mb-2">
-              Emergency Direct Dispatch Hotlines
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
-              <a
-                href="tel:1078"
-                className="p-2 sm:p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-center border border-slate-800 transition-colors block"
-              >
-                <div className="text-[10px] text-slate-400">NDRF Control</div>
-                <div className="font-mono text-xs sm:text-sm font-black text-white mt-0.5">1078</div>
-              </a>
-              <a
-                href="tel:1070"
-                className="p-2 sm:p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-center border border-slate-800 transition-colors block"
-              >
-                <div className="text-[10px] text-slate-400">SDMA State</div>
-                <div className="font-mono text-xs sm:text-sm font-black text-white mt-0.5">1070</div>
-              </a>
-              <a
-                href="tel:112"
-                className="col-span-2 sm:col-span-1 p-2 sm:p-2.5 rounded-xl bg-red-950/40 hover:bg-red-900/40 text-center border border-red-500/30 transition-colors block"
-              >
-                <div className="text-[10px] text-red-400">All-India SOS</div>
-                <div className="font-mono text-xs sm:text-sm font-black text-white mt-0.5">112</div>
-              </a>
-            </div>
           </div>
 
         </div>
