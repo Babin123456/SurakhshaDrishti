@@ -97,10 +97,38 @@ const FEATURES = [
 
 export default function FeaturesShowcase() {
   const [headerRef, headerRevealed] = useScrollReveal();
-  const [gridRef, gridRevealed] = useScrollReveal({ threshold: 0.1 });
+  const sectionRef = React.useRef(null);
+  const [revealedCount, setRevealedCount] = React.useState(0);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      if (!sectionRef.current) return;
+      const rect = sectionRef.current.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const sectionTop = rect.top;
+
+      // Start revealing card 1 when section top reaches 70% of screen height
+      const startTrigger = windowHeight * 0.70;
+      // Step distance per card for smooth, staggered unmasking
+      const stepDistance = Math.max(rect.height / 5.2, 120);
+
+      if (sectionTop > startTrigger) {
+        setRevealedCount(0);
+      } else {
+        const scrolledIntoSection = startTrigger - sectionTop;
+        const currentStage = Math.min(Math.max(Math.floor(scrolledIntoSection / stepDistance) + 1, 1), 6);
+        setRevealedCount(currentStage);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <section 
+      ref={sectionRef}
       id="features" 
       className="relative py-24 bg-transparent scroll-mt-20 overflow-hidden"
       aria-labelledby="features-heading"
@@ -121,25 +149,48 @@ export default function FeaturesShowcase() {
 
           <h2 
             id="features-heading"
-            className="text-4xl sm:text-6xl font-black text-[#1A1A1A] tracking-tight leading-[1.1]"
+            className="text-4xl sm:text-6xl font-black tracking-tight leading-[1.1]"
           >
-            Engineered for <span className="text-[#8B7355]">Extreme Stress.</span>
+            <span className="gradient-text-stone">Engineered for </span>
+            <span className="gradient-text-gold">Extreme Stress.</span>
           </h2>
 
           <p className="text-sm sm:text-base text-[#5C544D] mt-4 leading-relaxed font-light">
             When power grids and commercial cellular links fail, SurakshaDrishti's resilient stack activates.
           </p>
+
+          {/* Module Progression Dots */}
+          <div className="flex items-center justify-center gap-1.5 mt-5">
+            {FEATURES.map((_, i) => (
+              <div 
+                key={i}
+                className={`h-1.5 rounded-full transition-all duration-500 ${
+                  revealedCount >= i + 1 ? 'w-6 bg-[#8B7355]' : 'w-1.5 bg-[#E8E1D5]'
+                }`}
+              />
+            ))}
+          </div>
         </div>
 
-        {/* Features 6-Card Grid with Apple-Style 3D Tilt & Staggered Scroll Parallax */}
-        <div 
-          ref={gridRef}
-          className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 reveal ${gridRevealed ? 'revealed' : ''}`}
-        >
+        {/* Features 6-Card Grid with Sequential Scroll Reveal & Reverse Unmasking */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {FEATURES.map((feature, idx) => {
             const Icon = feature.icon;
+            const isCardRevealed = revealedCount >= idx + 1;
+
             return (
-              <div key={feature.id} style={{ transitionDelay: `${idx * 75}ms` }} className="h-full">
+              <div 
+                key={feature.id} 
+                className={`h-full transition-all duration-800 ease-out will-change-transform ${
+                  isCardRevealed 
+                    ? 'opacity-100 translate-y-0 scale-100 filter blur-0 pointer-events-auto' 
+                    : 'opacity-0 translate-y-14 scale-95 filter blur-sm pointer-events-none'
+                }`}
+                style={{ 
+                  transitionDelay: isCardRevealed ? `${(idx % 3) * 100}ms` : '0ms',
+                  transitionTimingFunction: 'cubic-bezier(0.16, 1, 0.3, 1)'
+                }}
+              >
                 <Interactive3DCard 
                   intensity={10}
                   className="h-full"
@@ -159,7 +210,7 @@ export default function FeaturesShowcase() {
                     {/* Top Bar: Visual Asset + Module Code */}
                     <div className="flex items-center justify-between">
                       {feature.image ? (
-                        <div className="w-14 h-14 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 drop-shadow-sm">
+                        <div className="w-14 h-14 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 drop-shadow-sm select-none pointer-events-none">
                           <img src={feature.image} alt={feature.title} className="w-full h-full object-contain" />
                         </div>
                       ) : (
@@ -168,7 +219,11 @@ export default function FeaturesShowcase() {
                         </div>
                       )}
 
-                      <span className="text-[11px] font-mono font-bold text-[#8C847A] group-hover:text-[#4A4238] transition-colors bg-[#F6F4F0] border border-[#E8E1D5] px-2.5 py-0.5 rounded-full">
+                      <span className={`text-[11px] font-mono font-bold transition-colors border px-2.5 py-0.5 rounded-full ${
+                        isCardRevealed 
+                          ? 'text-[#4A4238] bg-[#F6F4F0] border-[#E8E1D5]' 
+                          : 'text-stone-400 border-stone-200'
+                      }`}>
                         MOD • {feature.num}
                       </span>
                     </div>
