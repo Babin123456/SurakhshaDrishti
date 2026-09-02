@@ -32,10 +32,11 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['"Outfit"', 'sans-serif'],
+        mono: ['"Space Grotesk"', 'monospace'],
         italianno: ['"Italianno"', 'cursive'],
         cambria: ['"Cambria Math"', 'Cambria', 'Georgia', 'serif'],
-        mono: ['"JetBrains Mono"', 'Fira Code', 'monospace'],
       },
       animation: {
         'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
