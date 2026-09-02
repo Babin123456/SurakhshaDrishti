@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { AlertTriangle, LogIn, Menu, X, UserPlus, Map, Layers, Cpu, HeartHandshake, ChevronRight, ShieldCheck } from 'lucide-react';
+import { 
+  AlertTriangle, 
+  LogIn, 
+  Menu, 
+  X, 
+  UserPlus, 
+  Map, 
+  Layers, 
+  Cpu, 
+  Activity, 
+  Shield, 
+  Sparkles,
+  ArrowRight,
+  Users
+} from 'lucide-react';
 
 export default function Navbar({ onSignIn, onSignUp, onEmergencyAccess }) {
   const navigate = useNavigate();
@@ -11,7 +25,7 @@ export default function Navbar({ onSignIn, onSignUp, onEmergencyAccess }) {
   useEffect(() => {
     const handleScroll = () => {
       const scrollPos = window.scrollY || document.documentElement.scrollTop || (window.__lenis ? window.__lenis.scroll : 0);
-      setIsScrolled(scrollPos > 30);
+      setIsScrolled(scrollPos > 40);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -19,7 +33,7 @@ export default function Navbar({ onSignIn, onSignUp, onEmergencyAccess }) {
     if (window.__lenis) {
       window.__lenis.on('scroll', (e) => {
         const scrollPos = e.scroll || window.scrollY;
-        setIsScrolled(scrollPos > 30);
+        setIsScrolled(scrollPos > 40);
       });
     }
 
@@ -28,22 +42,10 @@ export default function Navbar({ onSignIn, onSignUp, onEmergencyAccess }) {
     };
   }, []);
 
-  useEffect(() => {
-    if (isMobileOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMobileOpen]);
-
   const navLinks = [
-    { name: 'GIS Map', href: '#map', icon: Map },
-    { name: 'Capabilities', href: '#features', icon: Layers },
-    { name: 'AI Pipeline', href: '#pipeline', icon: Cpu },
-    { name: 'Decision Support', href: '#cta', icon: HeartHandshake },
+    { name: 'Capabilities', href: '#features' },
+    { name: 'AI Pipeline', href: '#pipeline' },
+    { name: 'Deploy DSS', href: '#cta' },
   ];
 
   const handleNavClick = (e, href) => {
@@ -56,238 +58,182 @@ export default function Navbar({ onSignIn, onSignUp, onEmergencyAccess }) {
     }
 
     if (href === '#' || href === '#top') {
-      if (window.__lenis) {
-        window.__lenis.scrollTo(0, { duration: 1.2 });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      if (window.__lenis) window.__lenis.scrollTo(0, { duration: 1.2 });
       return;
     }
 
     const target = document.querySelector(href);
     if (target) {
-      if (window.__lenis) {
-        window.__lenis.scrollTo(target, { offset: -90, duration: 1.2 });
-      } else {
-        const top = target.getBoundingClientRect().top + window.pageYOffset - 90;
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
+      const top = target.getBoundingClientRect().top + window.pageYOffset - 90;
+      window.scrollTo({ top, behavior: 'smooth' });
+      if (window.__lenis) window.__lenis.scrollTo(target, { offset: -90, duration: 1.2 });
     }
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 w-full z-[9999] transition-all duration-300 ease-out flex justify-center pointer-events-none">
+    <header className="fixed top-0 left-0 right-0 w-full z-[9995] flex justify-center pointer-events-none transition-transform duration-300">
+      
+      {/* Container that dynamically shrinks, floats forward, and centers on scroll */}
       <div 
-        className={`transition-all duration-500 ease-out pointer-events-auto ${
+        className={`pointer-events-auto transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${
           isScrolled 
-            ? 'w-[94%] max-w-5xl pt-3 px-0' 
-            : 'w-full max-w-full pt-0 px-0'
+            ? 'w-[94%] max-w-4xl pt-3.5 px-0 scale-[0.98]' 
+            : 'w-full max-w-6xl pt-4 px-4 sm:px-8 scale-100'
         }`}
       >
         <nav
-          className={`w-full transition-all duration-500 ease-out ${
+          className={`w-full transition-all duration-500 ease-out flex items-center justify-between ${
             isScrolled
-              ? 'rounded-full bg-slate-900/95 backdrop-blur-2xl border border-slate-700/80 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_20px_rgba(6,182,212,0.2)] px-4 sm:px-7 py-2.5 text-slate-100'
-              : 'rounded-none bg-slate-950/95 backdrop-blur-xl border-b border-slate-800/90 px-4 sm:px-8 lg:px-12 py-3.5 shadow-lg text-slate-100'
+              ? 'rounded-full bg-[#FDFBF7]/90 backdrop-blur-2xl border border-[#E8E1D5] shadow-2xl shadow-[#D9D0C1]/40 px-4 sm:px-6 py-2.5 text-[#2C2A29]'
+              : 'rounded-2xl bg-white/70 backdrop-blur-md border border-[#E8E1D5] px-5 sm:px-8 py-3.5 shadow-xs text-[#2C2A29]'
           }`}
           role="navigation"
           aria-label="Main navigation"
         >
-          <div className="flex items-center justify-between h-11 max-w-7xl mx-auto">
-            
-            {/* Brand Logo & Name */}
-            <a
-              href="#"
-              onClick={(e) => handleNavClick(e, '#top')}
-              className="flex items-center gap-2.5 group cursor-pointer shrink-0"
-            >
-              <div className="relative flex items-center justify-center transition-transform group-hover:scale-105">
-                <img src="/favicon.webp" alt="SurakshaDrishti Logo" className="w-7 h-7 object-contain" />
-                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-slate-950"></div>
-              </div>
-              <div>
-                <h1 className="font-cambria font-black text-sm tracking-tight text-white leading-none">
-                  SurakshaDrishti
-                </h1>
-                <span className="font-cambria text-[9px] text-cyan-400 font-semibold tracking-wider uppercase block">
-                  SIH 26191 DSS
-                </span>
-              </div>
-            </a>
-
-            {/* Desktop Navigation Links */}
-            <div className={`hidden lg:flex items-center gap-1 transition-all duration-300 ${
-              isScrolled ? 'bg-slate-950/80 px-2.5 py-1 rounded-full border border-white/5' : 'bg-slate-900/70 px-3 py-1 rounded-xl border border-white/5'
-            }`}>
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
-                  className="px-3.5 py-1 rounded-full text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all cursor-pointer"
-                >
-                  {link.name}
-                </a>
-              ))}
+          {/* Brand Logo & Emblem */}
+          <a
+            href="#"
+            onClick={(e) => handleNavClick(e, '#top')}
+            className="flex items-center gap-2.5 group cursor-pointer shrink-0"
+          >
+            <div className="w-8 h-8 rounded-xl bg-[#2C2A29] text-[#FDFBF7] flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs">
+              <Shield className="w-4 h-4" />
             </div>
-
-            {/* Desktop Action Controls */}
-            <div className="hidden md:flex items-center gap-2.5 shrink-0">
-              <button
-                onClick={onEmergencyAccess}
-                className="px-3.5 py-1.5 rounded-full bg-red-600/20 hover:bg-red-600/30 border border-red-500/40 text-red-300 hover:text-white font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer btn-bottom-glow-red shadow-sm"
-                aria-label="Emergency Access"
-              >
-                <AlertTriangle className="w-3.5 h-3.5 text-red-400" />
-                <span>Emergency SOS</span>
-              </button>
-
-              <button
-                onClick={onSignIn}
-                className="px-3.5 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer btn-bottom-glow-slate"
-                aria-label="Sign In"
-              >
-                <LogIn className="w-3 h-3 text-cyan-400" />
-                <span>Sign In</span>
-              </button>
-
-              <button
-                onClick={onSignUp}
-                className="px-3.5 py-1.5 rounded-full bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition-all shadow-md shadow-blue-900/40 flex items-center gap-1 cursor-pointer btn-bottom-glow-blue"
-                aria-label="Sign Up"
-              >
-                <UserPlus className="w-3 h-3 text-white" />
-                <span>Sign Up</span>
-              </button>
+            <div>
+              <div className="font-bold text-sm tracking-tight text-[#1A1A1A] leading-none">
+                Suraksha<span className="text-[#8B7355]">Drishti</span>
+              </div>
+              <span className="text-[9px] font-mono text-[#7A726A] font-semibold tracking-wider uppercase block mt-0.5">
+                SIH 26191 DSS
+              </span>
             </div>
+          </a>
 
-            {/* Mobile Hamburger Toggle */}
+          {/* Desktop Navigation Links */}
+          <div className="hidden md:flex items-center gap-1 bg-[#F6F4F0] p-1 rounded-full border border-[#E8E1D5]">
+            {navLinks.map((link) => (
+              <a
+                key={link.name}
+                href={link.href}
+                onClick={(e) => handleNavClick(e, link.href)}
+                className="px-4 py-1 rounded-full text-xs font-semibold text-[#5C544D] hover:text-[#1A1A1A] hover:bg-white transition-all cursor-pointer"
+              >
+                {link.name}
+              </a>
+            ))}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="hidden sm:flex items-center gap-2 shrink-0">
             <button
-              onClick={() => setIsMobileOpen(!isMobileOpen)}
-              className="md:hidden p-2 rounded-xl bg-slate-900 border border-slate-800 hover:bg-slate-800 text-slate-200 hover:text-white transition-all cursor-pointer"
-              aria-label="Toggle navigation menu"
-              aria-expanded={isMobileOpen}
+              onClick={onEmergencyAccess}
+              className="px-3.5 py-1.5 rounded-full bg-[#FFF5F2] hover:bg-[#B85C38] hover:text-white border border-[#FADED4] text-[#B85C38] font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
-              {isMobileOpen ? <X className="w-5 h-5 text-cyan-400" /> : <Menu className="w-5 h-5 text-slate-200" />}
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>SOS</span>
+            </button>
+
+            <button
+              onClick={onSignIn}
+              className="px-4 py-1.5 rounded-full bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-xs transition-all shadow-xs flex items-center gap-1 cursor-pointer hover:-translate-y-0.5"
+            >
+              <span>Sign In</span>
+              <ArrowRight className="w-3 h-3 text-[#8B7355]" />
             </button>
           </div>
+
+          {/* Mobile Menu Toggle with Animated Three Lines */}
+          <button
+            onClick={() => setIsMobileOpen(!isMobileOpen)}
+            className="md:hidden relative p-2.5 rounded-xl bg-white/90 hover:bg-white border border-[#E8E1D5] hover:border-[#8B7355]/50 text-[#1A1A1A] cursor-pointer shadow-xs transition-all duration-300 active:scale-95 flex flex-col items-center justify-center gap-1 w-9 h-9 overflow-hidden"
+            aria-label="Toggle navigation menu"
+          >
+            <span 
+              className={`w-4 h-0.5 bg-[#2C2A29] rounded-full transition-all duration-300 ease-out origin-center ${
+                isMobileOpen ? 'rotate-45 translate-y-[6px]' : ''
+              }`}
+            />
+            <span 
+              className={`w-4 h-0.5 bg-[#2C2A29] rounded-full transition-all duration-200 ease-out ${
+                isMobileOpen ? 'opacity-0 scale-x-0' : 'opacity-100'
+              }`}
+            />
+            <span 
+              className={`w-4 h-0.5 bg-[#2C2A29] rounded-full transition-all duration-300 ease-out origin-center ${
+                isMobileOpen ? '-rotate-45 -translate-y-[6px]' : ''
+              }`}
+            />
+          </button>
         </nav>
       </div>
 
-      {/* Mobile Drawer (Smooth Sliding Drawer with Backdrop Transition) */}
-      <div 
-        className={`md:hidden fixed inset-0 z-[10000] transition-all duration-300 ${
-          isMobileOpen ? 'visible pointer-events-auto' : 'invisible pointer-events-none delay-200'
-        }`}
-      >
-        {/* Dark Blurred Backdrop Overlay */}
+      {/* Mobile Drawer with Subtle Frosted Glass & Staggered Reveal */}
+      {isMobileOpen && (
         <div 
           onClick={() => setIsMobileOpen(false)}
-          className={`absolute inset-0 bg-slate-950/80 backdrop-blur-md transition-opacity duration-300 ease-out ${
-            isMobileOpen ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
-
-        {/* Sliding Panel from Right */}
-        <div 
-          className={`absolute top-0 right-0 bottom-0 w-full max-w-sm bg-slate-950 border-l border-slate-800 flex flex-col justify-between p-5 sm:p-6 shadow-2xl transition-transform duration-300 ease-out text-slate-100 overflow-y-auto ${
-            isMobileOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+          className="md:hidden fixed inset-0 z-[9999] bg-[#1A1A1A]/40 backdrop-blur-md pointer-events-auto flex justify-end animate-mobile-backdrop"
         >
-          
-          {/* Mobile Drawer Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-slate-800 shrink-0">
-            <div className="flex items-center gap-2.5">
-              <img src="/favicon.webp" alt="SurakshaDrishti" className="w-7 h-7 object-contain" />
-              <div>
-                <span className="font-cambria font-black text-sm text-white block leading-none">SurakshaDrishti</span>
-                <span className="font-cambria text-[9px] text-cyan-400 font-bold uppercase">SIH 26191 DSS</span>
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="w-80 max-w-[85vw] bg-[#FDFBF7]/95 backdrop-blur-2xl border-l border-[#E8E1D5] p-6 flex flex-col justify-between shadow-2xl h-full animate-mobile-menu"
+          >
+            <div>
+              <div className="flex items-center justify-between pb-4 border-b border-[#E8E1D5]">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-1.5 rounded-xl bg-[#2C2A29] text-[#FDFBF7] shadow-xs">
+                    <Shield className="w-4 h-4 text-[#8B7355]" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-sm text-[#1A1A1A] block leading-tight">SurakshaDrishti</span>
+                    <span className="text-[10px] font-mono text-[#8C847A]">MOBILE DISPATCH HUD</span>
+                  </div>
+                </div>
+                <button 
+                  onClick={() => setIsMobileOpen(false)}
+                  className="p-1.5 rounded-xl border border-[#E8E1D5] hover:border-[#8B7355]/40 text-[#5C544D] hover:text-[#1A1A1A] bg-white/80 active:scale-95 transition-all"
+                  aria-label="Close menu"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="space-y-1.5 mt-6">
+                {navLinks.map((link, idx) => (
+                  <a
+                    key={link.name}
+                    href={link.href}
+                    onClick={(e) => handleNavClick(e, link.href)}
+                    style={{ animationDelay: `${idx * 50}ms` }}
+                    className="group flex items-center justify-between px-4 py-3 rounded-2xl text-sm font-semibold text-[#5C544D] hover:text-[#1A1A1A] hover:bg-white hover:border hover:border-[#E8E1D5] transition-all duration-200"
+                  >
+                    <span>{link.name}</span>
+                    <ArrowRight className="w-3.5 h-3.5 text-[#8B7355] opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                  </a>
+                ))}
               </div>
             </div>
-            <button
-              onClick={() => setIsMobileOpen(false)}
-              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white cursor-pointer transition-colors"
-              aria-label="Close menu"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
 
-          {/* Mobile Navigation Links */}
-          <div className="py-5 space-y-2 flex-1">
-            <div className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider px-3 mb-2">
-              Navigation Menu
-            </div>
-            {navLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  onClick={(e) => handleNavClick(e, link.href)}
-                  className="flex items-center justify-between px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold text-slate-200 hover:text-white bg-slate-900/60 hover:bg-slate-800/90 border border-slate-800/80 transition-all cursor-pointer active:scale-[0.98]"
-                >
-                  <div className="flex items-center gap-3">
-                    <Icon className="w-4 h-4 text-cyan-400" />
-                    <span>{link.name}</span>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-slate-500" />
-                </a>
-              );
-            })}
-
-            {/* Quick Links to Legal & Documentation on Mobile */}
-            <div className="pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2">
+            <div className="space-y-2.5 pt-6 border-t border-[#E8E1D5]">
               <button
-                onClick={() => { navigate('/documentation'); setIsMobileOpen(false); }}
-                className="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white text-center cursor-pointer hover:border-slate-700 transition-colors"
+                onClick={() => { setIsMobileOpen(false); onEmergencyAccess(); }}
+                className="w-full py-3 rounded-2xl bg-[#FFF5F2] hover:bg-[#FFEAE3] border border-[#FADED4] hover:border-[#B85C38] text-[#B85C38] font-bold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-xs"
               >
-                Documentation
+                <AlertTriangle className="w-4 h-4" />
+                <span>Emergency SOS Mode</span>
               </button>
               <button
-                onClick={() => { navigate('/faqs'); setIsMobileOpen(false); }}
-                className="py-2.5 px-3 rounded-xl bg-slate-900 border border-slate-800 text-xs font-bold text-slate-300 hover:text-white text-center cursor-pointer hover:border-slate-700 transition-colors"
+                onClick={() => { setIsMobileOpen(false); onSignIn(); }}
+                className="w-full py-3 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm"
               >
-                FAQs
+                <Users className="w-3.5 h-3.5 opacity-80" />
+                <span>Authorized Sign In</span>
               </button>
             </div>
           </div>
-
-          {/* Mobile Actions Bottom Section */}
-          <div className="space-y-2.5 pt-4 border-t border-slate-800 shrink-0">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-amber-950/40 border border-amber-500/30 text-[11px] font-bold text-amber-400">
-              <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
-              <span>14 Active Red Hazard Zones Active</span>
-            </div>
-
-            <button
-              onClick={() => { onEmergencyAccess(); setIsMobileOpen(false); }}
-              className="w-full py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-red-950/60 btn-bottom-glow-red"
-            >
-              <AlertTriangle className="w-4 h-4" />
-              <span>Emergency Resident SOS</span>
-            </button>
-            
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={() => { onSignIn(); setIsMobileOpen(false); }}
-                className="w-full py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer border border-slate-700 btn-bottom-glow-slate"
-              >
-                <LogIn className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Sign In</span>
-              </button>
-              <button
-                onClick={() => { onSignUp(); setIsMobileOpen(false); }}
-                className="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer btn-bottom-glow-blue shadow-md"
-              >
-                <UserPlus className="w-3.5 h-3.5" />
-                <span>Sign Up</span>
-              </button>
-            </div>
-          </div>
-
         </div>
-      </div>
+      )}
+
     </header>
   );
 }
