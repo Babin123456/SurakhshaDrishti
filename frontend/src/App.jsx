@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import HeroSection from './components/HeroSection';
-import LiveStatsStrip from './components/LiveStatsStrip';
-import FeaturesShowcase from './components/FeaturesShowcase';
-import HowItWorks from './components/HowItWorks';
-import CTASection from './components/CTASection';
-import Footer from './components/Footer';
+
+// Pages & Sections
+import GovernmentLanding from './components/GovernmentLanding';
 import AuthSection from './components/AuthSection';
 import EmergencyMode from './components/EmergencyMode';
 import QuickSignModal from './components/QuickSignModal';
@@ -35,31 +31,6 @@ export default function App() {
     document.body.style.overflow = '';
   }, []);
 
-  useEffect(() => {
-    if (isHomePage) {
-      const savedScrollPos = sessionStorage.getItem('landing_scroll_pos');
-      if (savedScrollPos !== null) {
-        const targetPos = parseInt(savedScrollPos, 10);
-        const restoreScroll = () => {
-          if (window.__lenis) {
-            window.__lenis.scrollTo(targetPos, { immediate: true });
-          } else {
-            window.scrollTo({ top: targetPos, behavior: 'instant' });
-          }
-        };
-
-        restoreScroll();
-        const t1 = setTimeout(restoreScroll, 30);
-        const t2 = setTimeout(restoreScroll, 120);
-
-        return () => {
-          clearTimeout(t1);
-          clearTimeout(t2);
-        };
-      }
-    }
-  }, [isHomePage]);
-
   const handleOpenAuth = (mode = 'signin') => {
     setAuthMode(mode);
     setShowAuth(true);
@@ -76,28 +47,7 @@ export default function App() {
     setUserSession(null);
   };
 
-  const handleSelectZoneFromHero = (zone) => {
-    setQuickSignLocation({
-      coords: { lat: zone.lat, lng: zone.lng },
-      inRedZone: zone.type === 'red',
-      name: `${zone.name} (${zone.hazard})`,
-    });
-    setShowQuickSign(true);
-  };
-
-  const handleLaunchAdminConsole = () => {
-    setUserSession({
-      user: {
-        user_id: 'ndrf_command_chief',
-        username: 'NDRF Command Chief',
-        name: 'NDRF Commander (Admin)',
-        role: 'NDRF',
-        officer_mode: 'OFF_SITE',
-        district: 'Wayanad Sector 4'
-      }
-    });
-  };
-
+  // If user is logged in, show dashboard
   if (userSession) {
     return (
       <div className="min-h-screen bg-slate-950 text-slate-200 font-sans">
@@ -109,24 +59,15 @@ export default function App() {
     );
   }
 
-  if (location.pathname === '/privacy') {
-    return <PrivacyPolicy />;
-  }
+  // Static Pages Route rendering
+  if (location.pathname === '/privacy') return <PrivacyPolicy />;
+  if (location.pathname === '/terms') return <TermsOfService />;
+  if (location.pathname === '/faqs') return <Faqs />;
+  if (location.pathname === '/documentation') return <Documentation />;
 
-  if (location.pathname === '/terms') {
-    return <TermsOfService />;
-  }
-
-  if (location.pathname === '/faqs') {
-    return <Faqs />;
-  }
-
-  if (location.pathname === '/documentation') {
-    return <Documentation />;
-  }
-
+  // Main Landing Page
   return (
-    <div className="min-h-screen bg-matte-grid text-slate-200 font-sans selection:bg-blue-600/40 selection:text-white relative overflow-x-hidden">
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-600/40 selection:text-white relative overflow-x-hidden">
       
       {showIntro && (
         <IntroSequence
@@ -139,41 +80,13 @@ export default function App() {
         />
       )}
 
-      {/* Ambient background particles and glow effects */}
-      <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-blue-600/10 rounded-full blur-[140px] animate-pulse-slow"></div>
-        <div className="absolute bottom-1/3 right-1/4 w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[120px]"></div>
-        <div className="absolute top-2/3 left-1/3 w-[450px] h-[450px] bg-red-600/5 rounded-full blur-[130px]"></div>
-      </div>
-
-      {/* Global Fixed Navbar */}
-      <Navbar
+      {/* New Government Style Landing Page */}
+      <GovernmentLanding 
         onSignIn={() => handleOpenAuth('signin')}
-        onSignUp={() => handleOpenAuth('signup')}
         onEmergencyAccess={() => setShowEmergency(true)}
       />
 
-      <div className="relative z-10">
-        <HeroSection
-          onExplore={handleLaunchAdminConsole}
-          onEmergencyAccess={() => setShowEmergency(true)}
-          onSelectZone={handleSelectZoneFromHero}
-        />
-
-        <LiveStatsStrip />
-        <FeaturesShowcase />
-        <HowItWorks />
-
-        <CTASection
-          onExplore={handleLaunchAdminConsole}
-          onSignUp={() => handleOpenAuth('signup')}
-          onEmergencyAccess={() => setShowEmergency(true)}
-          onQuickSign={() => setShowQuickSign(true)}
-        />
-
-        <Footer />
-      </div>
-
+      {/* Modals for Auth and Emergency */}
       {showAuth && (
         <AuthSection
           initialMode={authMode}

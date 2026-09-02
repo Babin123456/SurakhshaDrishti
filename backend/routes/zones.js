@@ -210,8 +210,12 @@ router.post("/vote-resolve", async (req, res, next) => {
         );
         const totalVotes = voteCountRes.rows[0].total_votes;
 
-        const zoneRes = await db.query(`SELECT resolution_votes_required FROM hazard_zones WHERE zone_id = $1`, [zone_id]);
-        const votesRequired = zoneRes.rows[0]?.resolution_votes_required || 2;
+        const assignedRes = await db.query(
+            `SELECT COUNT(*)::int AS total_assigned FROM zone_assignments WHERE zone_id = $1`,
+            [zone_id]
+        );
+        const totalAssigned = assignedRes.rows[0].total_assigned;
+        const votesRequired = Math.max(1, Math.ceil(totalAssigned * 0.8)); // 80% consensus required
 
         let newStatus = 'ACTIVE_RED_ZONE';
         let isResolved = false;
@@ -239,6 +243,38 @@ router.post("/vote-resolve", async (req, res, next) => {
             message: isResolved 
                 ? `Red Zone ${zone_id} marked as RESOLVED — Situation Under Control!` 
                 : `Vote recorded (${totalVotes}/${votesRequired} consensus votes).`
+        });
+    } catch (err) {
+        return next(err);
+    }
+});
+
+// 4.5 POST /zones/unassign — Officer unassigns self from a Red Zone
+router.post("/unassign", async (req, res, next) => {
+    const { zone_id, user_id } = req.body;
+
+    if (!zone_id || !user_id) {
+        res.statusCode = 400;
+        return next(new Error("zone_id and user_id are required."));
+    }
+
+    try {
+        const zoneRes = await db.query(`SELECT status FROM hazard_zones WHERE zone_id = $1`, [zone_id]);
+        if (!zoneRes.rows[0]) {
+            res.statusCode = 404;
+            return next(new Error("Red Zone not found in database."));
+        }
+
+        if (zoneRes.rows[0].status !== 'SITUATION_UNDER_CONTROL') {
+            res.statusCode = 403;
+            return next(new Error("Cannot unassign: the area is not marked cleared. 80% of assigned officers must vote to resolve first."));
+        }
+
+        await db.query(`DELETE FROM zone_assignments WHERE zone_id = $1 AND user_id = $2`, [zone_id, user_id]);
+
+        return res.json({
+            success: true,
+            message: `Officer successfully unassigned from ${zone_id}.`
         });
     } catch (err) {
         return next(err);
