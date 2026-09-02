@@ -4,3 +4,5 @@ backend/node_modules
 dist
 frontend/dist
 .env
+.vite
+frontend/.vite
