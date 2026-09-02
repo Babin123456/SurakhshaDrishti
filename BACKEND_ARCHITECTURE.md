@@ -1,6 +1,17 @@
-# SurakshaDrishti — Complete Backend Technical Architecture & Line-by-Line Code Breakdown
+<div align="center">
 
-> **SIH 2026 Problem Statement 191:** AI-Driven Multi-Hazard Red Zone Identification, Dynamic Relocation, and Emergency Telemetry Decision Support System (DSS).
+<!-- Animated Header Wave -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=180&section=header&text=SurakshaDrishti%20Backend%20Deep%20Dive&fontSize=38&fontColor=ffffff&fontAlignY=36" width="100%" alt="Backend Architecture Header Wave"/>
+
+<!-- Animated Dynamic Typing Banner -->
+<img src="https://readme-typing-svg.demolab.com?font=Outfit&weight=800&size=20&duration=3000&pause=1000&color=4169E1&center=true&vCenter=true&width=650&lines=SIH+2026+Problem+Statement+26191;ADAMAS+University+SurakshaDrishti+Team;PostgreSQL+17+Schema+%2B+Atomic+Transaction+Migrations" alt="Backend Architecture Typing Subtitle" />
+
+</div>
+
+<br/>
+
+> **SIH 2026 Problem Statement 26191:** AI-Driven Multi-Hazard Red Zone Identification, Dynamic Relocation, and Emergency Telemetry Decision Support System (DSS).  
+> **Team**: ADAMAS University  
 
 ---
 
@@ -257,6 +268,13 @@ CREATE TABLE IF NOT EXISTS e2ee_messages (
 2. **2FA Policy**: Emergency 2FA bypass is strictly restricted to Citizens (`RESIDENT`) trapped in Red Zones. All Authority role logins (`NDRF`, `SDMA`, `POLICE`) enforce mandatory 2FA.
 3. **Database SSL & Resilience**: Supabase PostgreSQL connections enforce `ssl: { rejectUnauthorized: false }` with automated connection timeouts.
 
----
+<div align="center">
 
-*Document Generated for SIH 2026 Project Repository (`Kashcx-dev/SurakshaDrishti`).*
+<!-- Animated Footer Wave -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=120&section=footer" width="100%" alt="Backend Architecture Footer Wave"/>
+
+**SurakshaDrishti Backend Technical Architecture**  
+*Smart India Hackathon 2026 • Problem Statement #26191 • Developed by ADAMAS University Team*  
+*Repository: [`Babin123456/SurakshaDrishti`](https://github.com/Babin123456/SurakshaDrishti)*
+
+</div>
