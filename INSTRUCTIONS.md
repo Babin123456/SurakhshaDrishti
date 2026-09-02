@@ -250,21 +250,30 @@
 
 ## 6. Data Flow & Inter-Process Communication
 
-```text
-[ISRO SAR / Sentinel Sensors] 
-       │ (GeoTIFF / Thermal)
-       ▼
-[PyTorch ConvLSTM / XGBoost Engine]
-       │ (JSON Ingestion: /api/zones/ai-satellite-detect)
-       ▼
-[Express.js Engine (backend/src/main.js)] ◄───► [Supabase PostgreSQL 17]
-       │                                              │
-       ├────────────── WebSocket Alerts ──────────────┤
-       ▼                                              ▼
-[Command HUD (Dashboard.jsx)]            [Resident App (EmergencyMode.jsx)]
-  • 16-Digit Access Verification           • 30-Sec QuickSign Pass
-  • Multi-Agency Consensus Vote            • Offline GSM 3.4 SMS Ping
-  • Multi-Layer Open GIS Inspection        • Capacity-Balanced Safe Shelter
+```mermaid
+flowchart TD
+    Sensors["🛰️ ISRO SAR / Sentinel Sensors"]
+    AI["🧠 PyTorch ConvLSTM / XGBoost Engine"]
+    Backend["⚡ Express.js Engine (backend/src/main.js)"]
+    DB[("🗄️ Supabase PostgreSQL 17")]
+    
+    subgraph HUD["Command HUD (Dashboard.jsx)"]
+        H1["• 16-Digit Access Verification"]
+        H2["• Multi-Agency Consensus Vote"]
+        H3["• Multi-Layer Open GIS Inspection"]
+    end
+
+    subgraph Resident["Resident App (EmergencyMode.jsx)"]
+        R1["• 30-Sec QuickSign Pass"]
+        R2["• Offline GSM 3.4 SMS Ping"]
+        R3["• Capacity-Balanced Safe Shelter"]
+    end
+
+    Sensors -->|"GeoTIFF / Thermal"| AI
+    AI -->|"JSON Ingestion: /api/zones/ai-satellite-detect"| Backend
+    Backend <--> DB
+    Backend ==>|"WebSocket Alerts"| HUD
+    Backend ==>|"WebSocket Alerts"| Resident
 ```
 
 <br/>
