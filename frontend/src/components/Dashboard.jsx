@@ -19,7 +19,11 @@ import {
   Navigation,
   MapPin,
   RefreshCw,
-  Shield
+  Shield,
+  RadioReceiver,
+  Megaphone,
+  Ambulance,
+  Plane
 } from 'lucide-react';
 import RealGoogleMap from './RealGoogleMap';
 
@@ -42,10 +46,10 @@ export default function Dashboard({ user, onLogout }) {
       access_key: 'RZ-89A4-91F2-3B7C',
       status: 'ACTIVE_RED_ZONE',
       resolution_votes_required: 2,
-      resolution_votes_cast: 1,
+      resolution_votes_cast: 0,
       population_risk: 1420,
       assigned_officers: [
-        { user_id: 'sdma_officer', officer_name: 'SDMA Regional Officer', department: 'SDMA', vote_to_resolve: true }
+        { user_id: 'sdma_officer', officer_name: 'SDMA Regional Officer', department: 'SDMA', vote_to_resolve: false }
       ]
     },
     {
@@ -86,6 +90,8 @@ export default function Dashboard({ user, onLogout }) {
   const [inputKey, setInputKey] = useState('');
   const [assignSuccessMsg, setAssignSuccessMsg] = useState(null);
   const [assignErrorMsg, setAssignErrorMsg] = useState(null);
+  const [broadcastSent, setBroadcastSent] = useState(false);
+  const [backupRequested, setBackupRequested] = useState(false);
 
   // Selected Zone Details
   const activeZone = zones.find(z => z.zone_id === selectedZoneId) || zones[0];
@@ -156,9 +162,39 @@ export default function Dashboard({ user, onLogout }) {
     setInputKey('');
   };
 
+  // Helper to assign self directly from Map HUD card or search bar
+  const handleAssignSelfFromMap = (targetZone) => {
+    setAssignSuccessMsg(null);
+    setAssignErrorMsg(null);
+
+    const target = targetZone 
+      ? (zones.find(z => z.zone_id === targetZone.zone_id || z.access_key === targetZone.access_key || z.name.toLowerCase().includes((targetZone.shortName || targetZone.name || '').toLowerCase())) || activeZone) 
+      : activeZone;
+      
+    setSelectedZoneId(target.zone_id);
+
+    const currentOfficerId = user?.userId || user?.user_id || user?.username || 'ndrf_command_chief';
+    const currentOfficerName = user?.fullName || user?.name || user?.username || 'NDRF Commander Chief';
+    const currentDept = user?.role || 'NDRF';
+
+    setZones(prev => prev.map(z => {
+      if (z.zone_id === target.zone_id) {
+        const alreadyIn = z.assigned_officers.some(o => o.user_id === currentOfficerId);
+        const updatedList = alreadyIn 
+          ? z.assigned_officers 
+          : [...z.assigned_officers, { user_id: currentOfficerId, officer_name: currentOfficerName, department: currentDept, vote_to_resolve: false }];
+        return { ...z, assigned_officers: updatedList };
+      }
+      return z;
+    }));
+
+    setAssignSuccessMsg(`Successfully assigned to ${target.name}! You are now part of the multi-agency response team.`);
+    setInputKey('');
+  };
+
   // 3. Vote to Resolve Situation in Red Zone
   const handleVoteResolve = () => {
-    const currentOfficerId = user?.user_id || user?.username || 'ndrf_command_chief';
+    const currentOfficerId = user?.userId || user?.user_id || user?.username || 'ndrf_command_chief';
 
     setZones(prev => prev.map(z => {
       if (z.zone_id === selectedZoneId) {
@@ -210,7 +246,7 @@ export default function Dashboard({ user, onLogout }) {
               </span>
             </div>
             <p className="text-xs text-[#5C544D] mt-0.5">
-              Officer: <span className="text-[#1A1A1A] font-semibold">{user?.name || user?.username || 'NDRF Commander Chief'}</span> | Department: <span className="text-[#8B7355] font-semibold">{user?.role || 'NDRF Tactical Command'}</span>
+              Officer: <span className="text-[#1A1A1A] font-semibold">{user?.fullName || user?.name || user?.username || 'NDRF Commander Chief'}</span> | Department: <span className="text-[#8B7355] font-semibold">{user?.role || 'NDRF Tactical Command'}</span>
             </p>
           </div>
         </div>
@@ -254,7 +290,7 @@ export default function Dashboard({ user, onLogout }) {
         {/* Left Column: Interactive GIS Map */}
         <div className="lg:col-span-8 space-y-4">
           
-          <div className="bg-white/80 border border-[#E8E1D5] rounded-3xl p-4 flex flex-col justify-between min-h-[480px] relative overflow-hidden backdrop-blur-md shadow-sm">
+          <div className="bg-white/80 border border-[#E8E1D5] rounded-3xl p-4 flex flex-col justify-between min-h-[560px] relative overflow-hidden backdrop-blur-md shadow-sm">
             
             {/* Map Header & Zone Selector */}
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#F6F4F0] p-3 rounded-2xl border border-[#E8E1D5]">
@@ -285,11 +321,15 @@ export default function Dashboard({ user, onLogout }) {
             </div>
 
             {/* Interactive Real Map */}
-            <div className="relative z-10 my-4 rounded-2xl overflow-hidden border border-[#E8E1D5] h-[400px]">
+            <div className="relative z-10 my-4 rounded-2xl overflow-hidden border border-[#E8E1D5] h-[480px]">
               <RealGoogleMap
                 center={[activeZone.lat, activeZone.lng]}
-                zoom={14}
-                interactive={true}
+                zoom={13}
+                onZoneSelect={(selected) => {
+                  const found = zones.find(z => z.zone_id === selected.id || z.name.toLowerCase().includes(selected.shortName?.toLowerCase() || ''));
+                  if (found) setSelectedZoneId(found.zone_id);
+                }}
+                onAssignSelf={(selected) => handleAssignSelfFromMap(selected)}
               />
 
               {/* Overlay Legend */}
@@ -491,6 +531,60 @@ export default function Dashboard({ user, onLogout }) {
                 </>
               )}
             </button>
+          </div>
+          
+          {/* Card 4: Tactical Actions */}
+          <div className="bg-white/80 border border-[#E8E1D5] rounded-3xl p-5 backdrop-blur-md space-y-3 shadow-sm">
+            <div className="flex items-center justify-between pb-2.5 border-b border-[#E8E1D5]">
+              <h3 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4 text-[#B85C38]" /> Tactical Actions
+              </h3>
+            </div>
+            <div className="space-y-2">
+              <button
+                onClick={() => setBroadcastSent(true)}
+                disabled={broadcastSent || !isOfficerAssigned}
+                className={`w-full py-2.5 rounded-xl font-medium text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
+                  broadcastSent
+                    ? 'bg-[#EBF7EE] text-[#2D7A4F] border border-[#2D7A4F]/30 cursor-default'
+                    : !isOfficerAssigned
+                    ? 'bg-[#F6F4F0] text-[#8C847A] cursor-not-allowed opacity-70'
+                    : 'bg-[#B85C38] hover:bg-[#A04D2D] text-white'
+                }`}
+              >
+                {broadcastSent ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" /> Broadcast Sent to Citizens
+                  </>
+                ) : (
+                  <>
+                    <Megaphone className="w-4 h-4" /> Send Evacuation Broadcast
+                  </>
+                )}
+              </button>
+              
+              <button
+                onClick={() => setBackupRequested(true)}
+                disabled={backupRequested || !isOfficerAssigned}
+                className={`w-full py-2.5 rounded-xl font-medium text-xs transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer ${
+                  backupRequested
+                    ? 'bg-[#EBF7EE] text-[#2D7A4F] border border-[#2D7A4F]/30 cursor-default'
+                    : !isOfficerAssigned
+                    ? 'bg-[#F6F4F0] text-[#8C847A] cursor-not-allowed opacity-70'
+                    : 'bg-[#2C2A29] hover:bg-[#1A1A1A] text-white'
+                }`}
+              >
+                {backupRequested ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" /> NDRF Backup Dispatched
+                  </>
+                ) : (
+                  <>
+                    <Ambulance className="w-4 h-4" /> Request Emergency Backup
+                  </>
+                )}
+              </button>
+            </div>
           </div>
 
         </div>

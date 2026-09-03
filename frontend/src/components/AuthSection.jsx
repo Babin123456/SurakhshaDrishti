@@ -34,7 +34,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
-  const [stateDistrict, setStateDistrict] = useState('Wayanad, Kerala');
+  const [district, setDistrict] = useState('Wayanad, Kerala');
   const [familyMembers, setFamilyMembers] = useState('4');
   const [hasVulnerable, setHasVulnerable] = useState(false);
   const [detectedLoc, setDetectedLoc] = useState(null);
@@ -135,7 +135,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
       phone,
       password: signupPassword,
       role: signupRole,
-      stateDistrict,
+      district,
       familyMembers: parseInt(familyMembers) || 1,
       hasVulnerable,
       coordinates: detectedLoc,
@@ -151,7 +151,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
             username: email || phone,
             name: fullName,
             role: signupRole,
-            district: stateDistrict,
+            district,
             token: 'jwt_registered_' + Date.now(),
             emergencyId: res.emergencyId
           }
@@ -481,8 +481,8 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                   <label className="block text-xs font-semibold text-[#2C2A29] mb-1">District / Jurisdiction</label>
                   <input
                     type="text"
-                    value={stateDistrict}
-                    onChange={(e) => setStateDistrict(e.target.value)}
+                    value={district}
+                    onChange={(e) => setDistrict(e.target.value)}
                     className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2 px-3 text-xs text-[#1A1A1A] focus:outline-none focus:border-[#8B7355]"
                   />
                 </div>

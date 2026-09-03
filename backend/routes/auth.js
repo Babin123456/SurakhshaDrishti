@@ -96,11 +96,11 @@ router.post("/login", async (req, res, next) => {
                         bypassed2FA: true,
                         token: token,
                         user: {
-                            user_id: user.user_id,
-                            name: user.full_name || user.user_id,
+                            userId: user.user_id,
+                            fullName: user.full_name || user.user_id,
                             email: user.email,
                             role: 'RESIDENT',
-                            officer_mode: 'OFF_SITE',
+                            officerMode: 'OFF_SITE',
                             district: user.district || 'Wayanad, Kerala',
                             zone: 'Red Zone — Emergency Resident Override'
                         }
@@ -129,15 +129,16 @@ router.post("/login", async (req, res, next) => {
                         resolvedUsername: user.user_id
                     });
                 } catch (emailErr) {
-                    const token = jwt.sign({ user_id: user.user_id, email: user.email }, process.env.JWT_SECRET, { expiresIn: "24h" });
+                    const token = jwt.sign({ userId: user.user_id, email: user.email }, process.env.JWT_SECRET || 'secret', { expiresIn: "24h" });
                     return res.json({
                         success: true,
                         token,
                         user: {
-                            user_id: user.user_id,
-                            name: user.full_name || user.user_id,
+                            userId: user.user_id,
+                            fullName: user.full_name || user.user_id,
                             email: user.email,
-                            role: user.user_role || 'RESIDENT'
+                            role: user.user_role || 'RESIDENT',
+                            district: user.district || 'Wayanad, Kerala'
                         }
                     });
                 }
@@ -148,15 +149,15 @@ router.post("/login", async (req, res, next) => {
         } else {
             // Auto-provision demo authority user if authority login is attempted
             if (username.includes('ndrf') || username.includes('sdma') || loginType === 'authority') {
-                const token = jwt.sign({ user_id: username, role: 'NDRF' }, process.env.JWT_SECRET, { expiresIn: "24h" });
+                const token = jwt.sign({ userId: username, role: 'NDRF' }, process.env.JWT_SECRET || 'secret', { expiresIn: "24h" });
                 return res.json({
                     success: true,
                     token,
                     user: {
-                        user_id: username,
-                        name: 'NDRF Command Officer',
+                        userId: username,
+                        fullName: 'NDRF Command Officer',
                         role: 'NDRF',
-                        officer_mode: 'OFF_SITE',
+                        officerMode: 'OFF_SITE',
                         district: 'Wayanad Sector 4'
                     }
                 });
@@ -248,18 +249,32 @@ router.post("/verify-otp", (req, res, next) => {
 
 // SIGNUP ROUTE
 router.post("/signup", async (req, res, next) => {
-    const { username, email, password, full_name, phone, role, district, family_members, has_vulnerable } = req.body;
+    let { userId, username, email, password, fullName, full_name, phone, role, district, familyMembers, family_members, hasVulnerable, has_vulnerable } = req.body;
 
-    if (!username || !email || !password) {
+    const userFullName = fullName || full_name || 'Citizen User';
+    const userEmail = email || (phone ? `${phone}@surakshadrishti.local` : null);
+    const userPhone = phone || '';
+    const userDistrict = district || 'Wayanad, Kerala';
+    const userRole = (role || 'RESIDENT').toUpperCase();
+    const userFamilyMembers = parseInt(familyMembers || family_members) || 1;
+    const userHasVulnerable = !!(hasVulnerable !== undefined ? hasVulnerable : has_vulnerable);
+    const finalUserId = userId || username || userEmail || userPhone || `user_${Date.now()}`;
+
+    if (!userEmail && !userPhone && !finalUserId) {
         res.statusCode = 400;
-        return next(new Error("Username, Email, and Password are required."));
+        return next(new Error("Email or Phone Number is required to register."));
+    }
+
+    if (!password) {
+        res.statusCode = 400;
+        return next(new Error("Password is required."));
     }
 
     try {
-        const existing = await db.query('SELECT * FROM users WHERE user_id = $1 OR email = $2', [username, email]);
-        if (existing.rows[0]) {
+        const existing = await db.query('SELECT * FROM users WHERE user_id = $1 OR email = $2', [finalUserId, userEmail]);
+        if (existing.rows && existing.rows.length > 0) {
             res.statusCode = 400;
-            return next(new Error("Username or Email already registered."));
+            return next(new Error("An account with this email or user ID is already registered."));
         }
 
         const hashedPassword = await Hash_Pass(password);
@@ -267,21 +282,28 @@ router.post("/signup", async (req, res, next) => {
         await db.query(
             `INSERT INTO users (user_id, email, password, full_name, phone, user_role, district, family_members, has_vulnerable) 
              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-            [username, email, hashedPassword, full_name || username, phone || '', role || 'RESIDENT', district || 'Wayanad, Kerala', family_members || 1, !!has_vulnerable]
+            [finalUserId, userEmail, hashedPassword, userFullName, userPhone, userRole, userDistrict, userFamilyMembers, userHasVulnerable]
         );
 
-        const token = jwt.sign({ user_id: username, email, role: role || 'RESIDENT' }, process.env.JWT_SECRET, { expiresIn: "24h" });
+        const token = jwt.sign(
+            { userId: finalUserId, email: userEmail, role: userRole }, 
+            process.env.JWT_SECRET || 'suraksha_secret_jwt_2026', 
+            { expiresIn: "24h" }
+        );
 
         return res.json({
             success: true,
             message: "Account registered successfully!",
             token,
             user: {
-                user_id: username,
-                name: full_name || username,
-                email,
-                role: role || 'RESIDENT',
-                district: district || 'Wayanad, Kerala'
+                userId: finalUserId,
+                fullName: userFullName,
+                email: userEmail,
+                phone: userPhone,
+                role: userRole,
+                district: userDistrict,
+                familyMembers: userFamilyMembers,
+                hasVulnerable: userHasVulnerable
             }
         });
     } catch (err) {

@@ -16,7 +16,8 @@ import {
   Radio,
   Lock,
   Globe,
-  Zap
+  Zap,
+  Key
 } from 'lucide-react';
 
 const TILE_LAYERS = {
@@ -170,7 +171,7 @@ function getHaversineDistanceKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-export default function RealGoogleMap({ onZoneSelect }) {
+export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const tileLayerRef = useRef(null);
@@ -178,25 +179,27 @@ export default function RealGoogleMap({ onZoneSelect }) {
   const userLocationLayerRef = useRef(null);
   const markersMapRef = useRef({});
 
+  const [searchQuery, setSearchQuery] = useState('');
   const [activeLayerType, setActiveLayerType] = useState('streets');
   const [selectedZone, setSelectedZone] = useState(HAZARD_ZONES[0]);
   const [showRedZones, setShowRedZones] = useState(true);
   const [showSafeSites, setShowSafeSites] = useState(true);
   const [showRoutes, setShowRoutes] = useState(true);
 
-
   const [isLocating, setIsLocating] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
 
-
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
+    const initialCenter = center || [HAZARD_ZONES[0].lat, HAZARD_ZONES[0].lng];
+    const initialZoom = zoom || 13;
+
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current, {
-        center: [20.5937, 78.9629],
-        zoom: 5,
+        center: initialCenter,
+        zoom: initialZoom,
         zoomControl: true,
         scrollWheelZoom: true,
       });
@@ -209,6 +212,10 @@ export default function RealGoogleMap({ onZoneSelect }) {
       layersGroupRef.current = L.layerGroup().addTo(map);
       userLocationLayerRef.current = L.layerGroup().addTo(map);
       mapInstanceRef.current = map;
+
+      setTimeout(() => {
+        if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+      }, 250);
     }
 
     return () => {
@@ -218,6 +225,15 @@ export default function RealGoogleMap({ onZoneSelect }) {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (mapInstanceRef.current && center && Array.isArray(center) && center.length === 2) {
+      mapInstanceRef.current.flyTo(center, zoom || 13, { animate: true, duration: 1 });
+      setTimeout(() => {
+        if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+      }, 250);
+    }
+  }, [center?.[0], center?.[1], zoom]);
 
 
   useEffect(() => {
@@ -554,23 +570,68 @@ export default function RealGoogleMap({ onZoneSelect }) {
           {/* Row 1: Sector Dropdown & Locate / Reset Actions */}
           <div className="flex flex-wrap items-center justify-between gap-2">
             
-            <div className="flex items-center gap-1.5 bg-slate-800/90 px-2 py-1 rounded-xl border border-slate-700 text-xs font-semibold flex-1 min-w-[170px] sm:flex-initial">
-              <Search className="w-3 h-3 text-cyan-400 shrink-0" />
-              <select
-                value={selectedZone?.id || ''}
-                onChange={(e) => {
-                  const found = HAZARD_ZONES.find((z) => z.id === e.target.value);
-                  if (found) handleFlyTo(found);
-                }}
-                aria-label="Select hotspot"
-                className="w-full bg-slate-900 text-white rounded-lg px-2 py-1 text-[11px] sm:text-xs font-bold border border-slate-700 outline-none cursor-pointer hover:border-cyan-500 transition-colors"
-              >
-                {HAZARD_ZONES.map((z) => (
-                  <option key={z.id} value={z.id}>
-                    {z.shortName} ({z.state})
-                  </option>
-                ))}
-              </select>
+            <div className="relative flex-1 min-w-[200px]">
+              <div className="flex items-center gap-1.5 bg-slate-800/90 px-2.5 py-1 rounded-xl border border-slate-700 text-xs font-semibold">
+                <Search className="w-3.5 h-3.5 text-cyan-400 shrink-0" />
+                <input
+                  type="text"
+                  placeholder="Search location or red zone..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent text-white text-[11px] sm:text-xs outline-none placeholder-slate-400 font-medium"
+                />
+                {searchQuery && (
+                  <button onClick={() => setSearchQuery('')} className="text-slate-400 hover:text-white text-xs font-bold px-1">✕</button>
+                )}
+                <select
+                  value={selectedZone?.id || ''}
+                  onChange={(e) => {
+                    const found = HAZARD_ZONES.find((z) => z.id === e.target.value);
+                    if (found) {
+                      handleFlyTo(found);
+                      onZoneSelect?.(found);
+                    }
+                  }}
+                  aria-label="Select hotspot"
+                  className="bg-slate-900 text-cyan-300 rounded-lg px-2 py-0.5 text-[10px] font-bold border border-slate-700 outline-none cursor-pointer hover:border-cyan-500 transition-colors"
+                >
+                  {HAZARD_ZONES.map((z) => (
+                    <option key={z.id} value={z.id}>
+                      {z.shortName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Live Search Suggestions Dropdown */}
+              {searchQuery.trim().length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-1 bg-slate-950 border border-slate-700 rounded-xl shadow-2xl z-[2500] overflow-hidden max-h-48 overflow-y-auto backdrop-blur-lg">
+                  {HAZARD_ZONES.filter(z => 
+                    z.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    z.shortName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    z.state.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    z.geohash.toLowerCase().includes(searchQuery.toLowerCase())
+                  ).map(z => (
+                    <button
+                      key={z.id}
+                      onClick={() => {
+                        handleFlyTo(z);
+                        setSearchQuery('');
+                        onZoneSelect?.(z);
+                      }}
+                      className="w-full text-left p-2 hover:bg-slate-800 border-b border-slate-800/60 flex items-center justify-between text-xs cursor-pointer transition-colors"
+                    >
+                      <div>
+                        <div className="font-bold text-white text-[11px] sm:text-xs">{z.shortName}</div>
+                        <div className="text-[10px] text-slate-400">{z.state} • #{z.geohash}</div>
+                      </div>
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${z.type === 'red' ? 'bg-red-900/80 text-red-300 border border-red-700' : 'bg-amber-900/80 text-amber-300 border border-amber-700'}`}>
+                        {z.type.toUpperCase()} ZONE
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Locate Me & Reset View */}
@@ -776,14 +837,25 @@ export default function RealGoogleMap({ onZoneSelect }) {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => onZoneSelect?.(selectedZone)}
-                  className="w-full py-1.5 sm:py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] sm:text-xs tracking-wide shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer btn-bottom-glow-blue"
-                >
-                  <Zap className="w-3 h-3 text-amber-300" />
-                  <span>Generate QuickPass for this Sector</span>
-                </button>
+                <div className="flex gap-1.5 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => onAssignSelf?.(selectedZone)}
+                    className="flex-1 py-1.5 sm:py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-[10px] sm:text-xs tracking-wide shadow-md transition-all flex items-center justify-center gap-1 cursor-pointer border border-amber-400/50"
+                  >
+                    <Key className="w-3 h-3 text-amber-200" />
+                    <span>Assign Self</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => onZoneSelect?.(selectedZone)}
+                    className="flex-1 py-1.5 sm:py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] sm:text-xs tracking-wide shadow-md transition-all flex items-center justify-center gap-1 cursor-pointer"
+                  >
+                    <Zap className="w-3 h-3 text-amber-300" />
+                    <span>QuickPass</span>
+                  </button>
+                </div>
 
               </div>
             </div>

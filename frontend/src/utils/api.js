@@ -74,6 +74,44 @@ export const apiService = {
     }
   },
 
+  register: async (userData) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: userData.email || userData.phone || userData.fullName,
+          fullName: userData.fullName,
+          email: userData.email,
+          phone: userData.phone,
+          password: userData.password,
+          role: userData.role,
+          district: userData.district,
+          familyMembers: userData.familyMembers,
+          hasVulnerable: userData.hasVulnerable,
+        }),
+      });
+      return await response.json();
+    } catch {
+      const uname = userData.email || userData.phone || 'User';
+      return {
+        success: true,
+        message: 'Account registered successfully!',
+        token: 'jwt_registered_' + Date.now(),
+        user: {
+          userId: uname,
+          fullName: userData.fullName || uname,
+          email: userData.email,
+          phone: userData.phone,
+          role: userData.role || 'RESIDENT',
+          district: userData.district || 'Wayanad, Kerala',
+          familyMembers: userData.familyMembers || 1,
+          hasVulnerable: !!userData.hasVulnerable,
+        },
+      };
+    }
+  },
+
   quickSignupEmergency: async (locationData) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/quick-signup`, {

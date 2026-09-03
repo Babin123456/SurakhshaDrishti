@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import Navbar from './components/Navbar';
@@ -69,6 +69,17 @@ export default function App() {
     setUserSession(null);
   };
 
+  const handleIntroComplete = useCallback(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    if (window.__lenis) window.__lenis.scrollTo(0, { immediate: true });
+    // Start the landing page blur reveal immediately
+    setIsBlurTransitioning(true);
+    // Delay removing the loader from the DOM until its 1000ms CSS fade-out finishes
+    setTimeout(() => {
+      setShowIntro(false);
+    }, 1000);
+  }, []);
+
   // If user is logged in, show dashboard
   if (userSession) {
     return (
@@ -95,16 +106,7 @@ export default function App() {
       {/* 1. Intro Sequence Loader */}
       {showIntro && (
         <IntroSequence
-          onComplete={() => {
-            window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
-            if (window.__lenis) window.__lenis.scrollTo(0, { immediate: true });
-            // Start the landing page blur reveal immediately
-            setIsBlurTransitioning(true);
-            // Delay removing the loader from the DOM until its 1000ms CSS fade-out finishes
-            setTimeout(() => {
-              setShowIntro(false);
-            }, 1000);
-          }}
+          onComplete={handleIntroComplete}
         />
       )}
 

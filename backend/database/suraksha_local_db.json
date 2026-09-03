@@ -1,0 +1,116 @@
+{
+  "users": [
+    {
+      "user_id": "ndrf_admin",
+      "email": "ndrf.command@mha.gov.in",
+      "password": "$2b$10$w09ZkF2xO59lU22qj4A24u7s2h/k8q5d/Z71d.a6f4s8b9c1d2e3f",
+      "full_name": "NDRF Commander Chief",
+      "user_role": "NDRF",
+      "officer_mode": "OFF_SITE",
+      "district": "Wayanad Sector 4"
+    },
+    {
+      "user_id": "sdma_officer",
+      "email": "sdma.kerala@gov.in",
+      "password": "$2b$10$w09ZkF2xO59lU22qj4A24u7s2h/k8q5d/Z71d.a6f4s8b9c1d2e3f",
+      "full_name": "SDMA Regional Officer",
+      "user_role": "SDMA",
+      "officer_mode": "ON_SITE",
+      "district": "Wayanad, Kerala"
+    },
+    {
+      "user_id": "master.trainer049@gmail.com",
+      "email": "master.trainer049@gmail.com",
+      "password": "$2b$10$UyqyAYfd7GK.O6E1eAEeNuettYN92SqJMJlqu3M6bAeM0C4YfcYl.",
+      "full_name": "Kash",
+      "phone": "9433087827",
+      "user_role": "NDRF",
+      "district": "Wayanad, Kerala",
+      "family_members": 4,
+      "has_vulnerable": false,
+      "created_at": "2026-09-03T12:32:22.800Z"
+    }
+  ],
+  "hazard_zones": [
+    {
+      "zone_id": "RZ-WAYANAD-04",
+      "name": "Wayanad Hill Slope (Sector 4)",
+      "state": "Kerala",
+      "lat": 11.6854,
+      "lng": 76.132,
+      "zone_type": "RED",
+      "hazard_type": "LANDSLIDE",
+      "risk_score": 94,
+      "geohash": "t1829abc",
+      "population_risk": 1420,
+      "radius_meters": 3500,
+      "access_key": "RZ-89A4-91F2-3B7C",
+      "status": "ACTIVE_RED_ZONE",
+      "resolution_votes_required": 2,
+      "resolution_votes_cast": 0
+    },
+    {
+      "zone_id": "RZ-JOSHIMATH-02",
+      "name": "Joshimath Slope Sector B",
+      "state": "Uttarakhand",
+      "lat": 30.5564,
+      "lng": 79.5659,
+      "zone_type": "RED",
+      "hazard_type": "SUBSIDENCE",
+      "risk_score": 88,
+      "geohash": "t2912xyz",
+      "population_risk": 2850,
+      "radius_meters": 4200,
+      "access_key": "RZ-41C2-88E0-99A1",
+      "status": "ACTIVE_RED_ZONE",
+      "resolution_votes_required": 3,
+      "resolution_votes_cast": 0
+    },
+    {
+      "zone_id": "RZ-TEESTA-07",
+      "name": "Teesta Riverbank Sector 7",
+      "state": "Sikkim",
+      "lat": 27.0883,
+      "lng": 88.2609,
+      "zone_type": "YELLOW",
+      "hazard_type": "FLASH_FLOOD",
+      "risk_score": 76,
+      "geohash": "t3819mno",
+      "population_risk": 3100,
+      "radius_meters": 2800,
+      "access_key": "RZ-73F9-22D4-55B8",
+      "status": "ACTIVE_RED_ZONE",
+      "resolution_votes_required": 2,
+      "resolution_votes_cast": 0
+    }
+  ],
+  "zone_assignments": [],
+  "shelters": [
+    {
+      "shelter_id": "SH-01",
+      "zone_id": "RZ-WAYANAD-04",
+      "name": "Nilambur Foothill Base Camp",
+      "lat": 11.2764,
+      "lng": 76.2241,
+      "capacity_total": 1420,
+      "capacity_occupied": 420,
+      "status": "OPEN",
+      "evacuation_corridor": "Via SH-28 (Clearing Teams Active)"
+    },
+    {
+      "shelter_id": "SH-02",
+      "zone_id": "RZ-WAYANAD-04",
+      "name": "Pipalkoti Relief Center",
+      "lat": 30.4285,
+      "lng": 79.4312,
+      "capacity_total": 850,
+      "capacity_occupied": 210,
+      "status": "OPEN",
+      "evacuation_corridor": "Via NH-07 (Bypass Operational)"
+    }
+  ],
+  "emergency_passes": [],
+  "e2ee_conversations": [],
+  "e2ee_messages": [],
+  "gsm_telemetry_logs": []
+}
