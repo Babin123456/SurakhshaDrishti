@@ -23,7 +23,7 @@ const FN_verifyTkn = (req, res, next) =>{
     }
 
     try{
-        const verifyTkn = jwt.verify(token, process.env.JWT_SECRET);
+        const verifyTkn = jwt.verify(token, process.env.JWT_SECRET || 'suraksha_secret_jwt_2026_production');
         req.user = verifyTkn; //this adds a new section to the json called user which has jwt contents
         next();
     }catch(err){
