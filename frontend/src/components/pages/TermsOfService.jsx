@@ -10,7 +10,12 @@ export default function TermsOfService() {
   }, []);
 
   const handleBack = () => {
-    navigate('/');
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   };
 
   return (
@@ -50,42 +55,54 @@ export default function TermsOfService() {
         {/* Terms Body */}
         <div className="space-y-4 text-xs sm:text-sm text-[#5C544D] leading-relaxed">
           
-          <section className="bg-white/70 backdrop-blur-md border border-[#E8E1D5] rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs">
-            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2">
-              <Shield className="w-4 h-4 text-[#8B7355] shrink-0" />
+          <section className="group bg-white/70 hover:bg-white backdrop-blur-md border border-[#E8E1D5] hover:border-[#8B7355]/60 rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-[#8B7355] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2.5 group-hover:text-[#8B7355] transition-colors">
+              <div className="p-2 rounded-xl bg-[#F6F4F0] group-hover:bg-[#8B7355]/10 text-[#8B7355] transition-all duration-300 group-hover:scale-110">
+                <Shield className="w-4 h-4 shrink-0" />
+              </div>
               <span>1. Authorized Public Safety Scope & Prohibition of False Alarms</span>
             </h2>
-            <p>
+            <p className="group-hover:text-[#2C2A29] transition-colors pl-0.5">
               SurakshaDrishti is deployed for official civil defense, geological risk mitigation, and automated citizen evacuation coordination. Transmitting fabricated SOS beacons, impersonating civil response officials, or tampering with disaster sensor data is punishable under Section 54 of the Disaster Management Act, 2005.
             </p>
           </section>
 
-          <section className="bg-white/70 backdrop-blur-md border border-[#E8E1D5] rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs">
-            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-[#B85C38] shrink-0" />
+          <section className="group bg-white/70 hover:bg-white backdrop-blur-md border border-[#E8E1D5] hover:border-[#B85C38]/60 rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-[#B85C38] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2.5 group-hover:text-[#B85C38] transition-colors">
+              <div className="p-2 rounded-xl bg-[#F6F4F0] group-hover:bg-[#B85C38]/10 text-[#B85C38] transition-all duration-300 group-hover:scale-110">
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+              </div>
               <span>2. Decision Support Systems (DSS) & Executive Command Hierarchy</span>
             </h2>
-            <p>
+            <p className="group-hover:text-[#2C2A29] transition-colors pl-0.5">
               Automated hazard threat calculations (landslide slope instability, cloudburst run-off vectors, and carrying capacity scores) operate strictly as Decision Support Systems (DSS). Final on-ground evacuation declarations and statutory orders remain within the jurisdiction of District Magistrates, NDMA, and NDRF Incident Commanders.
             </p>
           </section>
 
-          <section className="bg-white/70 backdrop-blur-md border border-[#E8E1D5] rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs">
-            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2">
-              <Radio className="w-4 h-4 text-[#2D7A4F] shrink-0" />
+          <section className="group bg-white/70 hover:bg-white backdrop-blur-md border border-[#E8E1D5] hover:border-[#2D7A4F]/60 rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-[#2D7A4F] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2.5 group-hover:text-[#2D7A4F] transition-colors">
+              <div className="p-2 rounded-xl bg-[#F6F4F0] group-hover:bg-[#2D7A4F]/10 text-[#2D7A4F] transition-all duration-300 group-hover:scale-110">
+                <Radio className="w-4 h-4 shrink-0" />
+              </div>
               <span>3. Telecommunication Resiliency & GSM 3.4 Fallback</span>
             </h2>
-            <p>
+            <p className="group-hover:text-[#2C2A29] transition-colors pl-0.5">
               While the platform incorporates cellular broadcast failovers (GSM 3.4 binary SMS packet relays) for extreme conditions with zero broadband connectivity, residents are advised to maintain battery-powered radio receivers during severe multi-hazard calamities.
             </p>
           </section>
 
-          <section className="bg-white/70 backdrop-blur-md border border-[#E8E1D5] rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs">
-            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2">
-              <FileCheck2 className="w-4 h-4 text-[#2E5B88] shrink-0" />
+          <section className="group bg-white/70 hover:bg-white backdrop-blur-md border border-[#E8E1D5] hover:border-[#2E5B88]/60 rounded-3xl p-6 sm:p-7 space-y-2.5 shadow-xs hover:shadow-md hover:-translate-y-1 transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-1.5 h-full bg-[#2E5B88] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <h2 className="text-sm sm:text-base font-bold text-[#1A1A1A] flex items-center gap-2.5 group-hover:text-[#2E5B88] transition-colors">
+              <div className="p-2 rounded-xl bg-[#F6F4F0] group-hover:bg-[#2E5B88]/10 text-[#2E5B88] transition-all duration-300 group-hover:scale-110">
+                <FileCheck2 className="w-4 h-4 shrink-0" />
+              </div>
               <span>4. Safe Hub Allocations & Carrying Capacity Fair Use</span>
             </h2>
-            <p>
+            <p className="group-hover:text-[#2C2A29] transition-colors pl-0.5">
               Designated safe transit hubs (e.g. Nilambur Foothill Base, Pipalkoti Relief Center) are allocated through real-time load balancing algorithms. Citizens and responders agree to adhere to allocated transit corridors to avoid road congestion during rapid evacuations.
             </p>
           </section>

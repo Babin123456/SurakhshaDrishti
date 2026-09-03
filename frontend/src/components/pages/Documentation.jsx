@@ -93,7 +93,12 @@ export default function Documentation() {
   }, []);
 
   const handleBack = () => {
-    navigate('/');
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   };
 
   const scrollToDoc = (id) => {
@@ -214,9 +219,19 @@ export default function Documentation() {
               })}
             </nav>
 
-            <div className="pt-4 border-t border-[#E8E1D5] text-[11px] text-[#7A726A] font-mono px-3">
-              GITHUB REPO: SIH-26191<br/>
-              SPECIFICATION: OAS 3.0 / WGS84
+            <div className="pt-4 border-t border-[#E8E1D5] text-[11px] text-[#7A726A] font-mono px-3 space-y-1">
+              <div>
+                GITHUB REPO:{' '}
+                <a 
+                  href="https://github.com/Kashcx-dev/SurakshaDrishti" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-[#8B7355] hover:text-[#1A1A1A] underline font-semibold transition-colors"
+                >
+                  Kashcx-dev/SurakshaDrishti
+                </a>
+              </div>
+              <div>SPECIFICATION: OAS 3.0 / WGS84</div>
             </div>
           </aside>
 
@@ -226,35 +241,39 @@ export default function Documentation() {
             {/* Section 1: Overview */}
             <article 
               id="overview" 
-              className={`bg-white/70 backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs scroll-mt-24 transition-all duration-300 ${
-                activeSection === 'overview' ? 'border-[#8B7355]/60 shadow-md ring-1 ring-[#8B7355]/20' : 'border-[#E8E1D5]'
+              className={`group bg-white/70 hover:bg-white backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs hover:shadow-lg hover:-translate-y-1 scroll-mt-24 transition-all duration-300 relative overflow-hidden ${
+                activeSection === 'overview' ? 'border-[#8B7355]/60 shadow-md ring-1 ring-[#8B7355]/20' : 'border-[#E8E1D5] hover:border-[#8B7355]/50'
               }`}
             >
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-[#8B7355] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2.5 text-[#8B7355] font-bold text-xs sm:text-sm">
-                  <Terminal className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <div className="p-1.5 rounded-lg bg-[#8B7355]/10 group-hover:scale-110 transition-transform duration-300">
+                    <Terminal className="w-4 h-4 sm:w-5 sm:h-5 text-[#8B7355]" />
+                  </div>
                   <span>1. Platform Overview & Problem Mandate</span>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] border border-[#E8E1D5] text-[#4A4238]">SIH 26191</span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] group-hover:bg-[#8B7355]/10 group-hover:text-[#8B7355] border border-[#E8E1D5] text-[#4A4238] transition-colors">SIH 26191</span>
               </div>
               
-              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] group-hover:text-[#8B7355] transition-colors">
                 AI Multi-Hazard Red Zone Identification & Relocation DSS
               </h2>
               
-              <p className="text-xs sm:text-sm text-[#5C544D] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#5C544D] group-hover:text-[#2C2A29] leading-relaxed transition-colors">
                 SurakshaDrishti addresses Smart India Hackathon Problem Statement 26191. In rugged Himalayan terrains and coastal river deltas, recurring landslides, glacial lake outburst floods (GLOF), and tectonic subsidence create recurring human catastrophes. The platform synthesizes multi-source spatial sensors to identify high-risk zones, balance carrying capacity at designated safe hubs, and dispatch prioritized proactive evacuation alerts.
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                <div className="p-4 bg-[#F6F4F0] border border-[#E8E1D5] rounded-2xl text-xs">
+                <div className="p-4 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#2D7A4F]/40 rounded-2xl text-xs hover:shadow-xs transition-all duration-300">
                   <div className="font-bold text-[#2D7A4F] flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#2D7A4F]"></span>
                     Target User Base
                   </div>
                   <div className="text-[#5C544D] text-[11px] mt-1.5 leading-normal">NDRF Battalions, SDMAs, District Emergency Operations Centers (DEOCs), and local habitations.</div>
                 </div>
-                <div className="p-4 bg-[#F6F4F0] border border-[#E8E1D5] rounded-2xl text-xs">
+                <div className="p-4 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#8B7355]/40 rounded-2xl text-xs hover:shadow-xs transition-all duration-300">
                   <div className="font-bold text-[#8B7355] flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-[#8B7355]"></span>
                     Core Objectives
@@ -267,46 +286,50 @@ export default function Documentation() {
             {/* Section 2: Open GIS Spatial Engine */}
             <article 
               id="gis-engine" 
-              className={`bg-white/70 backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs scroll-mt-24 transition-all duration-300 ${
-                activeSection === 'gis-engine' ? 'border-[#2D7A4F]/60 shadow-md ring-1 ring-[#2D7A4F]/20' : 'border-[#E8E1D5]'
+              className={`group bg-white/70 hover:bg-white backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs hover:shadow-lg hover:-translate-y-1 scroll-mt-24 transition-all duration-300 relative overflow-hidden ${
+                activeSection === 'gis-engine' ? 'border-[#2D7A4F]/60 shadow-md ring-1 ring-[#2D7A4F]/20' : 'border-[#E8E1D5] hover:border-[#2D7A4F]/50'
               }`}
             >
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-[#2D7A4F] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2.5 text-[#2D7A4F] font-bold text-xs sm:text-sm">
-                  <Layers className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <div className="p-1.5 rounded-lg bg-[#2D7A4F]/10 group-hover:scale-110 transition-transform duration-300">
+                    <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-[#2D7A4F]" />
+                  </div>
                   <span>2. Open GIS Spatial Engine (Zero Google API Keys)</span>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] border border-[#E8E1D5] text-[#2D7A4F]">OPENSOURCE GIS</span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] group-hover:bg-[#2D7A4F]/10 group-hover:text-[#2D7A4F] border border-[#E8E1D5] text-[#2D7A4F] transition-colors">OPENSOURCE GIS</span>
               </div>
               
-              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] group-hover:text-[#2D7A4F] transition-colors">
                 Leaflet.js & Open Geospatial Architecture
               </h2>
               
-              <p className="text-xs sm:text-sm text-[#5C544D] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#5C544D] group-hover:text-[#2C2A29] leading-relaxed transition-colors">
                 Unlike commercial systems that incur heavy per-request billing and quota exhaustion with proprietary Google Maps APIs, SurakshaDrishti operates on a 100% open-source spatial stack:
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl text-xs">
+                <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#2D7A4F]/40 rounded-xl text-xs hover:shadow-xs transition-all duration-300">
                   <strong className="text-[#1A1A1A] block mb-1">Map View (OpenStreetMap)</strong>
                   <span className="text-[#5C544D] text-[11px]">High-speed open raster tiles rendered through distributed regional CDNs.</span>
                 </div>
-                <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl text-xs">
+                <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#2D7A4F]/40 rounded-xl text-xs hover:shadow-xs transition-all duration-300">
                   <strong className="text-[#1A1A1A] block mb-1">Satellite View (Esri)</strong>
                   <span className="text-[#5C544D] text-[11px]">High-resolution satellite imagery from Esri World Imagery (Maxar/Earthstar).</span>
                 </div>
-                <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl text-xs">
+                <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#2D7A4F]/40 rounded-xl text-xs hover:shadow-xs transition-all duration-300">
                   <strong className="text-[#1A1A1A] block mb-1">Dark Terrain (CARTO)</strong>
                   <span className="text-[#5C544D] text-[11px]">CARTO Dark Matter vector tile sets for low-light command room viewing.</span>
                 </div>
-                <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl text-xs">
+                <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#2D7A4F]/40 rounded-xl text-xs hover:shadow-xs transition-all duration-300">
                   <strong className="text-[#1A1A1A] block mb-1">Vector Math & GeoJSON</strong>
                   <span className="text-[#5C544D] text-[11px]">Client-side Haversine geodesic distance and bounding polygon calculations.</span>
                 </div>
               </div>
 
-              <div className="p-3 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl font-mono text-[10px] sm:text-[11px] text-[#4A4238] overflow-x-auto">
+              <div className="p-3 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] group-hover:border-[#2D7A4F]/30 rounded-xl font-mono text-[10px] sm:text-[11px] text-[#4A4238] overflow-x-auto transition-colors">
                 <code>{`const tileLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 18 });`}</code>
               </div>
             </article>
@@ -314,33 +337,37 @@ export default function Documentation() {
             {/* Section 3: AI Machine Learning Pipeline */}
             <article 
               id="ai-models" 
-              className={`bg-white/70 backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs scroll-mt-24 transition-all duration-300 ${
-                activeSection === 'ai-models' ? 'border-[#C05621]/60 shadow-md ring-1 ring-[#C05621]/20' : 'border-[#E8E1D5]'
+              className={`group bg-white/70 hover:bg-white backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs hover:shadow-lg hover:-translate-y-1 scroll-mt-24 transition-all duration-300 relative overflow-hidden ${
+                activeSection === 'ai-models' ? 'border-[#C05621]/60 shadow-md ring-1 ring-[#C05621]/20' : 'border-[#E8E1D5] hover:border-[#C05621]/50'
               }`}
             >
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-[#C05621] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2.5 text-[#C05621] font-bold text-xs sm:text-sm">
-                  <Cpu className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <div className="p-1.5 rounded-lg bg-[#C05621]/10 group-hover:scale-110 transition-transform duration-300">
+                    <Cpu className="w-4 h-4 sm:w-5 sm:h-5 text-[#C05621]" />
+                  </div>
                   <span>3. Multi-Hazard AI Scoring & Carrying Capacity</span>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] border border-[#E8E1D5] text-[#C05621]">XGBOOST + DEM</span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] group-hover:bg-[#C05621]/10 group-hover:text-[#C05621] border border-[#E8E1D5] text-[#C05621] transition-colors">XGBOOST + DEM</span>
               </div>
               
-              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] group-hover:text-[#C05621] transition-colors">
                 4-Stage Machine Learning Predictive Framework
               </h2>
               
               <div className="space-y-3 text-xs sm:text-sm text-[#5C544D] leading-relaxed">
-                <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl">
+                <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#8B7355]/40 rounded-xl hover:shadow-xs transition-all duration-300">
                   <strong className="text-[#8B7355]">Stage 1 (Hazard Detection):</strong> Multi-spectral satellite band analysis (NDVI vegetation loss, NDWI water accumulation) combined with SRTM 30m Digital Elevation Models (slope angle &gt; 35°).
                 </div>
-                <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl">
+                <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#B85C38]/40 rounded-xl hover:shadow-xs transition-all duration-300">
                   <strong className="text-[#B85C38]">Stage 2 (Risk Index Computation):</strong> An ensemble XGBoost model outputs a normalized 0–100 Threat Index by fusing precipitation intensity, soil moisture saturation, and historical slip recurrence.
                 </div>
-                <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl">
+                <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#2D7A4F]/40 rounded-xl hover:shadow-xs transition-all duration-300">
                   <strong className="text-[#2D7A4F]">Stage 3 (Carrying Capacity Allocation):</strong> Relocation shelters are dynamically assessed on potable water volume, bed density, transit road width, and medical logistics to prevent transit bottlenecking.
                 </div>
-                <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl">
+                <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#2E5B88]/40 rounded-xl hover:shadow-xs transition-all duration-300">
                   <strong className="text-[#2E5B88]">Stage 4 (Priority Dispatch):</strong> Habitations with elderly, vulnerable populations and limited escape paths receive top-priority evacuation convoy assignments.
                 </div>
               </div>
@@ -349,27 +376,31 @@ export default function Documentation() {
             {/* Section 4: GSM 3.4 Telecommunication Mesh */}
             <article 
               id="mesh-protocol" 
-              className={`bg-white/70 backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs scroll-mt-24 transition-all duration-300 ${
-                activeSection === 'mesh-protocol' ? 'border-[#2E5B88]/60 shadow-md ring-1 ring-[#2E5B88]/20' : 'border-[#E8E1D5]'
+              className={`group bg-white/70 hover:bg-white backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs hover:shadow-lg hover:-translate-y-1 scroll-mt-24 transition-all duration-300 relative overflow-hidden ${
+                activeSection === 'mesh-protocol' ? 'border-[#2E5B88]/60 shadow-md ring-1 ring-[#2E5B88]/20' : 'border-[#E8E1D5] hover:border-[#2E5B88]/50'
               }`}
             >
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-[#2E5B88] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2.5 text-[#2E5B88] font-bold text-xs sm:text-sm">
-                  <Network className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <div className="p-1.5 rounded-lg bg-[#2E5B88]/10 group-hover:scale-110 transition-transform duration-300">
+                    <Network className="w-4 h-4 sm:w-5 sm:h-5 text-[#2E5B88]" />
+                  </div>
                   <span>4. GSM 3.4 Cellular Fallback & LoRa Hardware Bridge</span>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] border border-[#E8E1D5] text-[#2E5B88]">ZERO BROADBAND</span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] group-hover:bg-[#2E5B88]/10 group-hover:text-[#2E5B88] border border-[#E8E1D5] text-[#2E5B88] transition-colors">ZERO BROADBAND</span>
               </div>
               
-              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] group-hover:text-[#2E5B88] transition-colors">
                 Zero-Broadband Emergency Communication Framework
               </h2>
               
-              <p className="text-xs sm:text-sm text-[#5C544D] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#5C544D] group-hover:text-[#2C2A29] leading-relaxed transition-colors">
                 Catastrophic landslides and flash floods frequently sever optical fiber links and disable commercial 4G/5G base stations. SurakshaDrishti incorporates automated binary SMS packet compression over surviving 2G GSM control channels.
               </p>
 
-              <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl space-y-1.5 font-mono text-[10px] sm:text-[11px] overflow-x-auto">
+              <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] group-hover:border-[#2E5B88]/30 rounded-xl space-y-1.5 font-mono text-[10px] sm:text-[11px] overflow-x-auto transition-colors">
                 <div className="text-[#8B7355] font-bold">160-Character Compressed Frame Structure:</div>
                 <div className="text-[#1A1A1A] text-[10px]">`[SOS][GEO:#tdv2n19z][POP:4820][EVAC_HUB:Nilambur][ROUTE:NH-766][ETA:38M][SIGN:ed25519]`</div>
               </div>
@@ -378,36 +409,40 @@ export default function Documentation() {
             {/* Section 5: QuickSign Pass & Security */}
             <article 
               id="quicksign" 
-              className={`bg-white/70 backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs scroll-mt-24 transition-all duration-300 ${
-                activeSection === 'quicksign' ? 'border-[#8B7355]/60 shadow-md ring-1 ring-[#8B7355]/20' : 'border-[#E8E1D5]'
+              className={`group bg-white/70 hover:bg-white backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs hover:shadow-lg hover:-translate-y-1 scroll-mt-24 transition-all duration-300 relative overflow-hidden ${
+                activeSection === 'quicksign' ? 'border-[#8B7355]/60 shadow-md ring-1 ring-[#8B7355]/20' : 'border-[#E8E1D5] hover:border-[#8B7355]/50'
               }`}
             >
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-[#8B7355] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2.5 text-[#8B7355] font-bold text-xs sm:text-sm">
-                  <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <div className="p-1.5 rounded-lg bg-[#8B7355]/10 group-hover:scale-110 transition-transform duration-300">
+                    <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5 text-[#8B7355]" />
+                  </div>
                   <span>5. QuickSign Pass Generation & RBAC Security</span>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] border border-[#E8E1D5] text-[#8B7355]">AES-256 E2EE</span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] group-hover:bg-[#8B7355]/10 group-hover:text-[#8B7355] border border-[#E8E1D5] text-[#8B7355] transition-colors">AES-256 E2EE</span>
               </div>
               
-              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] group-hover:text-[#8B7355] transition-colors">
                 30-Second Resident SOS & Cryptographic Clearances
               </h2>
               
-              <p className="text-xs sm:text-sm text-[#5C544D] leading-relaxed">
+              <p className="text-xs sm:text-sm text-[#5C544D] group-hover:text-[#2C2A29] leading-relaxed transition-colors">
                 Residents in urgent hazard zones can generate an instant digital evacuation badge with zero typing friction. The pass embeds designated shelter allocations, GPS coordinates, and offline transit maps.
               </p>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2 text-xs">
-                <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-2xl">
+                <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#2E5B88]/40 rounded-2xl hover:shadow-xs transition-all duration-300">
                   <div className="text-[#2E5B88] font-bold">Citizen Level</div>
                   <div className="text-[#5C544D] text-[10px] mt-1">SOS pass creation, live hazard alerts, and designated hub directions.</div>
                 </div>
-                <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-2xl">
+                <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#C05621]/40 rounded-2xl hover:shadow-xs transition-all duration-300">
                   <div className="text-[#C05621] font-bold">Responder Level</div>
                   <div className="text-[#5C544D] text-[10px] mt-1">Convoy tracking, checkpoint check-in, and victim triage logging.</div>
                 </div>
-                <div className="p-3.5 bg-[#F6F4F0] border border-[#E8E1D5] rounded-2xl">
+                <div className="p-3.5 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#2D7A4F]/40 rounded-2xl hover:shadow-xs transition-all duration-300">
                   <div className="text-[#2D7A4F] font-bold">Commander Level</div>
                   <div className="text-[#5C544D] text-[10px] mt-1">Zone classification override, GIS shapefile exports, and broadcast trigger.</div>
                 </div>
@@ -417,32 +452,36 @@ export default function Documentation() {
             {/* Section 6: API Reference */}
             <article 
               id="api-reference" 
-              className={`bg-white/70 backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs scroll-mt-24 transition-all duration-300 ${
-                activeSection === 'api-reference' ? 'border-[#8B7355]/60 shadow-md ring-1 ring-[#8B7355]/20' : 'border-[#E8E1D5]'
+              className={`group bg-white/70 hover:bg-white backdrop-blur-md border rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs hover:shadow-lg hover:-translate-y-1 scroll-mt-24 transition-all duration-300 relative overflow-hidden ${
+                activeSection === 'api-reference' ? 'border-[#8B7355]/60 shadow-md ring-1 ring-[#8B7355]/20' : 'border-[#E8E1D5] hover:border-[#8B7355]/50'
               }`}
             >
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-[#8B7355] opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div className="flex items-center gap-2.5 text-[#8B7355] font-bold text-xs sm:text-sm">
-                  <Database className="w-4 h-4 sm:w-5 sm:h-5" />
+                  <div className="p-1.5 rounded-lg bg-[#8B7355]/10 group-hover:scale-110 transition-transform duration-300">
+                    <Database className="w-4 h-4 sm:w-5 sm:h-5 text-[#8B7355]" />
+                  </div>
                   <span>6. REST API Endpoints & NDMA Webhook Schema</span>
                 </div>
-                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] border border-[#E8E1D5] text-[#8B7355]">OPEN API 3.0</span>
+                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-[#F6F4F0] group-hover:bg-[#8B7355]/10 group-hover:text-[#8B7355] border border-[#E8E1D5] text-[#8B7355] transition-colors">OPEN API 3.0</span>
               </div>
               
-              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A]">
+              <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] group-hover:text-[#8B7355] transition-colors">
                 Developer Integration Reference
               </h2>
               
               <div className="space-y-2 text-xs font-mono">
-                <div className="p-3 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl flex items-center justify-between flex-wrap gap-2">
+                <div className="p-3 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#2D7A4F]/50 rounded-xl flex items-center justify-between flex-wrap gap-2 hover:shadow-xs transition-all duration-300">
                   <span className="text-[#2D7A4F] font-bold">GET /api/hazard-zones</span>
                   <span className="text-[#5C544D] text-[11px]">Returns active red/orange hazard clusters & geohashes</span>
                 </div>
-                <div className="p-3 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl flex items-center justify-between flex-wrap gap-2">
+                <div className="p-3 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#2E5B88]/50 rounded-xl flex items-center justify-between flex-wrap gap-2 hover:shadow-xs transition-all duration-300">
                   <span className="text-[#2E5B88] font-bold">POST /api/evacuation/quick-sign</span>
                   <span className="text-[#5C544D] text-[11px]">Generates 30-second encrypted resident pass</span>
                 </div>
-                <div className="p-3 bg-[#F6F4F0] border border-[#E8E1D5] rounded-xl flex items-center justify-between flex-wrap gap-2">
+                <div className="p-3 bg-[#F6F4F0] group-hover:bg-white border border-[#E8E1D5] hover:border-[#B85C38]/50 rounded-xl flex items-center justify-between flex-wrap gap-2 hover:shadow-xs transition-all duration-300">
                   <span className="text-[#B85C38] font-bold">GET /api/relocation/carrying-capacity</span>
                   <span className="text-[#5C544D] text-[11px]">Calculates shelter load balance and open units</span>
                 </div>
