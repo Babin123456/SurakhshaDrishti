@@ -49,6 +49,13 @@
     transform: translateY(-2px);
   }
 
+  /* Disabled buttons: never show pointer or allow click actions */
+  button:disabled,
+  button[disabled] {
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+  }
+
   html {
     scroll-behavior: smooth;
     color-scheme: light;
