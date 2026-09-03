@@ -171,7 +171,16 @@ function getHaversineDistanceKm(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom }) {
+export default function RealGoogleMap({ 
+  onZoneSelect, 
+  onAssignSelf, 
+  onLocationDetect,
+  center, 
+  zoom, 
+  standalone = false,
+  selectedZoneId = null,
+  activeHazardType = null
+}) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const tileLayerRef = useRef(null);
@@ -181,7 +190,9 @@ export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeLayerType, setActiveLayerType] = useState('streets');
-  const [selectedZone, setSelectedZone] = useState(HAZARD_ZONES[0]);
+  const [selectedZone, setSelectedZone] = useState(
+    HAZARD_ZONES.find(z => z.id === selectedZoneId) || HAZARD_ZONES[0]
+  );
   const [showRedZones, setShowRedZones] = useState(true);
   const [showSafeSites, setShowSafeSites] = useState(true);
   const [showRoutes, setShowRoutes] = useState(true);
@@ -189,6 +200,46 @@ export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom
   const [isLocating, setIsLocating] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
   const [locationError, setLocationError] = useState(null);
+
+  // Sync internal selectedZone whenever parent updates selectedZoneId or center
+  useEffect(() => {
+    if (selectedZoneId) {
+      const match = HAZARD_ZONES.find(z => 
+        z.id === selectedZoneId || 
+        z.id.toLowerCase() === selectedZoneId.toLowerCase() ||
+        selectedZoneId.toLowerCase().includes(z.id.toLowerCase())
+      );
+      if (match) {
+        setSelectedZone(match);
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+          if (match.wayroute && match.wayroute.length > 0) {
+            const bounds = L.latLngBounds(match.wayroute);
+            if (match.safeSite) {
+              bounds.extend([match.safeSite.lat, match.safeSite.lng]);
+            }
+            bounds.extend([match.lat, match.lng]);
+            mapInstanceRef.current.fitBounds(bounds, {
+              paddingTopLeft: [50, 50],
+              paddingBottomRight: [50, 50],
+              maxZoom: 12,
+              animate: true,
+              duration: 1.2
+            });
+          } else {
+            mapInstanceRef.current.flyTo([match.lat, match.lng], zoom || 11, { animate: true, duration: 1.2 });
+          }
+
+          setTimeout(() => {
+            if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
+            if (markersMapRef.current[match.id]) {
+              markersMapRef.current[match.id].openPopup();
+            }
+          }, 600);
+        }
+      }
+    }
+  }, [selectedZoneId, zoom]);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -204,6 +255,12 @@ export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom
         scrollWheelZoom: true,
       });
 
+      map.on('click', (e) => {
+        // Clear selected zone when clicking map canvas
+        if (e.originalEvent?.defaultPrevented) return;
+        setSelectedZone(null);
+      });
+
       tileLayerRef.current = L.tileLayer(TILE_LAYERS[activeLayerType].url, {
         attribution: TILE_LAYERS[activeLayerType].attribution,
         maxZoom: 18,
@@ -216,6 +273,16 @@ export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom
       setTimeout(() => {
         if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
       }, 250);
+
+      // Robust ResizeObserver: ensures map tiles immediately recalculate when switching Split <-> Full View
+      if (typeof ResizeObserver !== 'undefined' && mapContainerRef.current) {
+        const resizeObserver = new ResizeObserver(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        });
+        resizeObserver.observe(mapContainerRef.current);
+      }
     }
 
     return () => {
@@ -327,6 +394,7 @@ export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom
         offset: [0, -10],
         closeButton: true,
         autoPan: true,
+        autoPanPadding: [40, 50],
       });
 
       marker.on('click', () => {
@@ -406,6 +474,7 @@ export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom
 
 
   const handleResetView = () => {
+    setSelectedZone(null);
     if (mapInstanceRef.current) {
       mapInstanceRef.current.flyTo([20.5937, 78.9629], 5, {
         duration: 1.2
@@ -451,6 +520,8 @@ export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom
         };
 
         setUserLocation(locData);
+        setSelectedZone(null);
+        if (onLocationDetect) onLocationDetect(locData);
         setIsLocating(false);
 
         if (mapInstanceRef.current && userLocationLayerRef.current) {
@@ -518,6 +589,209 @@ export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom
       }
     );
   };
+
+  if (standalone) {
+    return (
+      <div className="w-full h-full flex flex-col relative bg-[#F6F4F0] rounded-2xl overflow-hidden select-none">
+        {/* Sleek Integrated GIS Control Bar */}
+        <div className="sticky top-0 z-20 px-3 py-2 bg-white/95 border-b border-[#E8E1D5] backdrop-blur-md flex items-center justify-between gap-2 shadow-xs text-xs overflow-x-auto no-scrollbar scroll-smooth">
+          {/* Left Controls: Layer Switcher & Visibility Filters */}
+          <div className="flex items-center gap-2 shrink-0">
+            {/* Layer Type Switcher */}
+            <div className="flex items-center bg-[#F6F4F0] p-0.5 rounded-xl border border-[#E8E1D5] text-[11px] font-bold shrink-0">
+              <button
+                type="button"
+                onClick={() => setActiveLayerType('streets')}
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  activeLayerType === 'streets'
+                    ? 'bg-[#2C2A29] text-[#FDFBF7] shadow-xs'
+                    : 'text-[#5C544D] hover:text-[#1A1A1A]'
+                }`}
+              >
+                Road Map
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveLayerType('satellite')}
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  activeLayerType === 'satellite'
+                    ? 'bg-[#2C2A29] text-[#FDFBF7] shadow-xs'
+                    : 'text-[#5C544D] hover:text-[#1A1A1A]'
+                }`}
+              >
+                Satellite
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveLayerType('terrain')}
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                  activeLayerType === 'terrain'
+                    ? 'bg-[#2C2A29] text-[#FDFBF7] shadow-xs'
+                    : 'text-[#5C544D] hover:text-[#1A1A1A]'
+                }`}
+              >
+                Dark Terrain
+              </button>
+            </div>
+
+            <div className="h-4 w-[1px] bg-[#E8E1D5] shrink-0"></div>
+
+            {/* Quick Visibility Filter Toggles */}
+            <div className="flex items-center gap-1 shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowRedZones(!showRedZones)}
+                className={`px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                  showRedZones 
+                    ? 'bg-[#FFF5F2] border-[#FADED4] text-[#B85C38]' 
+                    : 'bg-white border-[#E8E1D5] text-[#7A726A] opacity-60'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-[#B85C38] shrink-0"></span>
+                <span>Red Zones</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowSafeSites(!showSafeSites)}
+                className={`px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                  showSafeSites 
+                    ? 'bg-[#EBF7EE] border-[#D4EDDA] text-[#2D7A4F]' 
+                    : 'bg-white border-[#E8E1D5] text-[#7A726A] opacity-60'
+                }`}
+              >
+                <span className="w-2 h-2 rounded-full bg-[#2D7A4F] shrink-0"></span>
+                <span>Safe Hubs</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowRoutes(!showRoutes)}
+                className={`px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                  showRoutes 
+                    ? 'bg-[#F0F7FF] border-[#D0E1FD] text-[#2563EB]' 
+                    : 'bg-white border-[#E8E1D5] text-[#7A726A] opacity-60'
+                }`}
+              >
+                <Navigation className="w-3 h-3 text-[#2563EB] shrink-0" />
+                <span>Corridors</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Action Buttons: Locate Me & Recenter */}
+          <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-[#E8E1D5] shrink-0">
+            <button
+              type="button"
+              onClick={handleDetectLocation}
+              disabled={isLocating}
+              className="px-2.5 py-1 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] text-[11px] font-semibold transition-all flex items-center gap-1.5 shadow-xs disabled:opacity-50 cursor-pointer shrink-0"
+              title="Detect Exact GPS Coordinates"
+            >
+              {isLocating ? (
+                <>
+                  <Loader2 className="w-3 h-3 animate-spin shrink-0" />
+                  <span>Locating...</span>
+                </>
+              ) : (
+                <>
+                  <Crosshair className="w-3 h-3 text-[#E8E1D5] shrink-0" />
+                  <span>My GPS</span>
+                </>
+              )}
+            </button>
+
+            <button
+              type="button"
+              onClick={handleResetView}
+              className="px-2.5 py-1 rounded-xl bg-white hover:bg-[#F6F4F0] border border-[#E8E1D5] text-[#5C544D] hover:text-[#1A1A1A] text-[11px] font-semibold transition-all flex items-center gap-1 cursor-pointer shrink-0"
+              title="Reset All-India View"
+            >
+              <RotateCcw className="w-3 h-3 text-[#8B7355] shrink-0" />
+              <span>All India</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Error Notice */}
+        {locationError && (
+          <div className="bg-[#FFF5F2] text-[#B85C38] text-xs px-3 py-1.5 border-b border-[#FADED4] flex items-center justify-between z-20">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="w-3.5 h-3.5 text-[#B85C38] shrink-0" />
+              <span>{locationError}</span>
+            </div>
+            <button onClick={() => setLocationError(null)} className="text-[#B85C38] hover:text-black font-bold ml-2">✕</button>
+          </div>
+        )}
+
+        {/* Map Viewport */}
+        <div className="relative flex-1 w-full h-full min-h-[480px]">
+          <div ref={mapContainerRef} className="w-full h-full z-0" />
+
+          {/* User Location Locked Badge */}
+          {userLocation && (
+            <div className="absolute top-3 right-3 z-[1000] pointer-events-auto max-w-xs">
+              <div className="bg-white/95 text-[#1A1A1A] backdrop-blur-md rounded-xl p-2.5 border border-[#E8E1D5] shadow-lg space-y-1 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1 text-[10px] font-extrabold text-[#2563EB]">
+                    <Crosshair className="w-3 h-3 text-[#2563EB] animate-pulse" />
+                    GPS ACQUIRED (±{userLocation.accuracy}m)
+                  </span>
+                  <span className="text-[9px] text-[#7A726A]">{userLocation.timestamp}</span>
+                </div>
+                <div className="text-[11px] font-mono text-[#4A4238]">
+                  {userLocation.lat.toFixed(4)}° N, {userLocation.lng.toFixed(4)}° E
+                </div>
+                <div className={`p-1 rounded-lg text-[10px] font-semibold flex items-center gap-1.5 ${
+                  userLocation.isInsideHazard 
+                    ? 'bg-[#FFF5F2] text-[#B85C38] border border-[#FADED4]' 
+                    : 'bg-[#EBF7EE] text-[#2D7A4F] border border-[#D4EDDA]'
+                }`}>
+                  {userLocation.isInsideHazard ? (
+                    <AlertTriangle className="w-3 h-3 text-[#B85C38] shrink-0" />
+                  ) : (
+                    <ShieldCheck className="w-3 h-3 text-[#2D7A4F] shrink-0" />
+                  )}
+                  <span className="truncate">
+                    {userLocation.isInsideHazard
+                      ? `Alert: Inside ${userLocation.nearestZone.shortName}!`
+                      : `Safe: ${userLocation.distanceKm} km to ${userLocation.nearestZone.shortName}`}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Minimalist Floating HUD Badge (Collapsible to prevent blocking map) */}
+          {selectedZone && (
+            <div className="absolute bottom-4 left-3 z-[1000] pointer-events-auto max-w-[280px] sm:max-w-xs transition-all duration-200">
+              <div className="bg-white/95 backdrop-blur-md rounded-2xl p-2.5 sm:p-3 border border-[#E8E1D5] shadow-lg space-y-1 text-xs text-[#1A1A1A]">
+                <div className="flex items-center justify-between gap-1.5">
+                  <span className={`px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-black uppercase tracking-wider ${
+                    selectedZone.type === 'red' ? 'bg-[#B85C38] text-white' : 'bg-[#E08A3C] text-white'
+                  }`}>
+                    {selectedZone.type === 'red' ? 'CRITICAL RED ZONE' : 'HIGH RISK SECTOR'}
+                  </span>
+                  <span className="text-[9px] font-mono text-[#8B7355] font-bold">
+                    #{selectedZone.geohash}
+                  </span>
+                </div>
+                <div className="font-bold text-xs sm:text-sm text-[#1A1A1A] truncate">{selectedZone.name}</div>
+                <div className="text-[10px] text-[#B85C38] font-medium truncate">{selectedZone.hazard}</div>
+                <div className="flex items-center gap-1.5 pt-1 text-[10px] text-[#5C544D] border-t border-[#E8E1D5]">
+                  <span>Score: <strong className="text-[#B85C38]">{selectedZone.riskScore}/100</strong></span>
+                  <span>•</span>
+                  <span>Pop: <strong className="text-[#1A1A1A]">{selectedZone.populationRisk.toLocaleString()}</strong></span>
+                  <span>•</span>
+                  <span>Evac: <strong className="text-[#2D7A4F]">{selectedZone.evacEta}</strong></span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     /* MacBook Bezel & Chassis Container */
@@ -764,7 +1038,7 @@ export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom
           {/* User Location Locked Badge (Mobile Floating Pill) */}
           {userLocation && (
             <div className="absolute top-2 left-2 right-2 sm:right-auto sm:max-w-xs z-[1000] pointer-events-auto">
-              <div className="bg-slate-950/95 text-white backdrop-blur-md rounded-xl p-2 sm:p-2.5 border border-blue-500/40 shadow-2xl space-y-1 text-xs">
+              <div className="bg-slate-950/95 text-white backdrop-blur-md rounded-xl p-2.5 border border-blue-500/40 shadow-2xl space-y-1 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="flex items-center gap-1 text-[10px] font-extrabold text-blue-400">
                     <Crosshair className="w-3 h-3 text-blue-400 animate-pulse" />
@@ -860,13 +1134,11 @@ export default function RealGoogleMap({ onZoneSelect, onAssignSelf, center, zoom
               </div>
             </div>
           )}
-
         </div>
-
       </div>
-
       {/* MacBook Bottom Base / Lip Notch */}
       <div className="w-40 h-2 bg-gradient-to-b from-slate-700 via-slate-800 to-slate-900 rounded-b-xl mx-auto -mt-0.5 border-t border-slate-700/60 shadow-md"></div>
     </div>
   );
 }
+
