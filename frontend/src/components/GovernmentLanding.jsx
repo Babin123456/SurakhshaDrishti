@@ -141,7 +141,7 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess, userSes
                 onClick={onSignIn}
                 className="w-full sm:w-auto px-7 py-3.5 bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] rounded-2xl font-semibold text-sm transition-all duration-300 shadow-md flex items-center justify-center gap-2.5 cursor-pointer hover:-translate-y-0.5 active:scale-[0.99] whitespace-nowrap group"
               >
-                {userPhoto ? (
+                {currentUser && userPhoto ? (
                   <img 
                     src={userPhoto} 
                     alt="Officer" 
