@@ -13,10 +13,20 @@ import {
   Shield, 
   Sparkles,
   ArrowRight,
-  Users
+  Users,
+  User,
+  LogOut
 } from 'lucide-react';
 
-export default function Navbar({ onSignIn, onSignUp, onEmergencyAccess }) {
+export default function Navbar({ 
+  onSignIn, 
+  onSignUp, 
+  onEmergencyAccess,
+  userSession,
+  onNavigateDashboard,
+  onNavigateProfile,
+  onLogout
+}) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
@@ -78,15 +88,15 @@ export default function Navbar({ onSignIn, onSignUp, onEmergencyAccess }) {
       <div 
         className={`pointer-events-auto transition-all duration-500 cubic-bezier(0.16, 1, 0.3, 1) ${
           isScrolled 
-            ? 'w-[94%] max-w-4xl pt-3.5 px-0 scale-[0.98]' 
-            : 'w-full max-w-6xl pt-4 px-4 sm:px-8 scale-100'
+            ? 'w-[94%] max-w-5xl pt-3 px-0 scale-[0.98]' 
+            : 'w-full max-w-7xl pt-4 px-4 sm:px-6 lg:px-8 scale-100'
         }`}
       >
         <nav
           className={`w-full transition-all duration-500 ease-out flex items-center justify-between ${
             isScrolled
               ? 'rounded-full bg-[#FDFBF7]/90 backdrop-blur-2xl border border-[#E8E1D5] shadow-2xl shadow-[#D9D0C1]/40 px-4 sm:px-6 py-2.5 text-[#2C2A29]'
-              : 'rounded-2xl bg-white/70 backdrop-blur-md border border-[#E8E1D5] px-5 sm:px-8 py-3.5 shadow-xs text-[#2C2A29]'
+              : 'rounded-2xl bg-white/80 backdrop-blur-md border border-[#E8E1D5] px-5 sm:px-8 py-3.5 shadow-xs text-[#2C2A29]'
           }`}
           role="navigation"
           aria-label="Main navigation"
@@ -134,13 +144,54 @@ export default function Navbar({ onSignIn, onSignUp, onEmergencyAccess }) {
               <span>SOS</span>
             </button>
 
-            <button
-              onClick={onSignIn}
-              className="px-4 py-1.5 rounded-full bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-xs transition-all shadow-xs flex items-center gap-1 cursor-pointer hover:-translate-y-0.5"
-            >
-              <span>Sign In</span>
-              <ArrowRight className="w-3 h-3 text-[#8B7355]" />
-            </button>
+            {userSession ? (
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={onNavigateDashboard}
+                  className="px-3.5 py-1.5 rounded-full bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-xs transition-all shadow-xs flex items-center gap-1 cursor-pointer"
+                  title="Open GIS Command Console"
+                >
+                  <Map className="w-3.5 h-3.5 text-[#8B7355]" />
+                  <span>Dashboard</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onNavigateProfile}
+                  className="px-3 py-1.5 rounded-full bg-white hover:bg-[#F6F4F0] border border-[#E8E1D5] text-[#1A1A1A] font-semibold text-xs transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
+                  title="View User Profile"
+                >
+                  {userSession.user?.profile_picture || userSession.user?.avatar ? (
+                    <img 
+                      src={userSession.user?.profile_picture || userSession.user?.avatar} 
+                      alt="User" 
+                      className="w-4 h-4 rounded-full object-cover border border-[#E8E1D5]" 
+                    />
+                  ) : (
+                    <User className="w-3.5 h-3.5 text-[#8B7355]" />
+                  )}
+                  <span>Profile</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="p-1.5 rounded-full bg-transparent hover:bg-[#FFF5F2] text-[#B85C38] hover:text-[#A04D2D] transition-colors cursor-pointer"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={onSignIn}
+                className="px-4 py-1.5 rounded-full bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-xs transition-all shadow-xs flex items-center gap-1 cursor-pointer hover:-translate-y-0.5"
+              >
+                <span>Sign In</span>
+                <ArrowRight className="w-3 h-3 text-[#8B7355]" />
+              </button>
+            )}
           </div>
 
           {/* Mobile Menu Toggle with Animated Three Lines */}
@@ -222,13 +273,42 @@ export default function Navbar({ onSignIn, onSignUp, onEmergencyAccess }) {
                 <AlertTriangle className="w-4 h-4" />
                 <span>Emergency SOS Mode</span>
               </button>
-              <button
-                onClick={() => { setIsMobileOpen(false); onSignIn(); }}
-                className="w-full py-3 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm"
-              >
-                <Users className="w-3.5 h-3.5 opacity-80" />
-                <span>Authorized Sign In</span>
-              </button>
+
+              {userSession ? (
+                <>
+                  <button
+                    onClick={() => { setIsMobileOpen(false); onNavigateDashboard(); }}
+                    className="w-full py-3 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm"
+                  >
+                    <Map className="w-3.5 h-3.5 text-[#8B7355]" />
+                    <span>Command Dashboard</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setIsMobileOpen(false); onNavigateProfile(); }}
+                    className="w-full py-3 rounded-2xl bg-white hover:bg-[#F6F4F0] border border-[#E8E1D5] text-[#1A1A1A] font-semibold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-2xs"
+                  >
+                    <User className="w-3.5 h-3.5 text-[#8B7355]" />
+                    <span>User Profile</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setIsMobileOpen(false); onLogout(); }}
+                    className="w-full py-2.5 rounded-2xl bg-transparent text-[#B85C38] hover:bg-[#FFF5F2] font-semibold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={() => { setIsMobileOpen(false); onSignIn(); }}
+                  className="w-full py-3 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm"
+                >
+                  <Users className="w-3.5 h-3.5 opacity-80" />
+                  <span>Authorized Sign In</span>
+                </button>
+              )}
             </div>
           </div>
         </div>
