@@ -131,7 +131,13 @@ export default function App() {
   const [loaderMessage, setLoaderMessage] = useState('Connecting Secure Sector Nodes...');
 
   // Trigger minimal 1-second circle loader when redirecting between sections
+  // Skip the loader entirely when landing on the home page
   useEffect(() => {
+    if (activeView === 'home') {
+      setIsSectionLoading(false);
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+      return;
+    }
     setIsSectionLoading(true);
     setLoaderMessage('Connecting Secure Sector Nodes...');
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
