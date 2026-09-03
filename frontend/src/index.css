@@ -441,6 +441,53 @@
 }
 
 /* ============================================================
+   Issue #14 — Realistic GPS Coordination Searching Animation
+   Randomized speed, direction changes, and intermittent sweep delays
+   ============================================================ */
+
+@keyframes gpsSearchRadar {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  15% {
+    transform: rotate(140deg) scale(1.08);
+  }
+  28% {
+    /* Brief lock-on hesitation / searching scan */
+    transform: rotate(115deg) scale(1.02);
+  }
+  42% {
+    /* Fast sweep in opposite direction */
+    transform: rotate(310deg) scale(1.1);
+  }
+  55% {
+    /* Settling scan pause */
+    transform: rotate(280deg) scale(1);
+  }
+  70% {
+    /* Deep sweep forward */
+    transform: rotate(500deg) scale(1.06);
+  }
+  82% {
+    /* Micro recoil */
+    transform: rotate(460deg) scale(0.98);
+  }
+  92% {
+    transform: rotate(680deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(720deg) scale(1);
+  }
+}
+
+.gps-radar-search {
+  display: inline-block;
+  animation: gpsSearchRadar 5.2s cubic-bezier(0.45, 0.05, 0.25, 0.95) infinite;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* ============================================================
    Reduced Motion Overrides
    ============================================================ */
 
