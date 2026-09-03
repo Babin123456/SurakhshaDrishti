@@ -94,16 +94,8 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess, userSes
                 className="p-5 rounded-2xl bg-white/70 backdrop-blur-xl border border-[#E8E1D5] hover:border-[#8B7355] hover:bg-white transition-all duration-300 group/box cursor-pointer flex flex-col justify-between shadow-xs hover:-translate-y-1"
               >
                 <div>
-                  <div className="w-10 h-10 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-center text-[#4A4238] mb-3 group-hover/box:bg-[#2C2A29] group-hover/box:text-white transition-colors shadow-xs overflow-hidden">
-                    {userPhoto ? (
-                      <img 
-                        src={userPhoto} 
-                        alt="Officer Avatar" 
-                        className="w-full h-full object-cover rounded-xl"
-                      />
-                    ) : (
-                      <Lock className="w-5 h-5" />
-                    )}
+                  <div className="w-10 h-10 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-center text-[#4A4238] mb-3 group-hover/box:bg-[#2C2A29] group-hover/box:text-white transition-colors shadow-xs">
+                    <Lock className="w-5 h-5" />
                   </div>
                   <h3 className="text-sm font-bold text-[#1A1A1A] mb-1 flex items-center gap-1.5">
                     {currentUser ? (currentUser.fullName || currentUser.name || 'Command Console') : 'Command Console'}
