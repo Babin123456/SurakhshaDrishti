@@ -214,13 +214,17 @@ export default function App() {
           <UserProfile
             user={currentUser}
             onUpdateUser={(updated) => {
+              const currentPfp = updated.profile_picture || updated.avatar || localStorage.getItem('suraksha_user_pfp');
+              const nextUserData = {
+                ...(userSession.user || userSession),
+                ...updated,
+                profile_picture: currentPfp,
+                avatar: currentPfp
+              };
               const nextSession = {
                 ...userSession,
-                ...updated,
-                user: {
-                  ...(userSession.user || {}),
-                  ...updated
-                }
+                ...nextUserData,
+                user: nextUserData
               };
               setUserSession(nextSession);
               try {
@@ -292,6 +296,7 @@ export default function App() {
       <div className={isBlurTransitioning ? 'animate-blur-reveal' : ''}>
         {/* Hero Section (Government Style) */}
         <GovernmentLanding 
+          userSession={userSession}
           onSignIn={() => {
             if (userSession) {
               setActiveView('dashboard');

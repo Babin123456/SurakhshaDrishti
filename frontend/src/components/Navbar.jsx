@@ -162,11 +162,11 @@ export default function Navbar({
                   className="px-3 py-1.5 rounded-full bg-white hover:bg-[#F6F4F0] border border-[#E8E1D5] text-[#1A1A1A] font-semibold text-xs transition-all shadow-2xs flex items-center gap-1.5 cursor-pointer"
                   title="View User Profile"
                 >
-                  {userSession.user?.profile_picture || userSession.user?.avatar ? (
+                  {userSession.user?.profile_picture || userSession.user?.avatar || (typeof window !== 'undefined' && localStorage.getItem('suraksha_user_pfp')) ? (
                     <img 
-                      src={userSession.user?.profile_picture || userSession.user?.avatar} 
+                      src={userSession.user?.profile_picture || userSession.user?.avatar || localStorage.getItem('suraksha_user_pfp')} 
                       alt="User" 
-                      className="w-4 h-4 rounded-full object-cover border border-[#E8E1D5]" 
+                      className="w-4 h-4 rounded-full object-cover border border-[#8B7355]/40" 
                     />
                   ) : (
                     <User className="w-3.5 h-3.5 text-[#8B7355]" />
@@ -288,7 +288,15 @@ export default function Navbar({
                     onClick={() => { setIsMobileOpen(false); onNavigateProfile(); }}
                     className="w-full py-3 rounded-2xl bg-white hover:bg-[#F6F4F0] border border-[#E8E1D5] text-[#1A1A1A] font-semibold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-2xs"
                   >
-                    <User className="w-3.5 h-3.5 text-[#8B7355]" />
+                    {userSession.user?.profile_picture || userSession.user?.avatar || (typeof window !== 'undefined' && localStorage.getItem('suraksha_user_pfp')) ? (
+                      <img 
+                        src={userSession.user?.profile_picture || userSession.user?.avatar || localStorage.getItem('suraksha_user_pfp')} 
+                        alt="User" 
+                        className="w-4 h-4 rounded-full object-cover border border-[#8B7355]/40" 
+                      />
+                    ) : (
+                      <User className="w-3.5 h-3.5 text-[#8B7355]" />
+                    )}
                     <span>User Profile</span>
                   </button>
 
