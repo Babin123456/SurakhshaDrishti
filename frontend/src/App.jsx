@@ -100,10 +100,19 @@ export default function App() {
   };
 
   const handleLogout = () => {
-    setUserSession(null);
-    try {
-      localStorage.removeItem('suraksha_user_session');
-    } catch {}
+    setIsSectionLoading(true);
+    setLoaderMessage('Closing session & returning to Home Portal...');
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    if (window.__lenis) window.__lenis.scrollTo(0, { immediate: true });
+
+    setTimeout(() => {
+      setUserSession(null);
+      setActiveView('home');
+      try {
+        localStorage.removeItem('suraksha_user_session');
+      } catch {}
+      setIsSectionLoading(false);
+    }, 1000);
   };
 
   const handleIntroComplete = useCallback(() => {
@@ -119,10 +128,12 @@ export default function App() {
 
   const [activeView, setActiveView] = useState('dashboard');
   const [isSectionLoading, setIsSectionLoading] = useState(false);
+  const [loaderMessage, setLoaderMessage] = useState('Connecting Secure Sector Nodes...');
 
   // Trigger minimal 1-second circle loader when redirecting between sections
   useEffect(() => {
     setIsSectionLoading(true);
+    setLoaderMessage('Connecting Secure Sector Nodes...');
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
     if (window.__lenis) {
       window.__lenis.scrollTo(0, { immediate: true });
@@ -152,7 +163,7 @@ export default function App() {
           Suraksha<span className="text-[#8B7355]">Drishti</span>
         </span>
         <span className="text-[9px] font-mono text-[#7A726A] mt-0.5">
-          Connecting Secure Sector Nodes...
+          {loaderMessage}
         </span>
       </div>
     </div>
