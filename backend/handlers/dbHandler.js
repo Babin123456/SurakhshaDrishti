@@ -1,12 +1,14 @@
 const { Pool } = require("pg");
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 
 const poolConfig = process.env.DATABASE_URL
     ? {
         connectionString: process.env.DATABASE_URL,
         ssl: { rejectUnauthorized: false },
-        connectionTimeoutMillis: 3000,
+        connectionTimeoutMillis: 10000,
+        idleTimeoutMillis: 30000,
       }
     : {
         user: process.env.PG_USER || "postgres",
@@ -14,7 +16,7 @@ const poolConfig = process.env.DATABASE_URL
         host: process.env.PG_HOST || "localhost",
         port: process.env.PG_PORT || 5432,
         database: process.env.PG_DATABASE || "instakg",
-        connectionTimeoutMillis: 3000,
+        connectionTimeoutMillis: 10000,
       };
 
 const pool = new Pool(poolConfig);
@@ -78,8 +80,17 @@ async function executeLocalQuery(text, params = []) {
   // SELECT FROM users
   if (lower.startsWith('select') && lower.includes('from users')) {
     if (params.length >= 1) {
-      const p = params[0];
-      const match = localStore.users.filter(u => u.user_id === p || u.email === p || u.phone === p);
+      const match = localStore.users.filter(u => {
+        return params.some(p => {
+          if (!p) return false;
+          const pStr = String(p).trim().toLowerCase();
+          return (
+            (u.user_id && String(u.user_id).trim().toLowerCase() === pStr) ||
+            (u.email && String(u.email).trim().toLowerCase() === pStr) ||
+            (u.phone && String(u.phone).trim() === String(p).trim())
+          );
+        });
+      });
       return { rows: match };
     }
     return { rows: localStore.users };
@@ -174,7 +185,7 @@ const dbWrapper = {
             try {
                 return await pool.query(text, params);
             } catch (err) {
-                pgHealthy = false;
+                console.warn("[Database Query Warning - Supabase]", err.message, "SQL:", text.slice(0, 60));
                 return executeLocalQuery(text, params);
             }
         }

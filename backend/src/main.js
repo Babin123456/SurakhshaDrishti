@@ -1,8 +1,8 @@
 //the main app
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const express = require("express");
 const cors = require("cors");
-const path = require("path");
 
 const {handle404, masterErrorHandler, FN_verifyTkn, API_Limiter} = require("../handlers/middlewareHandler");
 const profileRoutes = require("../routes/profile");
@@ -28,7 +28,6 @@ app.get("/", (req, res) => {
   res.json({ success: true, message: "SurakshaDrishti API Server is running on port " + PORT });
 });
 
-//app.use(API_Limiter(900, 100)); // global rate limiter disabled
 app.use("/auth", API_Limiter(60, 50, 1), authRoutes); // 60 seconds, 50 requests
 app.use("/api/auth", API_Limiter(60, 50, 1), authRoutes);
 app.use("/zones", zonesRoutes);

@@ -29,6 +29,30 @@
       "family_members": 4,
       "has_vulnerable": false,
       "created_at": "2026-09-03T12:32:22.800Z"
+    },
+    {
+      "user_id": "babinbid3@gmail.com",
+      "email": "babinbid3@gmail.com",
+      "password": "$2b$10$xu4mGXkyKocnWe0gVdg5.u/o8SC9EO59LYtZkHcz1cde/Rh9zGC2G",
+      "full_name": "Babin Bid",
+      "phone": "9123777679",
+      "user_role": "RESIDENT",
+      "district": "Howrah, West Bengal",
+      "family_members": 3,
+      "has_vulnerable": false,
+      "created_at": "2026-09-03T13:57:01.107Z"
+    },
+    {
+      "user_id": "resident_test@example.com",
+      "email": "resident_test@example.com",
+      "password": "$2b$10$3LN0G3ODI6wpd7Hh1cEeHOsGGmW11FliEF9fIARaoaG8mVJZy6hby",
+      "full_name": "Test Resident",
+      "phone": "9888877777",
+      "user_role": "RESIDENT",
+      "district": "Wayanad, Kerala",
+      "family_members": 1,
+      "has_vulnerable": false,
+      "created_at": "2026-09-03T14:06:51.512Z"
     }
   ],
   "hazard_zones": [
