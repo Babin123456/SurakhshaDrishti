@@ -79,7 +79,12 @@ export default function Faqs() {
   }, []);
 
   const handleBack = () => {
-    navigate('/');
+    if (window.history.length > 1) {
+      navigate(-1);
+    } else {
+      navigate('/');
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   };
 
   return (
@@ -123,28 +128,34 @@ export default function Faqs() {
             return (
               <div
                 key={idx}
-                className={`bg-white/80 border rounded-2xl overflow-hidden transition-all duration-300 shadow-xs ${
-                  isOpen ? 'border-[#8B7355]/60 bg-white' : 'border-[#E8E1D5] hover:border-[#8B7355]/40 hover:bg-white'
+                className={`group bg-white/80 border rounded-2xl overflow-hidden transition-all duration-300 shadow-xs hover:shadow-md hover:-translate-y-0.5 relative ${
+                  isOpen 
+                    ? 'border-[#8B7355]/70 bg-white ring-1 ring-[#8B7355]/20' 
+                    : 'border-[#E8E1D5] hover:border-[#8B7355]/60 hover:bg-white'
                 }`}
               >
+                <div className={`absolute top-0 left-0 w-1 h-full bg-[#8B7355] transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}></div>
+
                 <button
                   type="button"
                   onClick={() => setOpenIdx(isOpen ? null : idx)}
-                  className="w-full p-4 sm:p-5 flex items-start sm:items-center justify-between text-left gap-3.5 cursor-pointer transition-colors select-none"
+                  className="w-full p-4 sm:p-5 flex items-start sm:items-center justify-between text-left gap-3.5 cursor-pointer transition-colors select-none pl-5 sm:pl-6"
                   aria-expanded={isOpen}
                 >
                   <div className="flex-1">
-                    <span className="text-[10px] font-mono text-[#8B7355] font-bold uppercase tracking-wider block mb-1">
+                    <span className="text-[10px] font-mono text-[#8B7355] font-bold uppercase tracking-wider block mb-1 group-hover:tracking-widest transition-all duration-300">
                       {item.category}
                     </span>
                     <h3 className={`font-bold text-xs sm:text-base transition-colors leading-snug ${
-                      isOpen ? 'text-[#1A1A1A]' : 'text-[#2C2A29] hover:text-[#1A1A1A]'
+                      isOpen ? 'text-[#1A1A1A]' : 'text-[#2C2A29] group-hover:text-[#8B7355]'
                     }`}>
                       {item.q}
                     </h3>
                   </div>
-                  <div className={`p-1.5 sm:p-2 rounded-xl border transition-all duration-300 shrink-0 mt-0.5 sm:mt-0 ${
-                    isOpen ? 'bg-[#F6F4F0] border-[#8B7355] text-[#8B7355] rotate-180' : 'bg-[#F6F4F0] border-[#E8E1D5] text-[#7A726A] rotate-0'
+                  <div className={`p-1.5 sm:p-2 rounded-xl border transition-all duration-300 shrink-0 mt-0.5 sm:mt-0 group-hover:scale-110 ${
+                    isOpen 
+                      ? 'bg-[#8B7355] border-[#8B7355] text-white rotate-180 shadow-xs' 
+                      : 'bg-[#F6F4F0] border-[#E8E1D5] text-[#7A726A] rotate-0 group-hover:border-[#8B7355]/40 group-hover:text-[#1A1A1A]'
                   }`}>
                     <ChevronDown className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                   </div>
@@ -157,7 +168,7 @@ export default function Faqs() {
                   }`}
                 >
                   <div className="overflow-hidden">
-                    <div className="px-4 pb-4 sm:px-6 sm:pb-5 text-xs sm:text-sm text-[#5C544D] leading-relaxed border-t border-[#E8E1D5] pt-3.5 bg-[#FDFBF7]/60">
+                    <div className="px-5 pb-4 sm:px-6 sm:pb-5 text-xs sm:text-sm text-[#5C544D] leading-relaxed border-t border-[#E8E1D5] pt-3.5 bg-[#FDFBF7]/60 pl-6">
                       {item.a}
                     </div>
                   </div>

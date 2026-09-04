@@ -20,8 +20,10 @@ import {
   Heart
 } from 'lucide-react';
 import { apiService, checkGeofenceRedZoneStatus } from '../utils/api';
+import { useToast } from './Toast';
 
 export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuccess }) {
+  const { addToast } = useToast();
   const [authMode, setAuthMode] = useState(initialMode); // 'signin' | 'signup'
   const [loginType, setLoginType] = useState('authority'); // 'authority' | 'resident'
 
@@ -60,19 +62,21 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          const inRedZone = await checkGeofenceRedZoneStatus(coords.lat, coords.lng);
-          setLocationStatus({ inRedZone: true, coords, name: 'Wayanad Sector 4' });
+          const result = await checkGeofenceRedZoneStatus(coords.lat, coords.lng);
+          if (result.inRedZone && result.zone) {
+            setLocationStatus({ inRedZone: true, coords, name: result.zone.name });
+          } else {
+            setLocationStatus({ inRedZone: false, coords, name: null });
+          }
           setDetectedLoc(`${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}`);
         },
         () => {
-          setLocationStatus({ inRedZone: true, coords: { lat: 11.5583, lng: 76.1384 }, name: 'Wayanad Sector 4' });
-          setDetectedLoc('11.5583, 76.1384');
+          setLocationStatus({ inRedZone: false, coords: null, name: null });
         },
         { timeout: 5000 }
       );
     } else {
-      setLocationStatus({ inRedZone: true, coords: { lat: 11.5583, lng: 76.1384 }, name: 'Wayanad Sector 4' });
-      setDetectedLoc('11.5583, 76.1384');
+      setLocationStatus({ inRedZone: false, coords: null, name: null });
     }
   }, []);
 
@@ -97,8 +101,9 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
     setMessage(null);
 
     const res = await apiService.login({
-      username,
+      username: username.trim(),
       password,
+      loginType,
       role: loginType,
       trustedDevice,
     });
@@ -106,12 +111,12 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
     setIsLoading(false);
 
     if (res.success) {
-      setMessage({ type: 'success', text: 'Authentication Verified. Entering Command Platform...' });
+      addToast('Authentication successful! Initializing tactical session...', 'success');
+      setMessage({ type: 'success', text: 'Authentication successful! Initializing tactical session...' });
       setTimeout(() => {
         onAuthSuccess({
           token: res.token,
           user: res.user || {
-            user_id: username.split('@')[0],
             username: username,
             name: username.split('@')[0].toUpperCase(),
             role: loginType === 'authority' ? 'NDRF Tactical Command' : 'Resident Citizen',
@@ -120,7 +125,9 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
         });
       }, 700);
     } else {
-      setMessage({ type: 'error', text: res.message || 'Invalid credentials. Please verify your details.' });
+      const errText = res.error || res.message || 'Invalid credentials. Please verify your details.';
+      addToast(errText, 'error');
+      setMessage({ type: 'error', text: errText });
     }
   };
 
@@ -144,6 +151,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
     setIsLoading(false);
 
     if (res.success) {
+      addToast('Account registered successfully! Redirecting...', 'success');
       setMessage({ type: 'success', text: 'Account registered successfully! Redirecting...' });
       setTimeout(() => {
         onAuthSuccess({
@@ -158,7 +166,9 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
         });
       }, 800);
     } else {
-      setMessage({ type: 'error', text: 'Registration failed. Please check your fields.' });
+      const errText = 'Registration failed. Please check your fields.';
+      addToast(errText, 'error');
+      setMessage({ type: 'error', text: errText });
     }
   };
 
@@ -249,18 +259,6 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
               <UserPlus className="w-3.5 h-3.5" /> Register
             </button>
           </div>
-
-          {/* Status / Alert Message */}
-          {message && (
-            <div className={`mb-4 p-3 rounded-xl text-xs font-semibold flex items-center gap-2 ${
-              message.type === 'warning' ? 'bg-[#FFFBEB] border border-[#FDE68A] text-[#92400E]' :
-              message.type === 'error' ? 'bg-[#FFF5F2] border border-[#FADED4] text-[#B85C38]' :
-              'bg-[#F0FDF4] border border-[#BBF7D0] text-[#166534]'
-            }`}>
-              <AlertTriangle className="w-4 h-4 shrink-0" />
-              <span>{message.text}</span>
-            </div>
-          )}
 
           {/* ================= MODE: SIGN IN ================= */}
           {authMode === 'signin' && (

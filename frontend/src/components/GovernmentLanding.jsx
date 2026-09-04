@@ -14,8 +14,10 @@ import {
 } from 'lucide-react';
 import Interactive3DCard from './Interactive3DCard';
 
-export default function GovernmentLanding({ onSignIn, onEmergencyAccess }) {
+export default function GovernmentLanding({ onSignIn, onEmergencyAccess, userSession }) {
   const [mounted, setMounted] = useState(false);
+  const currentUser = userSession?.user || userSession;
+  const userPhoto = currentUser?.profile_picture || currentUser?.avatar || (typeof window !== 'undefined' ? localStorage.getItem('suraksha_user_pfp') : null);
   
   useEffect(() => {
     setMounted(true);
@@ -96,16 +98,16 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess }) {
                     <Lock className="w-5 h-5" />
                   </div>
                   <h3 className="text-sm font-bold text-[#1A1A1A] mb-1 flex items-center gap-1.5">
-                    Command Console
+                    {currentUser ? (currentUser.fullName || currentUser.name || 'Command Console') : 'Command Console'}
                     <ChevronRight className="w-3.5 h-3.5 text-[#8B7355] opacity-0 group-hover/box:opacity-100 group-hover/box:translate-x-1 transition-all" />
                   </h3>
                   <p className="text-[11px] text-[#5C544D] leading-relaxed">
-                    Tactical console for NDRF commanders and SDMA authorities.
+                    {currentUser ? `Active Tactical Session • Department: ${currentUser.role || 'NDRF'}` : 'Tactical console for NDRF commanders and SDMA authorities.'}
                   </p>
                 </div>
                 <div className="mt-3 pt-2 border-t border-[#E8E1D5] flex items-center justify-between text-[10px] font-mono text-[#8C847A]">
-                  <span>OFFICIAL ACCESS</span>
-                  <span className="font-bold text-[#4A4238]">16-DIGIT KEY</span>
+                  <span>{currentUser ? 'AUTHENTICATED OFFICER' : 'OFFICIAL ACCESS'}</span>
+                  <span className="font-bold text-[#4A4238]">{currentUser ? 'LIVE SESSION' : '16-DIGIT KEY'}</span>
                 </div>
               </div>
 
@@ -139,8 +141,16 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess }) {
                 onClick={onSignIn}
                 className="w-full sm:w-auto px-7 py-3.5 bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] rounded-2xl font-semibold text-sm transition-all duration-300 shadow-md flex items-center justify-center gap-2.5 cursor-pointer hover:-translate-y-0.5 active:scale-[0.99] whitespace-nowrap group"
               >
-                <Users className="w-4 h-4 opacity-80 shrink-0" />
-                <span>Authorized Sign In</span>
+                {currentUser && userPhoto ? (
+                  <img 
+                    src={userPhoto} 
+                    alt="Officer" 
+                    className="w-5 h-5 rounded-full object-cover border border-[#8B7355] shrink-0" 
+                  />
+                ) : (
+                  <Users className="w-4 h-4 opacity-80 shrink-0" />
+                )}
+                <span>{currentUser ? 'Enter Command Console' : 'Authorized Sign In'}</span>
                 <ArrowRight className="w-4 h-4 text-[#8B7355] group-hover:translate-x-0.5 transition-transform shrink-0" />
               </button>
               

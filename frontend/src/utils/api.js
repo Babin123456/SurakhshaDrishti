@@ -1,8 +1,34 @@
 const API_BASE_URL = 'http://localhost:5000';
 
+const KNOWN_RED_ZONES = [
+  { name: 'Wayanad Sector 4', lat: 11.5583, lng: 76.1384, radiusMeters: 4000 },
+  { name: 'Joshimath Ridge Sector', lat: 30.5564, lng: 79.5664, radiusMeters: 3000 },
+  { name: 'Teesta River Basin', lat: 27.5029, lng: 88.5309, radiusMeters: 3500 },
+  { name: 'Puri Coastal Sector', lat: 19.8135, lng: 85.8312, radiusMeters: 5000 },
+];
+
+function calculateDistanceMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // Earth radius in meters
+  const φ1 = (lat1 * Math.PI) / 180;
+  const φ2 = (lat2 * Math.PI) / 180;
+  const Δφ = ((lat2 - lat1) * Math.PI) / 180;
+  const Δλ = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
 export const checkGeofenceRedZoneStatus = async (lat, lng) => {
-  if (!lat || !lng) return false;
-  return true;
+  if (!lat || !lng) return { inRedZone: false, zone: null };
+  for (const z of KNOWN_RED_ZONES) {
+    const dist = calculateDistanceMeters(lat, lng, z.lat, z.lng);
+    if (dist <= z.radiusMeters) {
+      return { inRedZone: true, zone: z };
+    }
+  }
+  return { inRedZone: false, zone: null };
 };
 
 export const fetchLiveStats = async () => {
