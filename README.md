@@ -77,6 +77,15 @@ flowchart TD
 
 ---
 
+### Recent Updates (Changelog)
+
+* **Sector Resolution Workflow**: Fixed backend resolution state desync preventing resolved zones from correctly disappearing from the main dashboard feed.
+* **Map Rendering Fixes**: Reordered map layers to guarantee Active Red Zones are perpetually rendered above warning and informational zones.
+* **Split View Tactical Comms**: Redesigned the deep-focus layout to natively incorporate the Tactical Mesh Channel into the side panel during active sector assignment.
+* **Focus Recenter System**: Replaced the legacy map expansion toggle with an immediate `flyTo` coordinate refocus system.
+
+---
+
 ## Database Schema Architecture
 
 The relational data backbone operates on **Supabase PostgreSQL 17.6** across 11 synchronized tables:

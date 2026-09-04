@@ -30,9 +30,71 @@ router.get("/", async (req, res, next) => {
                 ) AS assigned_officers
             FROM hazard_zones z
             LEFT JOIN zone_assignments a ON z.zone_id = a.zone_id
+            WHERE z.status = 'ACTIVE_RED_ZONE'
             GROUP BY z.zone_id
             ORDER BY z.risk_score DESC
         `);
+
+        const activeZones = result.rows || [];
+        const combinedZones = [];
+
+        for (const zone of activeZones) {
+            combinedZones.push(zone);
+            if (zone.zone_type === 'RED') {
+                const yellowZone = {
+                    ...zone,
+                    zone_id: zone.zone_id + '-YELLOW-BUFFER',
+                    name: zone.name + ' (Warning Buffer)',
+                    zone_type: 'YELLOW',
+                    radius_meters: (zone.radius_meters || 3000) + 7000,
+                    risk_score: Math.max(0, zone.risk_score - 40),
+                    status: 'ACTIVE_WARNING_ZONE',
+                    assigned_officers: [],
+                    active_officers_count: 0
+                };
+                combinedZones.push(yellowZone);
+            }
+        }
+
+        return res.json({
+            success: true,
+            zones: combinedZones
+        });
+    } catch (err) {
+        return next(err);
+    }
+});
+
+// 1.5 GET /zones/search — Search red zones by geohash, key, or name
+router.get("/search", async (req, res, next) => {
+    const { q, mode } = req.query;
+    if (!q) {
+        return res.json({ success: true, zones: [] });
+    }
+    
+    try {
+        const searchTerm = `%${q}%`;
+        const result = await db.query(`
+            SELECT 
+                z.*,
+                COUNT(a.assignment_id)::int AS active_officers_count,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'user_id', a.user_id,
+                            'officer_name', a.officer_name,
+                            'department', a.department,
+                            'assigned_at', a.assigned_at,
+                            'vote_to_resolve', a.vote_to_resolve
+                        )
+                    ) FILTER (WHERE a.user_id IS NOT NULL), '[]'
+                ) AS assigned_officers
+            FROM hazard_zones z
+            LEFT JOIN zone_assignments a ON z.zone_id = a.zone_id
+            WHERE z.access_key ILIKE $1 OR z.geohash ILIKE $1 OR z.name ILIKE $1 OR z.zone_id ILIKE $1
+            GROUP BY z.zone_id
+            ORDER BY z.risk_score DESC
+        `, [searchTerm]);
 
         return res.json({
             success: true,
@@ -224,9 +286,13 @@ router.post("/vote-resolve", async (req, res, next) => {
             newStatus = 'SITUATION_UNDER_CONTROL';
             isResolved = true;
             await db.query(
-                `UPDATE hazard_zones SET status = 'SITUATION_UNDER_CONTROL', zone_type = 'GREEN', resolution_votes_cast = $1 WHERE zone_id = $2`,
-                [totalVotes, zone_id]
+                `UPDATE hazard_zones SET status = 'SITUATION_UNDER_CONTROL' WHERE zone_id = $1`,
+                [zone_id]
             );
+            await db.query(
+                `INSERT INTO history_red_zones (zone_id) VALUES ($1) ON CONFLICT DO NOTHING`,
+                [zone_id]
+            ).catch(() => {}); // Fallback in case table doesn't exist
         } else {
             await db.query(
                 `UPDATE hazard_zones SET resolution_votes_cast = $1 WHERE zone_id = $2`,
@@ -302,6 +368,22 @@ router.get("/:zoneId/trapped-citizens", async (req, res, next) => {
             success: true,
             zoneId,
             citizens
+        });
+    } catch (err) {
+        return next(err);
+    }
+});
+
+// 6. GET /zones/shelters/search — Safe location database matching red zone access key
+router.get("/shelters/search", async (req, res, next) => {
+    const { key } = req.query;
+    if (!key) return res.json({ success: true, shelters: [] });
+
+    try {
+        const result = await db.query(`SELECT * FROM shelters WHERE primary_hashed_key = $1`, [key]);
+        return res.json({
+            success: true,
+            shelters: result.rows
         });
     } catch (err) {
         return next(err);

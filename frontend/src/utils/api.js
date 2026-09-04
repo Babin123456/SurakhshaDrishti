@@ -179,4 +179,24 @@ export const apiService = {
       };
     }
   },
+
+  searchZones: async (query, mode = 'in_office') => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/zones/search?q=${encodeURIComponent(query)}&mode=${mode}`);
+      return await response.json();
+    } catch (e) {
+      console.error("Search failed, using fallback:", e);
+      return { success: false, zones: [] };
+    }
+  },
+
+  fetchZones: async () => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/zones`);
+      return await response.json();
+    } catch (e) {
+      console.error("Failed to fetch zones:", e);
+      return { success: false, zones: [] };
+    }
+  }
 };

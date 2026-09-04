@@ -38,14 +38,17 @@ let localStore = {
     { user_id: 'sdma_officer', email: 'sdma.kerala@gov.in', password: '$2b$10$w09ZkF2xO59lU22qj4A24u7s2h/k8q5d/Z71d.a6f4s8b9c1d2e3f', full_name: 'SDMA Regional Officer', user_role: 'SDMA', officer_mode: 'ON_SITE', district: 'Wayanad, Kerala' }
   ],
   hazard_zones: [
-    { zone_id: 'RZ-WAYANAD-04', name: 'Wayanad Hill Slope (Sector 4)', state: 'Kerala', lat: 11.6854, lng: 76.1320, zone_type: 'RED', hazard_type: 'LANDSLIDE', risk_score: 94, geohash: 't1829abc', population_risk: 1420, radius_meters: 3500, access_key: 'RZ-89A4-91F2-3B7C', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 2, resolution_votes_cast: 0 },
-    { zone_id: 'RZ-JOSHIMATH-02', name: 'Joshimath Slope Sector B', state: 'Uttarakhand', lat: 30.5564, lng: 79.5659, zone_type: 'RED', hazard_type: 'SUBSIDENCE', risk_score: 88, geohash: 't2912xyz', population_risk: 2850, radius_meters: 4200, access_key: 'RZ-41C2-88E0-99A1', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 3, resolution_votes_cast: 0 },
-    { zone_id: 'RZ-TEESTA-07', name: 'Teesta Riverbank Sector 7', state: 'Sikkim', lat: 27.0883, lng: 88.2609, zone_type: 'YELLOW', hazard_type: 'FLASH_FLOOD', risk_score: 76, geohash: 't3819mno', population_risk: 3100, radius_meters: 2800, access_key: 'RZ-73F9-22D4-55B8', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 2, resolution_votes_cast: 0 }
+    { zone_id: 'RZ-WAYANAD-01', name: 'Wayanad Sector 4 (Chooralmala - Meppadi)', state: 'Kerala', lat: 11.5583, lng: 76.1384, zone_type: 'RED', hazard_type: 'LANDSLIDE', risk_score: 94, geohash: 'tdv2n19z', population_risk: 4820, radius_meters: 4000, access_key: 'RZ-89A4-91F2-3B7C', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 2, resolution_votes_cast: 0, is_open: true },
+    { zone_id: 'RZ-KULLU-02', name: 'Beas River Valley (Kullu - Manali)', state: 'Himachal Pradesh', lat: 32.2396, lng: 77.1887, zone_type: 'RED', hazard_type: 'FLASH_FLOOD', risk_score: 91, geohash: 'ttv3m4wx', population_risk: 3200, radius_meters: 5000, access_key: 'RZ-41C2-88E0-99A1', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 3, resolution_votes_cast: 0, is_open: true },
+    { zone_id: 'RZ-DHUBRI-03', name: 'Dhubri Lower Assam Basin', state: 'Assam', lat: 26.0207, lng: 89.9743, zone_type: 'RED', hazard_type: 'FLOOD', risk_score: 85, geohash: 'wh8r3p7q', population_risk: 12500, radius_meters: 8000, access_key: 'RZ-73F9-22D4-55B8', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 2, resolution_votes_cast: 0, is_open: true },
+    { zone_id: 'RZ-KODAGU-04', name: 'Kodagu Western Ghats Slopes', state: 'Karnataka', lat: 12.3375, lng: 75.8069, zone_type: 'RED', hazard_type: 'LANDSLIDE', risk_score: 82, geohash: 'tdnc2e6w', population_risk: 2100, radius_meters: 3000, access_key: 'RZ-12A4-9X82-6C4D', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 2, resolution_votes_cast: 0, is_open: true },
+    { zone_id: 'RZ-TEESTA-05', name: 'Teesta River Basin (Singtam & Rangpo)', state: 'Sikkim', lat: 27.5029, lng: 88.5309, zone_type: 'RED', hazard_type: 'FLASH_FLOOD', risk_score: 88, geohash: 'tuyf29pk', population_risk: 6400, radius_meters: 4500, access_key: 'RZ-99B2-3C44-1D7F', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 3, resolution_votes_cast: 0, is_open: true }
   ],
+  history_red_zones: [],
   zone_assignments: [],
   shelters: [
-    { shelter_id: 'SH-01', zone_id: 'RZ-WAYANAD-04', name: 'Nilambur Foothill Base Camp', lat: 11.2764, lng: 76.2241, capacity_total: 1420, capacity_occupied: 420, status: 'OPEN', evacuation_corridor: 'Via SH-28 (Clearing Teams Active)' },
-    { shelter_id: 'SH-02', zone_id: 'RZ-WAYANAD-04', name: 'Pipalkoti Relief Center', lat: 30.4285, lng: 79.4312, capacity_total: 850, capacity_occupied: 210, status: 'OPEN', evacuation_corridor: 'Via NH-07 (Bypass Operational)' }
+    { shelter_id: 'SH-01', zone_id: 'RZ-WAYANAD-04', primary_hashed_key: 'RZ-89A4-91F2-3B7C', name: 'Nilambur Foothill Base Camp', lat: 11.2764, lng: 76.2241, capacity_total: 1420, capacity_occupied: 420, status: 'OPEN', evacuation_corridor: 'Via SH-28 (Clearing Teams Active)' },
+    { shelter_id: 'SH-02', zone_id: 'RZ-WAYANAD-04', primary_hashed_key: 'RZ-89A4-91F2-3B7C', name: 'Pipalkoti Relief Center', lat: 30.4285, lng: 79.4312, capacity_total: 850, capacity_occupied: 210, status: 'OPEN', evacuation_corridor: 'Via NH-07 (Bypass Operational)' }
   ],
   emergency_passes: [],
   e2ee_conversations: [],
@@ -125,7 +128,73 @@ async function executeLocalQuery(text, params = []) {
 
   // SELECT FROM shelters
   if (lower.startsWith('select') && lower.includes('from shelters')) {
+    if (lower.includes('where primary_hashed_key') && params.length > 0) {
+      const match = localStore.shelters.filter(s => s.primary_hashed_key === params[0]);
+      return { rows: match };
+    }
     return { rows: localStore.shelters };
+  }
+
+  // UPDATE zone_assignments
+  if (lower.startsWith('update zone_assignments') && lower.includes('vote_to_resolve')) {
+     const [zone_id, user_id] = params;
+     const assignment = localStore.zone_assignments.find(a => a.zone_id === zone_id && a.user_id === user_id);
+     if (assignment) assignment.vote_to_resolve = true;
+     saveLocalStore();
+     return { rows: [] };
+  }
+
+  // COUNT zone_assignments
+  if (lower.startsWith('select count(*)') && lower.includes('from zone_assignments')) {
+     const [zone_id] = params;
+     let count = 0;
+     if (lower.includes('vote_to_resolve = true')) {
+         count = localStore.zone_assignments.filter(a => a.zone_id === zone_id && a.vote_to_resolve).length;
+         return { rows: [{ total_votes: count }] };
+     } else {
+         count = localStore.zone_assignments.filter(a => a.zone_id === zone_id).length;
+         return { rows: [{ total_assigned: count }] };
+     }
+  }
+
+  // UPDATE hazard_zones (resolution_votes_cast)
+  if (lower.startsWith('update hazard_zones') && lower.includes('resolution_votes_cast')) {
+     const [totalVotes, zone_id] = params;
+     const zone = localStore.hazard_zones.find(z => z.zone_id === zone_id);
+     if (zone) zone.resolution_votes_cast = totalVotes;
+     saveLocalStore();
+     return { rows: [] };
+  }
+
+  // INSERT INTO history_red_zones & DELETE FROM hazard_zones
+  if (lower.startsWith('insert into history_red_zones')) {
+     const [zone_id] = params;
+     const zoneIdx = localStore.hazard_zones.findIndex(z => z.zone_id === zone_id);
+     if (zoneIdx >= 0) {
+         const closedZone = localStore.hazard_zones.splice(zoneIdx, 1)[0];
+         closedZone.is_open = false;
+         closedZone.status = 'SITUATION_UNDER_CONTROL';
+         localStore.history_red_zones.push(closedZone);
+         saveLocalStore();
+     }
+     return { rows: [] };
+  }
+
+  // INSERT INTO zone_assignments
+  if (lower.startsWith('insert into zone_assignments')) {
+     const [zone_id, user_id, officer_name, department] = params;
+     const existing = localStore.zone_assignments.find(a => a.zone_id === zone_id && a.user_id === user_id);
+     if (!existing) {
+         localStore.zone_assignments.push({ zone_id, user_id, officer_name, department, vote_to_resolve: false });
+         saveLocalStore();
+     }
+     return { rows: [] };
+  }
+  
+  // SELECT FROM zone_assignments
+  if (lower.startsWith('select user_id, officer_name') && lower.includes('from zone_assignments')) {
+     const [zone_id] = params;
+     return { rows: localStore.zone_assignments.filter(a => a.zone_id === zone_id) };
   }
 
   // INSERT INTO emergency_passes

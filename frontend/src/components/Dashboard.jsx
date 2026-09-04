@@ -41,6 +41,7 @@ import {
 } from 'lucide-react';
 import RealGoogleMap from './RealGoogleMap';
 import { useToast } from './Toast';
+import { apiService } from '../utils/api';
 
 export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigateHome }) {
   const { addToast } = useToast();
@@ -51,78 +52,25 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
   // Red Zones State
   const [zones, setZones] = useState([
     {
-      zone_id: 'RZ-WAYANAD-04',
-      map_id: 'wayanad',
-      name: 'Wayanad Sector 4 (Chooralmala - Meppadi)',
+      zone_id: 'RZ-WAYANAD-01',
+      name: 'Fetching Live Database...',
       state: 'Kerala',
       lat: 11.5583,
       lng: 76.1384,
       zone_type: 'RED',
-      hazard_type: 'High Slope Landslide & Debris Flow',
+      hazard_type: 'LANDSLIDE',
       risk_score: 94,
       access_key: 'RZ-89A4-91F2-3B7C',
       status: 'ACTIVE_RED_ZONE',
       resolution_votes_required: 2,
       resolution_votes_cast: 0,
       population_risk: 4820,
-      assigned_officers: [
-        { user_id: 'sdma_officer', officer_name: 'SDMA Regional Officer', department: 'SDMA', vote_to_resolve: false }
-      ]
-    },
-    {
-      zone_id: 'RZ-JOSHIMATH-02',
-      map_id: 'joshimath',
-      name: 'Joshimath Main Ridge (Sunil & Marwari)',
-      state: 'Uttarakhand',
-      lat: 30.5564,
-      lng: 79.5664,
-      zone_type: 'RED',
-      hazard_type: 'Tectonic Subsidence & Slope Collapse',
-      risk_score: 89,
-      access_key: 'RZ-41C2-88E0-99A1',
-      status: 'ACTIVE_RED_ZONE',
-      resolution_votes_required: 3,
-      resolution_votes_cast: 0,
-      population_risk: 3150,
-      assigned_officers: []
-    },
-    {
-      zone_id: 'RZ-TEESTA-07',
-      map_id: 'teesta',
-      name: 'Teesta River Basin (Singtam & Rangpo)',
-      state: 'Sikkim',
-      lat: 27.5029,
-      lng: 88.5309,
-      zone_type: 'YELLOW',
-      hazard_type: 'GLOF Moraine Breach & Flash Flood',
-      risk_score: 76,
-      access_key: 'RZ-73F9-22D4-55B8',
-      status: 'ACTIVE_RED_ZONE',
-      resolution_votes_required: 2,
-      resolution_votes_cast: 0,
-      population_risk: 6400,
-      assigned_officers: []
-    },
-    {
-      zone_id: 'RZ-PURI-09',
-      map_id: 'puri',
-      name: 'Puri Coastal Lowland Shore',
-      state: 'Odisha',
-      lat: 19.8135,
-      lng: 85.8312,
-      zone_type: 'YELLOW',
-      hazard_type: 'Storm Surge & Coastal Inundation',
-      risk_score: 68,
-      access_key: 'RZ-55D1-84B2-10F3',
-      status: 'ACTIVE_RED_ZONE',
-      resolution_votes_required: 2,
-      resolution_votes_cast: 0,
-      population_risk: 5200,
+      radius_meters: 4000,
       assigned_officers: []
     }
   ]);
 
-  const [selectedZoneId, setSelectedZoneId] = useState('RZ-WAYANAD-04');
+  const [selectedZoneId, setSelectedZoneId] = useState('RZ-WAYANAD-01');
   const [inputKey, setInputKey] = useState('');
   const [searchKey, setSearchKey] = useState('');
   const [assignSuccessMsg, setAssignSuccessMsg] = useState(null);
@@ -131,7 +79,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
   const [backupRequested, setBackupRequested] = useState(false);
 
   // Deep Focus Mode & Side Menu states (#13)
-  const [isDeepFocusMode, setIsDeepFocusMode] = useState(false);
+  const [focusTrigger, setFocusTrigger] = useState(0);
   const [isSideMenuCollapsed, setIsSideMenuCollapsed] = useState(false);
 
   // TeamViewer-style Side Panel Chatting Interface (#13)
@@ -146,36 +94,82 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [dynamicCoordinates, setDynamicCoordinates] = useState(null);
 
+  const fallbackZone = {
+    zone_id: 'ALL-SAFE-00',
+    name: 'No Active Emergencies (System Monitoring)',
+    state: 'India',
+    lat: 22.9734,
+    lng: 78.6569,
+    zone_type: 'SAFE',
+    hazard_type: 'ALL_CLEAR',
+    risk_score: 0,
+    population_risk: 0,
+    radius_meters: 0,
+    status: 'SITUATION_UNDER_CONTROL',
+    access_key: 'NO-ACTIVE-ZONES',
+    resolution_votes_cast: 0,
+    resolution_votes_required: 1,
+    assigned_officers: []
+  };
+
   // Selected Zone Details
-  const activeZone = zones.find(z => z.zone_id === selectedZoneId) || zones[0];
+  const activeZone = zones.find(z => z.zone_id === selectedZoneId) || zones[0] || fallbackZone;
+  // Current Officer Info
+  const currentOfficerId = user?.userId || user?.user_id || user?.username || 'ndrf_admin';
+  const currentOfficerName = user?.fullName || user?.name || user?.username || 'NDRF Commander Chief';
+  const currentDept = user?.role || 'NDRF Tactical Command';
+
   const isOfficerAssigned = activeZone?.assigned_officers?.some(
-    o => o.user_id === (user?.user_id || user?.username || 'ndrf_admin')
+    o => o.user_id === currentOfficerId
   );
   const hasOfficerVoted = activeZone?.assigned_officers?.some(
-    o => o.user_id === (user?.user_id || user?.username || 'ndrf_admin') && o.vote_to_resolve
+    o => o.user_id === currentOfficerId && o.vote_to_resolve
   );
 
   // 16-Digit Key Search System: Locates issue on map (#13)
-  const handleSearchKey = (e) => {
+  const handleSearchKey = async (e) => {
     if (e) e.preventDefault();
-    const query = (searchKey || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const query = (searchKey || '').trim();
     if (!query) {
-      addToast('Please enter a 16-digit key (e.g. RZ-89A4-91F2-3B7C)', 'warning');
+      addToast('Please enter a search term (e.g. 16-digit key, geohash, or name)', 'warning');
       return;
     }
 
-    const matchedZone = zones.find(z => {
-      const cleanKey = z.access_key.replace(/[^A-Z0-9]/g, '').toUpperCase();
-      return cleanKey === query || cleanKey.includes(query) || query.includes(cleanKey);
-    });
+    try {
+      const res = await apiService.searchZones(query, 'in_office');
+      if (res.success && res.zones.length > 0) {
+        const matchedZone = res.zones[0];
+        
+        setZones(prev => {
+           if (!prev.find(z => z.zone_id === matchedZone.zone_id)) {
+               return [...prev, matchedZone];
+           }
+           return prev;
+        });
 
-    if (matchedZone) {
-      setSelectedZoneId(matchedZone.zone_id);
-      setDynamicCoordinates(null);
-      addToast(`Issue Located! Navigating map to ${matchedZone.name} [${matchedZone.access_key}]`, 'success');
-      setSearchKey('');
-    } else {
-      addToast(`No issue found for key "${searchKey}". Verify 16-digit red zone key.`, 'error');
+        setSelectedZoneId(matchedZone.zone_id);
+        setDynamicCoordinates(null);
+        addToast(`Issue Located! Navigating map to ${matchedZone.name}`, 'success');
+        setSearchKey('');
+      } else {
+        // Fallback to local search
+        const queryClean = query.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const localMatch = zones.find(z => {
+          const cleanKey = (z.access_key || '').replace(/[^A-Z0-9]/g, '').toUpperCase();
+          return cleanKey === queryClean || cleanKey.includes(queryClean) || queryClean.includes(cleanKey);
+        });
+
+        if (localMatch) {
+          setSelectedZoneId(localMatch.zone_id);
+          setDynamicCoordinates(null);
+          addToast(`Issue Located Locally! Navigating map to ${localMatch.name}`, 'success');
+          setSearchKey('');
+        } else {
+          addToast(`No zone found for "${searchKey}". Verify search term.`, 'error');
+        }
+      }
+    } catch (err) {
+      addToast('Search error occurred.', 'error');
     }
   };
 
@@ -186,6 +180,25 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
     { id: 'SOS-903', name: 'Citizen #106', lat: activeZone.lat + 0.0025, lng: activeZone.lng - 0.0021, type: 'EVACUATING', specialNeeds: 'None' },
     { id: 'SOS-904', name: 'Citizen #107', lat: activeZone.lat - 0.0009, lng: activeZone.lng + 0.0028, type: 'CRITICAL', specialNeeds: 'Stretcher Required' },
   ];
+
+  // Fetch Zones from Backend
+  useEffect(() => {
+    let mounted = true;
+    const loadZones = async () => {
+      const res = await apiService.fetchZones();
+      if (mounted && res.success && res.zones.length > 0) {
+        setZones(res.zones);
+        setSelectedZoneId(prev => {
+          if (!res.zones.find(z => z.zone_id === prev)) {
+             return res.zones[0].zone_id;
+          }
+          return prev;
+        });
+      }
+    };
+    loadZones();
+    return () => { mounted = false; };
+  }, []);
 
   // 1. Fetch Browser Geolocation Automatically
   useEffect(() => {
@@ -225,9 +238,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
       return;
     }
 
-    const currentOfficerId = user?.user_id || user?.username || 'ndrf_command_chief';
-    const currentOfficerName = user?.fullName || user?.name || user?.username || 'NDRF Commander Chief';
-    const currentDept = user?.role || 'NDRF Tactical Command';
+
 
     setZones(prev => prev.map(z => {
       if (z.zone_id === selectedZoneId) {
@@ -245,9 +256,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
     addToast(successMsg, 'success');
     setInputKey('');
     
-    // As per #13: When assigned they go into deep focus mode and chatting interface opens
-    setIsDeepFocusMode(true);
-    setIsChatOpen(true);
+    // Chat is now natively part of Split View, Deep Focus mode removed
   };
 
   // Helper to assign self directly from Map HUD card or search bar
@@ -261,9 +270,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
       
     setSelectedZoneId(target.zone_id);
 
-    const currentOfficerId = user?.userId || user?.user_id || user?.username || 'ndrf_command_chief';
-    const currentOfficerName = user?.fullName || user?.name || user?.username || 'NDRF Commander Chief';
-    const currentDept = user?.role || 'NDRF';
+
 
     setZones(prev => prev.map(z => {
       if (z.zone_id === target.zone_id) {
@@ -280,7 +287,6 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
     setAssignSuccessMsg(successMsg);
     addToast(successMsg, 'success');
     setInputKey('');
-    setIsDeepFocusMode(true);
     setIsChatOpen(true);
   };
 
@@ -316,38 +322,39 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
   };
 
   // 3. Vote to Resolve Situation in Red Zone
-  const handleVoteResolve = () => {
-    const currentOfficerId = user?.userId || user?.user_id || user?.username || 'ndrf_command_chief';
+  const handleVoteResolve = async () => {
 
-    setZones(prev => prev.map(z => {
-      if (z.zone_id === selectedZoneId) {
-        const updatedOfficers = z.assigned_officers.map(o => {
-          if (o.user_id === currentOfficerId) {
-            return { ...o, vote_to_resolve: true };
-          }
-          return o;
+    try {
+        // Optimistic UI updates could go here, but since this triggers a major state change (movement to history), 
+        // we hit the real backend and refresh the state.
+        const res = await fetch('http://localhost:5000/api/zones/vote-resolve', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ zone_id: selectedZoneId, user_id: currentOfficerId })
         });
-
-        const newVotesCast = updatedOfficers.filter(o => o.vote_to_resolve).length;
-        const isFullyResolved = newVotesCast >= z.resolution_votes_required;
-
-        if (isFullyResolved) {
-          addToast(`Consensus reached! ${z.name} marked as Situation Under Control.`, 'success');
+        const data = await res.json();
+        
+        if (data.success) {
+            addToast(data.message, data.isResolved ? 'success' : 'info');
+            // Re-fetch zones to get updated list
+            const refreshRes = await apiService.fetchZones();
+            if (refreshRes.success && refreshRes.zones.length > 0) {
+                setZones(refreshRes.zones);
+                if (data.isResolved) {
+                    setSelectedZoneId(refreshRes.zones[0].zone_id);
+                }
+            } else if (refreshRes.success && refreshRes.zones.length === 0) {
+                setZones([]);
+            }
         } else {
-          addToast(`Resolution vote recorded (${newVotesCast}/${z.resolution_votes_required} votes).`, 'info');
+            addToast('Error resolving zone', 'error');
         }
-
-        return {
-          ...z,
-          assigned_officers: updatedOfficers,
-          resolution_votes_cast: newVotesCast,
-          status: isFullyResolved ? 'SITUATION_UNDER_CONTROL' : z.status,
-          zone_type: isFullyResolved ? 'GREEN' : z.zone_type
-        };
-      }
-      return z;
-    }));
+    } catch (e) {
+        addToast('Failed to record vote with backend', 'error');
+    }
   };
+
+
 
   const stats = [
     { title: 'Active Red Zones', value: `${zones.filter(z=>z.status==='ACTIVE_RED_ZONE').length} Sectors`, change: '16-Digit Encrypted Keys', color: 'text-[#B85C38]', bg: 'bg-white/70 border-[#FADED4]' },
@@ -490,15 +497,11 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                   <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E8E1D5] text-[#4A4238] shadow-2xs shrink-0">
                     {isFullMapView ? 'Full View' : 'Split View'}
                   </span>
-                  {isDeepFocusMode && (
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#B85C38] text-white animate-pulse shadow-2xs shrink-0 flex items-center gap-1">
-                      <Sparkles className="w-2.5 h-2.5" /> Deep Focus Mode
-                    </span>
-                  )}
                 </div>
               </div>
 
               {/* Center/Right: 16-Digit Red Zone Key Search Fallback System (#13) */}
+              {!isOfficerAssigned && (
               <form onSubmit={handleSearchKey} className="flex items-center gap-1.5 flex-1 max-w-md w-full">
                 <div className="relative flex-1">
                   <input
@@ -519,10 +522,12 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                   <span className="hidden sm:inline">Locate</span>
                 </button>
               </form>
+              )}
 
               {/* Right: Sector Selector & View Mode Toggle */}
               <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
                 {/* Sector Selector Dropdown */}
+                {!isOfficerAssigned && (
                 <div className="relative flex-1 sm:flex-initial min-w-[170px] max-w-full">
                   <select
                     value={selectedZoneId}
@@ -544,20 +549,22 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                     <ChevronRight className="w-3.5 h-3.5 rotate-90" />
                   </div>
                 </div>
+                )}
 
-                {/* Deep Focus Mode Toggle */}
+                {/* Focus Button */}
                 <button
                   type="button"
-                  onClick={() => setIsDeepFocusMode(!isDeepFocusMode)}
-                  className={`group shrink-0 px-3 py-2 rounded-xl border text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs ${
-                    isDeepFocusMode
-                      ? 'bg-[#B85C38] border-[#B85C38] text-white'
-                      : 'bg-white hover:bg-[#F6F4F0] border-[#E8E1D5] text-[#1A1A1A]'
+                  onClick={() => isOfficerAssigned && setFocusTrigger(f => f + 1)}
+                  disabled={!isOfficerAssigned}
+                  className={`group shrink-0 px-3 py-2 rounded-xl border text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs ${
+                    isOfficerAssigned
+                      ? 'bg-white hover:bg-[#F6F4F0] border-[#E8E1D5] text-[#1A1A1A] cursor-pointer'
+                      : 'bg-[#F6F4F0] border-[#E8E1D5] text-[#A89F91] cursor-not-allowed opacity-60'
                   }`}
-                  title={isDeepFocusMode ? "Exit Deep Focus Mode" : "Enter Deep Focus Mode"}
+                  title="Recenter Map on Assigned Sector"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{isDeepFocusMode ? 'Focus On' : 'Focus'}</span>
+                  <span className="hidden sm:inline">Focus</span>
                 </button>
 
                 {/* View Mode Toggle Button */}
@@ -581,19 +588,36 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
               </div>
             </div>
 
-            {/* Interactive Real Map Viewport with smooth height & scale easing (#13 deep focus expands) */}
+            {/* Interactive Real Map Viewport with smooth height & scale easing */}
             <div className={`relative z-10 my-3 rounded-2xl overflow-hidden border border-[#E8E1D5] ${
-              isDeepFocusMode 
-                ? 'h-[82vh] min-h-[760px]' 
-                : isFullMapView 
+              isFullMapView 
                 ? 'h-[720px]' 
                 : 'h-[640px]'
             } bg-[#F6F4F0] shadow-inner transition-[height,box-shadow] duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[height]`}>
               <RealGoogleMap
+                focusTrigger={focusTrigger}
                 standalone={true}
                 center={[activeZone.lat, activeZone.lng]}
                 zoom={13}
-                selectedZoneId={activeZone.map_id}
+                selectedZoneId={activeZone.zone_id}
+                zones={(isOfficerAssigned ? [activeZone] : zones).map(z => ({
+                  ...z,
+                  id: z.zone_id,
+                  type: z.zone_type ? z.zone_type.toLowerCase() : 'red',
+                  hazard: z.hazard_type,
+                  riskScore: z.risk_score,
+                  populationRisk: z.population_risk,
+                  radiusMeters: z.radius_meters || 3000,
+                  shortName: z.name ? z.name.split('(')[0].trim() : 'Unknown Zone',
+                  safeSite: z.safeSite || {
+                    name: `${z.state || 'Local'} Relief Hub`,
+                    lat: z.lat + 0.02,
+                    lng: z.lng + 0.02,
+                    capacity: '5,000 / 8,000 Available'
+                  },
+                  evacEta: z.evacEta || '45 mins',
+                  corridorName: z.corridorName || 'Primary Emergency Route'
+                }))}
                 onLocationDetect={(loc) => {
                   setDynamicCoordinates({
                     lat: loc.lat,
@@ -606,9 +630,8 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                 onZoneSelect={(selected) => {
                   const targetId = selected.id || selected.zone_id;
                   const found = zones.find(z => 
-                    z.map_id === targetId || 
                     z.zone_id === targetId || 
-                    z.name.toLowerCase().includes((selected.shortName || selected.name || '').toLowerCase())
+                    z.name?.toLowerCase().includes((selected.shortName || selected.name || '').toLowerCase())
                   );
                   if (found) {
                     setSelectedZoneId(found.zone_id);
@@ -643,15 +666,15 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
           </div>
         </div>
 
-        {/* Controls Column / Lower Grid (In Deep Focus Mode, collapses to keep focus entirely on map #13) */}
-        {!isDeepFocusMode && (
-          <div className={`${
-            isFullMapView 
-              ? 'lg:col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 space-y-0 opacity-100 translate-y-0' 
-              : 'lg:col-span-4 space-y-4 opacity-100 translate-y-0'
-          } transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[transform,opacity]`}>
+        {/* Controls Column / Lower Grid */}
+        <div className={`${
+          isFullMapView 
+            ? 'lg:col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 space-y-0 opacity-100 translate-y-0' 
+            : 'lg:col-span-4 space-y-4 opacity-100 translate-y-0'
+        } transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-[transform,opacity]`}>
           
           {/* Card 1: 16-Digit Key Assignment */}
+          {!isOfficerAssigned && (
           <div className="bg-white/80 hover:bg-white border border-[#E8E1D5] hover:border-[#8B7355]/50 rounded-3xl p-5 backdrop-blur-md space-y-3 shadow-2xs hover:shadow-md transition-all duration-300">
             <div className="flex items-center justify-between pb-2.5 border-b border-[#E8E1D5]">
               <h3 className="text-sm font-bold text-[#1A1A1A] flex items-center gap-2">
@@ -701,6 +724,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
               </button>
             </div>
           </div>
+          )}
 
           {/* Card 2: Inter-Departmental Assigned Officers Roster */}
           <div className="bg-white/80 hover:bg-white border border-[#E8E1D5] hover:border-[#8B7355]/50 rounded-3xl p-5 backdrop-blur-md space-y-3 shadow-2xs hover:shadow-md transition-all duration-300">
@@ -730,7 +754,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                         VOTED SAFE
                       </span>
                     ) : (
-                      <span className="px-2 py-0.5 bg-white text-[#7A726A] text-[10px] rounded border border-[#E8E1D5]">
+                      <span className="px-2 py-0.5 bg-[#EBF7EE] text-[#2D7A4F] text-[10px] font-bold rounded border border-[#2D7A4F]/30">
                         ON DUTY
                       </span>
                     )}
@@ -870,186 +894,83 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
             </div>
           </div>
 
-        </div>
-        )}
+          {/* Card 5: TeamViewer-Style Chat System (#13) - Rendered natively in split view */}
+          {isOfficerAssigned && (
+            <div className="bg-white border border-[#E8E1D5] rounded-3xl shadow-sm flex flex-col overflow-hidden h-full min-h-[400px]">
+              {/* TeamViewer style dark header bar */}
+              <div className="bg-[#2C2A29] px-4 py-3 flex items-center justify-between text-white border-b border-[#3D3A38]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-7 h-7 rounded-lg bg-[#3D3A38] flex items-center justify-center text-[#8B7355]">
+                    <Radio className="w-3.5 h-3.5 text-[#2D7A4F] animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold flex items-center gap-1.5">
+                      <span>Tactical Mesh Channel</span>
+                      <span className="w-2 h-2 rounded-full bg-[#2D7A4F]"></span>
+                    </div>
+                    <div className="text-[10px] text-[#A89F91] truncate max-w-[180px]">
+                      {activeZone.name}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-      </div>
+              {/* Session Banner */}
+              <div className="bg-[#F6F4F0] px-3.5 py-2 border-b border-[#E8E1D5] flex items-center justify-between text-[10px] text-[#5C544D]">
+                <span className="flex items-center gap-1">
+                  <Shield className="w-3 h-3 text-[#8B7355]" />
+                  <span>Encrypted Session • Linked</span>
+                </span>
+                <span className="font-mono font-bold text-[#8B7355]">{activeZone.access_key}</span>
+              </div>
 
-      {/* Floating Tactical Dispatch Bar & TeamViewer Chat Trigger (#13) */}
-      <div className="fixed bottom-6 right-6 z-[9999] flex items-center gap-2.5 pointer-events-auto animate-in fade-in">
-        {isDeepFocusMode && (
-          <button
-            type="button"
-            onClick={() => setIsSideMenuCollapsed(!isSideMenuCollapsed)}
-            className="px-3 py-2 rounded-2xl bg-white/90 hover:bg-white text-[#1A1A1A] border border-[#E8E1D5] shadow-lg backdrop-blur-md text-xs font-semibold flex items-center gap-1.5 transition-all hover:scale-105 cursor-pointer"
-            title="Toggle Tactical Side Menu"
-          >
-            <Layers className="w-3.5 h-3.5 text-[#8B7355]" />
-            <span className="hidden sm:inline">{isSideMenuCollapsed ? 'Show Sector Intel' : 'Hide Sector Intel'}</span>
-          </button>
-        )}
+              {/* Message Thread */}
+              <div className="flex-1 p-3.5 space-y-3 overflow-y-auto bg-white/70 text-xs">
+                {chatMessages.map(msg => {
+                  const isMe = msg.sender === (user?.fullName || user?.name || 'My Terminal');
+                  return (
+                    <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
+                      <div className="flex items-center gap-1.5 text-[10px] text-[#7A726A] mb-1">
+                        <span className="font-bold text-[#1A1A1A]">{msg.sender}</span>
+                        <span>•</span>
+                        <span className="px-1.5 py-0.2 rounded bg-[#E8E1D5] text-[#4A4238] font-mono text-[9px]">{msg.department}</span>
+                        <span>•</span>
+                        <span>{msg.time}</span>
+                      </div>
+                      <div className={`p-2.5 rounded-2xl max-w-[85%] text-xs leading-relaxed shadow-2xs ${
+                        isMe 
+                          ? 'bg-[#2C2A29] text-[#FDFBF7] rounded-tr-xs' 
+                          : 'bg-[#F6F4F0] text-[#1A1A1A] border border-[#E8E1D5] rounded-tl-xs'
+                      }`}>
+                        {msg.text}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
 
-        <button
-          type="button"
-          onClick={() => setIsChatOpen(!isChatOpen)}
-          className="relative px-4 py-2.5 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] border border-[#8B7355]/30 shadow-xl backdrop-blur-md text-xs font-bold flex items-center gap-2 transition-all hover:scale-105 cursor-pointer"
-        >
-          <span className="relative flex h-2.5 w-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2D7A4F] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#2D7A4F]"></span>
-          </span>
-          <MessageSquare className="w-4 h-4 text-[#8B7355]" />
-          <span>Tactical Dispatch</span>
-          {chatMessages.length > 0 && (
-            <span className="px-1.5 py-0.2 rounded-full bg-[#B85C38] text-[9px] font-bold text-white ml-0.5">
-              {chatMessages.length}
-            </span>
+              {/* Input & Dispatch Bar */}
+              <form onSubmit={handleSendChatMessage} className="p-2.5 bg-[#F6F4F0] border-t border-[#E8E1D5] flex items-center gap-1.5">
+                <input
+                  type="text"
+                  value={chatInput}
+                  onChange={(e) => setChatInput(e.target.value)}
+                  placeholder="Send message to sector team..."
+                  className="flex-1 bg-white text-[#1A1A1A] text-xs px-3 py-2 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355]"
+                />
+                <button
+                  type="submit"
+                  disabled={!chatInput.trim()}
+                  className="w-8 h-8 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:pointer-events-none cursor-pointer shadow-2xs shrink-0"
+                  title="Send Message"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </form>
+            </div>
           )}
-        </button>
+        </div>
       </div>
-
-      {/* Deep Focus Mode: Hideable Side Intel Drawer (#13) */}
-      {isDeepFocusMode && !isSideMenuCollapsed && (
-        <div className="fixed top-20 right-6 z-[9998] w-80 max-w-[calc(100vw-3rem)] bg-white/95 border border-[#E8E1D5] rounded-3xl p-4 shadow-2xl backdrop-blur-md space-y-3 animate-in slide-in-from-right duration-300">
-          <div className="flex items-center justify-between pb-2 border-b border-[#E8E1D5]">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#B85C38] animate-pulse"></span>
-              <h4 className="text-xs font-bold text-[#1A1A1A] uppercase tracking-wide">Sector Quick Intel</h4>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsSideMenuCollapsed(true)}
-              className="w-6 h-6 rounded-lg bg-[#F6F4F0] hover:bg-[#E8E1D5] flex items-center justify-center text-[#5C544D] cursor-pointer"
-              title="Hide side intel"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-
-          <div className="space-y-2 text-xs">
-            <div className="p-2.5 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5]">
-              <div className="text-[10px] text-[#7A726A] font-semibold">Active Sector</div>
-              <div className="font-bold text-[#1A1A1A] truncate">{activeZone.name}</div>
-              <div className="text-[10px] text-[#B85C38] font-mono mt-0.5 font-bold">Key: {activeZone.access_key}</div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div className="p-2 rounded-xl bg-white border border-[#E8E1D5]">
-                <div className="text-[9px] text-[#7A726A]">Risk Score</div>
-                <div className="text-sm font-bold text-[#B85C38]">{activeZone.risk_score}/100</div>
-              </div>
-              <div className="p-2 rounded-xl bg-white border border-[#E8E1D5]">
-                <div className="text-[9px] text-[#7A726A]">Pop. at Risk</div>
-                <div className="text-sm font-bold text-[#1A1A1A]">{activeZone.population_risk}</div>
-              </div>
-            </div>
-
-            <div className="pt-2 flex items-center gap-2">
-              <button
-                type="button"
-                onClick={handleVoteResolve}
-                disabled={hasOfficerVoted || !isOfficerAssigned}
-                className="flex-1 py-2 rounded-xl bg-[#2D7A4F] hover:bg-[#235F3E] text-white text-[11px] font-bold transition-all disabled:opacity-50 disabled:pointer-events-none cursor-pointer shadow-xs text-center"
-              >
-                {hasOfficerVoted ? 'Vote Cast' : 'Vote Resolve'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setIsDeepFocusMode(false)}
-                className="px-3 py-2 rounded-xl bg-[#F6F4F0] hover:bg-[#E8E1D5] text-[#1A1A1A] text-[11px] font-semibold transition-all cursor-pointer"
-              >
-                Exit Focus
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* TeamViewer-Style Floating Side Chat System (#13) */}
-      {isChatOpen && (
-        <div className="fixed bottom-20 right-6 z-[9999] w-[340px] sm:w-[380px] max-w-[calc(100vw-2rem)] bg-[#FDFBF7] border border-[#E8E1D5] rounded-3xl shadow-2xl backdrop-blur-xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-4 duration-300">
-          {/* TeamViewer style dark header bar */}
-          <div className="bg-[#2C2A29] px-4 py-3 flex items-center justify-between text-white border-b border-[#3D3A38]">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-[#3D3A38] flex items-center justify-center text-[#8B7355]">
-                <Radio className="w-3.5 h-3.5 text-[#2D7A4F] animate-pulse" />
-              </div>
-              <div>
-                <div className="text-xs font-bold flex items-center gap-1.5">
-                  <span>Tactical Mesh Channel</span>
-                  <span className="w-2 h-2 rounded-full bg-[#2D7A4F]"></span>
-                </div>
-                <div className="text-[10px] text-[#A89F91] truncate max-w-[180px]">
-                  {activeZone.name}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-1">
-              <button
-                type="button"
-                onClick={() => setIsChatOpen(false)}
-                className="w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-white/80 hover:text-white transition-colors cursor-pointer"
-                title="Minimize Channel"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {/* Session Banner */}
-          <div className="bg-[#F6F4F0] px-3.5 py-2 border-b border-[#E8E1D5] flex items-center justify-between text-[10px] text-[#5C544D]">
-            <span className="flex items-center gap-1">
-              <Shield className="w-3 h-3 text-[#8B7355]" />
-              <span>Encrypted Session • 16-Digit Key Linked</span>
-            </span>
-            <span className="font-mono font-bold text-[#8B7355]">{activeZone.access_key}</span>
-          </div>
-
-          {/* Message Thread */}
-          <div className="p-3.5 space-y-3 h-72 overflow-y-auto bg-white/70 text-xs">
-            {chatMessages.map(msg => {
-              const isMe = msg.sender === (user?.fullName || user?.name || 'My Terminal');
-              return (
-                <div key={msg.id} className={`flex flex-col ${isMe ? 'items-end' : 'items-start'}`}>
-                  <div className="flex items-center gap-1.5 text-[10px] text-[#7A726A] mb-1">
-                    <span className="font-bold text-[#1A1A1A]">{msg.sender}</span>
-                    <span>•</span>
-                    <span className="px-1.5 py-0.2 rounded bg-[#E8E1D5] text-[#4A4238] font-mono text-[9px]">{msg.department}</span>
-                    <span>•</span>
-                    <span>{msg.time}</span>
-                  </div>
-                  <div className={`p-2.5 rounded-2xl max-w-[85%] text-xs leading-relaxed shadow-2xs ${
-                    isMe 
-                      ? 'bg-[#2C2A29] text-[#FDFBF7] rounded-tr-xs' 
-                      : 'bg-[#F6F4F0] text-[#1A1A1A] border border-[#E8E1D5] rounded-tl-xs'
-                  }`}>
-                    {msg.text}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Input & Dispatch Bar */}
-          <form onSubmit={handleSendChatMessage} className="p-2.5 bg-[#F6F4F0] border-t border-[#E8E1D5] flex items-center gap-1.5">
-            <input
-              type="text"
-              value={chatInput}
-              onChange={(e) => setChatInput(e.target.value)}
-              placeholder="Send message to sector team..."
-              className="flex-1 bg-white text-[#1A1A1A] text-xs px-3 py-2 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355]"
-            />
-            <button
-              type="submit"
-              disabled={!chatInput.trim()}
-              className="w-8 h-8 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-white flex items-center justify-center transition-colors disabled:opacity-40 disabled:pointer-events-none cursor-pointer shadow-2xs shrink-0"
-              title="Send Message"
-            >
-              <Send className="w-3.5 h-3.5" />
-            </button>
-          </form>
-        </div>
-      )}
 
       {/* User Profile Modal */}
       {showProfileModal && (
