@@ -223,7 +223,7 @@ export default function Documentation() {
               <div>
                 GITHUB REPO:{' '}
                 <a 
-                  href="https://github.com/Kashcx-dev/SurakshaDrishti" 
+                  href="https://github.com/Kashcx-dev/SurakshaDrishti/tree/main" 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="text-[#8B7355] hover:text-[#1A1A1A] underline font-semibold transition-colors"

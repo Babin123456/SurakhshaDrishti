@@ -85,8 +85,12 @@ export default function IntroSequence({ onComplete }) {
           <div className="absolute inset-2 rounded-full border-2 border-dashed border-[#8B7355]/40 animate-spin" style={{ animationDuration: '9s' }}></div>
           <div className="absolute inset-6 rounded-full border border-[#D9D0C1]/60"></div>
           
-          <div className="w-16 h-16 rounded-2xl bg-white/80 backdrop-blur-md border border-[#E8E1D5] shadow-md flex items-center justify-center relative z-10 transition-transform hover:scale-105">
-            <Shield className="w-8 h-8 text-[#4A4238]" strokeWidth={1.75} />
+          <div className="w-16 h-16 flex items-center justify-center relative z-10 transition-transform hover:scale-105">
+            <img 
+              src="/favicon.webp" 
+              alt="SurakshaDrishti Core Emblem" 
+              className="w-full h-full object-contain drop-shadow-md" 
+            />
           </div>
         </div>
 

@@ -376,15 +376,19 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
           className="flex items-center gap-3 min-w-0 cursor-pointer p-1.5 -m-1.5 rounded-xl transition-all duration-300 hover:bg-[#F6F4F0]/80 group"
           title="Click to view and edit your profile credentials"
         >
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-[#2C2A29] group-hover:bg-[#1A1A1A] text-[#FDFBF7] shadow-sm shrink-0 transition-all duration-300 group-hover:scale-105 flex items-center justify-center overflow-hidden border border-[#8B7355]/30">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 shrink-0 transition-all duration-300 group-hover:scale-105 flex items-center justify-center overflow-hidden">
             {user?.profile_picture || user?.avatar || (typeof window !== 'undefined' && localStorage.getItem('suraksha_user_pfp')) ? (
               <img 
                 src={user?.profile_picture || user?.avatar || localStorage.getItem('suraksha_user_pfp')} 
                 alt="Officer Avatar" 
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-cover rounded-xl border border-[#8B7355]/30 shadow-sm" 
               />
             ) : (
-              <Shield className="w-5 h-5 sm:w-6 sm:h-6" />
+              <img 
+                src="/favicon.webp" 
+                alt="SurakshaDrishti Emblem" 
+                className="w-full h-full object-contain" 
+              />
             )}
           </div>
           <div className="min-w-0">

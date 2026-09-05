@@ -407,37 +407,17 @@
   will-change: filter, opacity, transform;
 }
 
-/* Clean Glass-type Letters with Sequential Left-to-Right Crisp Color Wave (No Glow) */
-@keyframes letterGlowWave {
-  0%, 100% {
-    color: rgba(44, 42, 41, 0.25);
-    transform: translateY(0px) scale(1);
-  }
-  15% {
-    color: #8B7355;
-    transform: translateY(-3px) scale(1.03);
-  }
-  30% {
-    color: #D4AF37;
-    transform: translateY(-6px) scale(1.07);
-  }
-  45% {
-    color: #B85C38;
-    transform: translateY(-3px) scale(1.03);
-  }
-  60% {
-    color: #2D7A4F;
-    transform: translateY(-1px) scale(1.01);
-  }
-  75% {
-    color: rgba(44, 42, 41, 0.25);
-    transform: translateY(0px) scale(1);
-  }
+/* Stable Letters with Smooth Theme Color Reveal on Hover */
+.letter-interactive {
+  color: #D9D0C1;
+  transition: color 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), text-shadow 0.4s ease;
+  will-change: color, transform;
 }
 
-.letter-wave-glow {
-  animation: letterGlowWave 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-  will-change: color, transform;
+.letter-interactive:hover {
+  color: #8B7355;
+  transform: translateY(-4px) scale(1.08);
+  text-shadow: 0 8px 24px rgba(139, 115, 85, 0.25);
 }
 
 /* ============================================================
@@ -485,6 +465,31 @@
   animation: gpsSearchRadar 5.2s cubic-bezier(0.45, 0.05, 0.25, 0.95) infinite;
   transform-origin: center center;
   will-change: transform;
+}
+
+/* ============================================================
+   Footer High-Tech Telemetry Beam Divider Line
+   ============================================================ */
+@keyframes footerBeamTravel {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+.footer-telemetry-beam {
+  animation: footerBeamTravel 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: transform, opacity;
 }
 
 /* ============================================================

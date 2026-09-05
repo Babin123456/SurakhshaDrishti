@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { Shield, Compass, ArrowUp } from 'lucide-react';
 
 export default function Footer({ onReplayIntro }) {
   const handleSaveScroll = () => {
@@ -8,17 +8,48 @@ export default function Footer({ onReplayIntro }) {
     sessionStorage.setItem('landing_scroll_pos', Math.round(scrollY).toString());
   };
 
+  const handleScrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (window.__lenis) {
+      window.__lenis.scrollTo(0, { duration: 1.4 });
+    }
+  };
+
   return (
-    <footer id="footer" className="w-full border-t border-[#E8E1D5] py-8 sm:py-12 bg-[#F6F4F0]/80 text-[#2C2A29] scroll-mt-10" role="contentinfo">
-      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <footer id="footer" className="relative w-full py-10 sm:py-14 bg-[#F6F4F0]/80 text-[#2C2A29] scroll-mt-10 overflow-hidden" role="contentinfo">
+      
+      {/* ─── COOL HIGH-TECH STARTING DIVIDER LINE AT THE VERY TOP OF FOOTER ─── */}
+      <div className="absolute top-0 left-0 right-0 w-full overflow-hidden select-none pointer-events-none">
+        {/* Subtle baseline track fading out on both edges */}
+        <div className="w-full h-px bg-gradient-to-r from-transparent via-[#E8E1D5] to-transparent"></div>
         
-        {/* Row 1: Brand, Navigation Links, System Status */}
+        {/* Soft Ambient Gold Glow beneath the line */}
+        <div className="w-full h-[1px] bg-gradient-to-r from-transparent via-[#8B7355]/20 to-transparent blur-[1px]"></div>
+        
+        {/* Continuous Dynamic Laser Pulse sweeping smoothly across the top starting edge */}
+        <div className="absolute top-0 inset-x-0 flex items-center justify-center">
+          <div className="w-64 sm:w-96 h-[2px] bg-gradient-to-r from-transparent via-[#8B7355] to-transparent blur-[0.5px] footer-telemetry-beam"></div>
+        </div>
+
+        {/* Elegant Central Diamond Notch */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center">
+          <div className="w-2.5 h-2.5 rotate-45 border border-[#8B7355]/40 bg-[#FDFBF7] shadow-xs"></div>
+        </div>
+      </div>
+
+      <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-7 relative z-10">
+        
+        {/* Row 1: Brand, Navigation Links, System Status & Interactive Radar Beacon */}
         <div className="grid grid-cols-1 md:grid-cols-3 items-center gap-4 text-center md:text-left">
           
-          {/* Left Column: Brand Emblem & Title */}
+          {/* Left Column: Brand Emblem & Title (Clean, No background box) */}
           <div className="flex items-center justify-center md:justify-start gap-3">
-            <div className="p-1.5 rounded-lg bg-white border border-[#E8E1D5] shadow-xs">
-              <Shield className="w-5 h-5 text-[#4A4238]" />
+            <div className="w-9 h-9 flex items-center justify-center shrink-0">
+              <img 
+                src="/favicon.webp" 
+                alt="SurakshaDrishti Emblem" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <span className="text-sm font-bold text-[#1A1A1A]">Suraksha<span className="text-[#8B7355]">Drishti</span></span>
@@ -77,16 +108,44 @@ export default function Footer({ onReplayIntro }) {
             </Link>
           </div>
 
-          {/* Right Column: Live System Status & Reference */}
-          <div className="flex items-center justify-center md:justify-end gap-2 text-xs text-[#5C544D]">
-            <span className="w-2 h-2 rounded-full bg-[#2D7A4F] animate-pulse"></span>
-            <span className="text-[#4A4238] font-bold font-mono text-[11px]">SYSTEM ACTIVE • WGS84</span>
+          {/* Right Column: Live System Status & Interactive Back-To-Top Radar Beacon */}
+          <div className="flex items-center justify-center md:justify-end gap-3 text-xs text-[#5C544D]">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 border border-[#E8E1D5] shadow-2xs">
+              <span className="w-2 h-2 rounded-full bg-[#2D7A4F] animate-pulse"></span>
+              <span className="text-[#4A4238] font-bold font-mono text-[10px] sm:text-[11px] tracking-wider">
+                SYSTEM ACTIVE • WGS84
+              </span>
+            </div>
+
+            {/* Floating Quick Back-To-Top Radar Beacon Button */}
+            <button
+              type="button"
+              onClick={handleScrollToTop}
+              className="group relative p-2 rounded-full bg-white hover:bg-[#2C2A29] border border-[#E8E1D5] hover:border-[#2C2A29] text-[#5C544D] hover:text-[#FDFBF7] transition-all duration-300 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 cursor-pointer flex items-center justify-center"
+              title="Return to Peak Position"
+              aria-label="Back to top"
+            >
+              {/* Subtle radar sweep ring on hover */}
+              <div className="w-4 h-4 relative flex items-center justify-center">
+                <Compass className="w-4 h-4 transition-transform duration-500 group-hover:rotate-180 group-hover:opacity-0 absolute" />
+                <ArrowUp className="w-4 h-4 transition-all duration-300 opacity-0 group-hover:opacity-100 group-hover:-translate-y-0.5 absolute text-[#8B7355]" />
+              </div>
+            </button>
           </div>
 
         </div>
 
-        {/* Row 2: Cinematic Monumental Typography "SURAKSHADRISHTI" - Guaranteed Single Line, Glass-Type with Wave Shimmer */}
-        <div className="border-t border-[#E8E1D5]/80 pt-10 pb-4 text-center select-none overflow-hidden">
+        {/* Sleek Minimalist Geometric Divider Line (Clean, No Text) */}
+        <div className="relative w-full py-2 overflow-hidden select-none">
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-[#E8E1D5] to-transparent"></div>
+          {/* Subtle center geometric diamond pip */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="w-1.5 h-1.5 rotate-45 bg-[#8B7355]/50"></div>
+          </div>
+        </div>
+
+        {/* Row 2: Monumental Typography "SURAKSHADRISHTI" - Stable Letters with Smooth Theme Color Reveal on Hover */}
+        <div className="pt-2 pb-4 text-center select-none overflow-hidden">
           <p className="text-[10px] font-mono tracking-[0.35em] text-[#8C847A] uppercase mb-5 opacity-75">
             National Red Zone Defense Matrix
           </p>
@@ -95,11 +154,7 @@ export default function Footer({ onReplayIntro }) {
             {"SURAKSHADRISHTI".split("").map((letter, i) => (
               <span
                 key={i}
-                className="letter-wave-glow inline-block text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black select-none shrink-0"
-                style={{
-                  animationDelay: `${(i * 0.24).toFixed(2)}s`,
-                  transitionTimingFunction: 'cubic-bezier(0.34, 1.56, 0.64, 1)'
-                }}
+                className="letter-interactive inline-block text-2xl xs:text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-black select-none shrink-0 cursor-default hover:text-[#8B7355]"
               >
                 {letter}
               </span>

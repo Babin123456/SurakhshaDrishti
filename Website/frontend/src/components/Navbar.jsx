@@ -68,6 +68,10 @@ export default function Navbar({
     }
 
     if (href === '#' || href === '#top') {
+      // Clear hash if any
+      if (window.location.hash) {
+        window.history.replaceState(null, '', window.location.pathname);
+      }
       window.scrollTo({ top: 0, behavior: 'smooth' });
       if (window.__lenis) window.__lenis.scrollTo(0, { duration: 1.2 });
       return;
@@ -78,6 +82,8 @@ export default function Navbar({
       const top = target.getBoundingClientRect().top + window.pageYOffset - 90;
       window.scrollTo({ top, behavior: 'smooth' });
       if (window.__lenis) window.__lenis.scrollTo(target, { offset: -90, duration: 1.2 });
+      // Keep URL clean so refresh doesn't jump automatically to the anchor
+      window.history.replaceState(null, '', window.location.pathname);
     }
   };
 
@@ -101,14 +107,18 @@ export default function Navbar({
           role="navigation"
           aria-label="Main navigation"
         >
-          {/* Brand Logo & Emblem */}
+          {/* Brand Logo & Emblem (Clean, No background box) */}
           <a
             href="#"
             onClick={(e) => handleNavClick(e, '#top')}
             className="flex items-center gap-2.5 group cursor-pointer shrink-0"
           >
-            <div className="w-8 h-8 rounded-xl bg-[#2C2A29] text-[#FDFBF7] flex items-center justify-center transition-transform group-hover:scale-105 shadow-xs">
-              <Shield className="w-4 h-4" />
+            <div className="w-9 h-9 flex items-center justify-center transition-transform group-hover:scale-105">
+              <img 
+                src="/favicon.webp" 
+                alt="SurakshaDrishti Emblem" 
+                className="w-full h-full object-contain"
+              />
             </div>
             <div>
               <div className="font-bold text-sm tracking-tight text-[#1A1A1A] leading-none">
@@ -232,8 +242,12 @@ export default function Navbar({
             <div>
               <div className="flex items-center justify-between pb-4 border-b border-[#E8E1D5]">
                 <div className="flex items-center gap-2.5">
-                  <div className="p-1.5 rounded-xl bg-[#2C2A29] text-[#FDFBF7] shadow-xs">
-                    <Shield className="w-4 h-4 text-[#8B7355]" />
+                  <div className="w-8 h-8 flex items-center justify-center">
+                    <img 
+                      src="/favicon.webp" 
+                      alt="SurakshaDrishti Emblem" 
+                      className="w-full h-full object-contain"
+                    />
                   </div>
                   <div>
                     <span className="font-bold text-sm text-[#1A1A1A] block leading-tight">SurakshaDrishti</span>
