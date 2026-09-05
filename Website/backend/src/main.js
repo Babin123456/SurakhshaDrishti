@@ -32,7 +32,7 @@ app.use("/auth", API_Limiter(60, 50, 1), authRoutes); // 60 seconds, 50 requests
 app.use("/api/auth", API_Limiter(60, 50, 1), authRoutes);
 app.use("/zones", zonesRoutes);
 app.use("/api/zones", zonesRoutes);
-app.use("/chat", FN_verifyTkn, API_Limiter(10, 500, 0), chatRoutes); // 10 seconds, 500 requests
+app.use("/chat", FN_verifyTkn, API_Limiter(10, 500, 0), chatRoutes); // 10 seconds, 500 requests [because for testing we need this]
 app.use("/profile", FN_verifyTkn, API_Limiter(10, 50, 0), profileRoutes); // 10 seconds, 50 requests
 app.use("/feedback", FN_verifyTkn, API_Limiter(60, 50, 1), feedbackRoutes); // 60 seconds, 50 requests
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
