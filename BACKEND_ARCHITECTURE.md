@@ -296,6 +296,6 @@ CREATE TABLE IF NOT EXISTS e2ee_messages (
 
 **SurakshaDrishti Backend Technical Architecture**  
 *Smart India Hackathon 2026 • Problem Statement #26191 • Developed by ADAMAS University Team*  
-*Repository: [`Babin123456/SurakshaDrishti`](https://github.com/Babin123456/SurakshaDrishti)*
+*Repository: [`Kashcx-dev/SurakshaDrishti`](https://github.com/Kashcx-dev/SurakshaDrishti/tree/main)*
 
 </div>
