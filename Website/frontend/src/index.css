@@ -1,0 +1,515 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   SurakhshaDrishti — Design System (Dark Matte Theme)
+   AI-Driven Multi-Hazard Red Zone & Relocation DSS
+   ============================================================ */
+
+@layer base {
+  :root {
+    --color-creme-bg: #FDFBF7;
+    --color-sand-border: #E8E1D5;
+    --color-sand-muted: #F2EDE4;
+    --color-taupe-dark: #2C2A29;
+    --color-taupe-charcoal: #1A1A1A;
+    --color-taupe-text: #5C544D;
+    --color-gold-accent: #8B7355;
+    --color-rust-accent: #B85C38;
+    --glass-bg: rgba(255, 255, 255, 0.75);
+    --glass-border: rgba(232, 225, 213, 0.8);
+  }
+
+  /* Paper Noise Texture */
+  .paper-texture {
+    position: absolute;
+    inset: 0;
+    background: url('data:image/svg+xml;utf8,<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg"><filter id="noiseFilter"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23noiseFilter)"/></svg>');
+    opacity: 0.04;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  /* Subtle Warm Creme Mesh Gradient */
+  .bg-creme-mesh {
+    background-image: 
+      radial-gradient(at 0% 0%, hsla(30, 40%, 94%, 1) 0, transparent 50%), 
+      radial-gradient(at 100% 0%, hsla(45, 30%, 96%, 1) 0, transparent 50%);
+  }
+
+  /* Gradient Bottom-Edge Glow on Button Hover */
+  .btn-bottom-glow-dark:hover {
+    box-shadow: 0 10px 25px -4px rgba(44, 42, 41, 0.35);
+    transform: translateY(-2px);
+  }
+
+  .btn-bottom-glow-rust:hover {
+    box-shadow: 0 10px 25px -4px rgba(184, 92, 56, 0.35);
+    transform: translateY(-2px);
+  }
+
+  /* Disabled buttons: never show pointer or allow click actions */
+  button:disabled,
+  button[disabled] {
+    cursor: not-allowed !important;
+    pointer-events: none !important;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    color-scheme: light;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+
+  body {
+    background: #FDFBF7;
+    color: #2C2A29;
+    overflow-x: hidden;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    letter-spacing: -0.011em;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif;
+    letter-spacing: -0.025em;
+  }
+
+  .nav-scrolled {
+    background: rgba(5, 9, 20, 0.9) !important;
+    backdrop-filter: blur(20px) !important;
+    -webkit-backdrop-filter: blur(20px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6), 0 0 15px 1px rgba(6, 182, 212, 0.08) !important;
+    transform: translateY(0);
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #F2EDE4;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #D9D0C1;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #B8AFA0;
+  }
+}
+
+/* ============================================================
+   Component Layer — Reusable Utilities
+   ============================================================ */
+
+@layer components {
+  /* Glassmorphism card for creme background */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(232, 225, 213, 0.8);
+    box-shadow: 0 4px 20px -2px rgba(217, 208, 193, 0.25);
+  }
+
+  /* Topographic background pattern */
+  .topo-pattern {
+    background-image:
+      radial-gradient(ellipse at 20% 50%, rgba(6, 182, 212, 0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(229, 62, 62, 0.03) 0%, transparent 50%),
+      repeating-conic-gradient(
+        from 0deg at 50% 50%,
+        rgba(255,255,255,0.01) 0deg 2deg,
+        transparent 2deg 4deg
+      );
+  }
+
+  /* Contour lines overlay */
+  .contour-lines {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cpath d='M0 100 Q50 60 100 100 T200 100' fill='none' stroke='rgba(6,182,212,0.06)' stroke-width='1'/%3E%3Cpath d='M0 130 Q50 90 100 130 T200 130' fill='none' stroke='rgba(6,182,212,0.04)' stroke-width='1'/%3E%3Cpath d='M0 70 Q50 30 100 70 T200 70' fill='none' stroke='rgba(6,182,212,0.05)' stroke-width='1'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    background: linear-gradient(135deg, #ffffff 0%, #94A3B8 50%, #06B6D4 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Still-type Gradient Heading Utilities */
+  .gradient-text-stone {
+    background: linear-gradient(135deg, #1A1A1A 0%, #3D3833 45%, #73695E 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-gold {
+    background: linear-gradient(135deg, #8B7355 0%, #B89255 50%, #D4AF37 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-text-terracotta {
+    background: linear-gradient(135deg, #B85C38 0%, #D97736 50%, #8B7355 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Hazard glow effects */
+  .glow-critical {
+    box-shadow: 0 0 20px rgba(229, 62, 62, 0.3), 0 0 60px rgba(229, 62, 62, 0.1);
+  }
+
+  .glow-info {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.25), 0 0 60px rgba(6, 182, 212, 0.08);
+  }
+
+  .glow-safe {
+    box-shadow: 0 0 20px rgba(56, 161, 105, 0.25);
+  }
+
+  /* Animated gradient border */
+  .gradient-border {
+    position: relative;
+  }
+  .gradient-border::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.4), rgba(229, 62, 62, 0.3), rgba(245, 158, 11, 0.3));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Button base styles */
+  .btn-primary {
+    @apply px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500
+           text-white font-bold rounded-xl text-sm transition-all duration-300
+           shadow-lg shadow-blue-900/30 hover:shadow-blue-800/50
+           active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-cyan-500/50;
+  }
+
+  .btn-danger {
+    @apply px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500
+           text-white font-extrabold rounded-xl text-sm transition-all duration-300
+           shadow-lg shadow-red-900/40 hover:shadow-red-800/60
+           active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-red-500/50;
+  }
+
+  .btn-ghost {
+    @apply px-5 py-2.5 bg-transparent border border-slate-700 hover:border-slate-500
+           text-slate-300 hover:text-white font-semibold rounded-xl text-sm transition-all duration-300
+           hover:bg-white/5 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-slate-500/50;
+  }
+
+  /* Cinematic Scroll Reveal & Parallax States */
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px) scale(0.97);
+    filter: blur(8px);
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal.revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+  .reveal-left {
+    opacity: 0;
+    transform: translateX(-50px) scale(0.97);
+    filter: blur(8px);
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal-left.revealed {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+  .reveal-right {
+    opacity: 0;
+    transform: translateX(50px) scale(0.97);
+    filter: blur(8px);
+    transition: opacity 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), filter 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal-right.revealed {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+    filter: blur(0);
+  }
+
+  /* Directional Cinematic Scroll Parallax Variants */
+  .reveal-tilt-left {
+    opacity: 0;
+    transform: translateY(45px) translateX(-30px) rotate(-4deg) scale(0.94);
+    filter: blur(10px);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal-tilt-left.revealed {
+    opacity: 1;
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    filter: blur(0);
+  }
+
+  .reveal-tilt-right {
+    opacity: 0;
+    transform: translateY(45px) translateX(30px) rotate(4deg) scale(0.94);
+    filter: blur(10px);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal-tilt-right.revealed {
+    opacity: 1;
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    filter: blur(0);
+  }
+
+  .reveal-drop {
+    opacity: 0;
+    transform: translateY(-40px) scale(0.95);
+    filter: blur(8px);
+    transition: opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1), filter 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+    will-change: opacity, transform, filter;
+  }
+  .reveal-drop.revealed {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+
+  /* Pipeline Connecting Arrow Pulse Animation */
+  @keyframes arrowPulse {
+    0%, 100% {
+      opacity: 0.35;
+      transform: translateX(0) scale(0.95);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(6px) scale(1.1);
+    }
+  }
+  /* Mobile Drawer Subtle Frosted Morph Animation */
+  @keyframes mobileBackdropFade {
+    from {
+      opacity: 0;
+      backdrop-filter: blur(0px);
+    }
+    to {
+      opacity: 1;
+      backdrop-filter: blur(12px);
+    }
+  }
+
+  @keyframes mobileMenuSlide {
+    from {
+      opacity: 0;
+      transform: translateX(18px) scale(0.98);
+      filter: blur(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) scale(1);
+      filter: blur(0);
+    }
+  }
+
+  .animate-mobile-backdrop {
+    animation: mobileBackdropFade 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  .animate-mobile-menu {
+    animation: mobileMenuSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  /* Stat card hover */
+  .stat-card {
+    @apply transition-all duration-300;
+  }
+  .stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px -10px var(--glow, rgba(6, 182, 212, 0.2));
+  }
+
+  /* Tactical Radar Sweep */
+  .radar-sweep-cone {
+    transform-origin: 200px 250px;
+    animation: radarSweep 6s linear infinite;
+  }
+
+  /* Animated Wayroute Line */
+  .animated-wayroute {
+    stroke-dasharray: 6 4;
+    animation: dashMove 1.5s linear infinite;
+  }
+
+  /* Glowing HUD elements */
+  .hud-badge {
+    background: rgba(13, 26, 45, 0.85);
+    border: 1px solid rgba(6, 182, 212, 0.3);
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.15);
+    backdrop-filter: blur(12px);
+  }
+
+  .neon-glow-red {
+    box-shadow: 0 0 25px rgba(229, 62, 62, 0.4), inset 0 0 15px rgba(229, 62, 62, 0.2);
+  }
+
+  .neon-glow-cyan {
+    box-shadow: 0 0 25px rgba(6, 182, 212, 0.35), inset 0 0 15px rgba(6, 182, 212, 0.15);
+  }
+}
+
+@keyframes radarSweep {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes dashMove {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: -20; }
+}
+
+/* Smooth Cinematic Blur Fade Transition into Landing Page */
+@keyframes landingBlurReveal {
+  0% {
+    filter: blur(20px);
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  50% {
+    filter: blur(8px);
+    opacity: 0.7;
+    transform: scale(0.99);
+  }
+  100% {
+    filter: blur(0px);
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-blur-reveal {
+  animation: landingBlurReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: filter, opacity, transform;
+}
+
+/* Clean Glass-type Letters with Sequential Left-to-Right Crisp Color Wave (No Glow) */
+@keyframes letterGlowWave {
+  0%, 100% {
+    color: rgba(44, 42, 41, 0.25);
+    transform: translateY(0px) scale(1);
+  }
+  15% {
+    color: #8B7355;
+    transform: translateY(-3px) scale(1.03);
+  }
+  30% {
+    color: #D4AF37;
+    transform: translateY(-6px) scale(1.07);
+  }
+  45% {
+    color: #B85C38;
+    transform: translateY(-3px) scale(1.03);
+  }
+  60% {
+    color: #2D7A4F;
+    transform: translateY(-1px) scale(1.01);
+  }
+  75% {
+    color: rgba(44, 42, 41, 0.25);
+    transform: translateY(0px) scale(1);
+  }
+}
+
+.letter-wave-glow {
+  animation: letterGlowWave 4.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  will-change: color, transform;
+}
+
+/* ============================================================
+   Issue #14 — Realistic GPS Coordination Searching Animation
+   Randomized speed, direction changes, and intermittent sweep delays
+   ============================================================ */
+
+@keyframes gpsSearchRadar {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  15% {
+    transform: rotate(140deg) scale(1.08);
+  }
+  28% {
+    /* Brief lock-on hesitation / searching scan */
+    transform: rotate(115deg) scale(1.02);
+  }
+  42% {
+    /* Fast sweep in opposite direction */
+    transform: rotate(310deg) scale(1.1);
+  }
+  55% {
+    /* Settling scan pause */
+    transform: rotate(280deg) scale(1);
+  }
+  70% {
+    /* Deep sweep forward */
+    transform: rotate(500deg) scale(1.06);
+  }
+  82% {
+    /* Micro recoil */
+    transform: rotate(460deg) scale(0.98);
+  }
+  92% {
+    transform: rotate(680deg) scale(1.05);
+  }
+  100% {
+    transform: rotate(720deg) scale(1);
+  }
+}
+
+.gps-radar-search {
+  display: inline-block;
+  animation: gpsSearchRadar 5.2s cubic-bezier(0.45, 0.05, 0.25, 0.95) infinite;
+  transform-origin: center center;
+  will-change: transform;
+}
+
+/* ============================================================
+   Reduced Motion Overrides
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .reveal-left,
+  .reveal-right {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+
+  .radar-ring {
+    animation: none !important;
+    opacity: 0.3 !important;
+  }
+
+  .topo-pattern {
+    background-image: none;
+  }
+
+  .stat-card:hover {
+    transform: none;
+  }
+}
