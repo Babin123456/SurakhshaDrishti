@@ -174,7 +174,7 @@ frontend/
 ### 2. Installation
 
 ```bash
-cd frontend
+cd Website/frontend
 npm install
 ```
 
@@ -192,7 +192,7 @@ npm run dev
 npm run build
 ```
 
-Generates minified production bundle in `frontend/dist/`.
+Generates minified production bundle in `dist/`.
 
 ---
 

@@ -174,17 +174,23 @@ frontend/
 ### 2. Installation
 
 ```bash
-cd frontend
+cd App
 npm install
 ```
 
-### 3. Running Locally
+### 3. Running Locally (Web or Desktop)
 
+To run the local web interface via Vite:
 ```bash
 npm run dev
 ```
-
 > ⚡ Local Development Server launches on: **`http://localhost:5173`**
+
+To launch the full Electron desktop client:
+```bash
+npm run electron
+```
+> 🖥️ Concurrently serves Vite on `http://localhost:5173` and boots the Electron desktop window.
 
 ### 4. Production Build
 
@@ -192,7 +198,7 @@ npm run dev
 npm run build
 ```
 
-Generates minified production bundle in `frontend/dist/`.
+Generates minified production bundle in `dist/`.
 
 ---
 

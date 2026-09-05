@@ -138,7 +138,7 @@ backend/
 
 ### 2. Environment Configuration
 
-Create a `.env` file inside `backend/`:
+Create a `.env` file inside `Website/backend/`:
 
 ```ini
 PORT=5000
@@ -153,18 +153,15 @@ SMTP_PASS=your_app_password
 ### 3. Installation & Run
 
 ```bash
-
 # Navigate to the backend directory
-
-cd backend
+cd Website/backend
 
 # Install dependencies
-
 npm install
 
 # Start the server
-
-node src/main.js
+npm start
+# or: node src/main.js
 ```
 
 > ⚡ API Server and WebSocket listener launch on: **`http://localhost:5000`**
