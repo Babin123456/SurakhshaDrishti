@@ -117,25 +117,35 @@ git clone https://github.com/Kashcx-dev/SurakshaDrishti.git
 cd SurakshaDrishti
 ```
 
-### 2. Backend Configuration
+### 2. Website Backend API & Telemetry Server
 
 ```bash
-cd backend
+cd Website/backend
 npm install
-node src/main.js
+npm start
 ```
 
-> Server starts on port `5000` (or `process.env.PORT`) with active WebSocket listener.
+> Server starts on port `5000` (or `process.env.PORT`) with active WebSocket listener (`node src/main.js`).
 
-### 3. Frontend Configuration
+### 3. Website Frontend Client
 
 ```bash
-cd ../frontend
+cd Website/frontend
 npm install
 npm run dev
 ```
 
 > Access the live web interface at `http://localhost:5173`
+
+### 4. Desktop Electron App (Optional Command Center)
+
+```bash
+cd App
+npm install
+npm run electron
+```
+
+> Launches the integrated Electron desktop command client connected to local Vite dev server.
 
 ---
 
@@ -149,8 +159,9 @@ For granular architectural diagrams, file-by-file working principles, and subsys
 | [**ARCHITECTURE.md**](./ARCHITECTURE.md) | In-depth Mermaid sequence and flow diagrams detailing high-level topology, multi-agency consensus resolution voting, and shelter carrying capacity balancing. |
 | [**AI Prediction Architecture**](./ai_prediction_architecture.md) | Deep learning specifications for time-series ConvLSTM, ViViT spatio-temporal modeling, and H3/S2 geohash anomaly heatmaps. |
 | [**Detailed Backend Architecture**](./BACKEND_ARCHITECTURE.md) | Line-by-line breakdown of Express route handlers, PostgreSQL DDL migrations, transaction integrity, and Socket.io channel topology. |
-| [**Frontend README**](./frontend/README.md) | Client-side architecture, 3D tilt engine, shrinking capsule navbar, design system tokens, and component directory tree. |
-| [**Backend README**](./backend/README.md) | Server-side command engine, Socket.io event channels, PostgreSQL schema matrix, and REST API route registry. |
+| [**Website Frontend README**](./Website/frontend/README.md) | Client-side architecture, 3D tilt engine, shrinking capsule navbar, design system tokens, and component directory tree. |
+| [**Website Backend README**](./Website/backend/README.md) | Server-side command engine, Socket.io event channels, PostgreSQL schema matrix, and REST API route registry. |
+| [**Desktop App README**](./App/README.md) | Electron desktop client integration, multi-monitor configuration, and local telemetry dispatch. |
 | [**LICENSE**](./LICENSE) | Official Open-Source MIT License attributed to ADAMAS University (SIH 2026). |
 
 ---
