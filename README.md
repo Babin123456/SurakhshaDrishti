@@ -107,8 +107,8 @@ The relational data backbone operates on **Supabase PostgreSQL 17.6** across 11 
 
 ### Prerequisites
 
-- **Node.js**: v18.0.0 or higher (v20+ recommended)
-- **npm**: v9.0.0+
+* **Node.js**: v18.0.0 or higher (v20+ recommended)
+* **npm**: v9.0.0+
 
 ### 1. Clone the Repository
 

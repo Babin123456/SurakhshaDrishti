@@ -33,6 +33,7 @@
 ## 🧭 Executive Overview
 
 The **SurakshaDrishti Backend** is a fault-tolerant, low-latency command engine engineered for emergency mission operations. It serves as the single source of truth for:
+
 - **Real-Time Spatial Ingestion:** High-speed ingest of ISRO SAR anomalies and IMD precipitation telemetry.
 - **16-Digit Cryptographic Access Verification:** Guarantees that only authorized on-site commanders can join incident coordination.
 - **Inter-Agency Consensus Voting:** Automatically transitions active Red Zones to "Situation Under Control" once consensus thresholds are met across NDRF, SDMA, and Police agencies.

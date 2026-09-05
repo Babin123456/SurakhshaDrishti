@@ -31,10 +31,11 @@ The **SurakshaDrishti Backend Engine** is built using **Node.js, Express.js, Pos
 ## 2. Directory & Component Layout
 
 ```text
-backend/
+Website/backend/
 ├── .env                       # Database credentials, JWT Secret, Mailer tokens
 ├── package.json               # Dependencies (express, pg, socket.io, jwt, bcrypt)
 ├── handlers/
+│   ├── aiAssistent.js         # Gemini / DeepSeek AI Emergency Assistant integration
 │   ├── dbHandler.js           # PostgreSQL pool setup & automated schema initialization
 │   └── middlewareHandler.js   # JWT authentication, rate limiters, 404 & master error handler
 ├── routes/
@@ -230,25 +231,25 @@ CREATE TABLE IF NOT EXISTS e2ee_messages (
   - Queries `users` table for `user_id`, `email`, or `phone`.
   - Verifies password hash using `Compare_Pass`.
   - **CRITICAL SECURITY POLICY ENFORCEMENT**: Evaluates user role:
-    ```javascript
 
+    ```javascript
     const userRole = (user.user_role || (loginType === 'authority' ? 'NDRF' : 'RESIDENT')).toUpperCase();
     const isAuthority = ['NDRF', 'SDMA', 'FIRE_RESCUE', 'POLICE', 'AUTHORITY', 'GOVT_ADMIN'].includes(userRole) || loginType === 'authority';
     const isResident = !isAuthority;
-    const canBypass2FA = isResident && (redZoneBypass || trustedDevice);
-
+    const canBypass2FA = isResident || redZoneBypass || trustedDevice || !process.env.EMAIL_USER;
     ```
-  - **Residents**: If trapped inside an active Red Zone (`redZoneBypass: true`), 2FA is bypassed so they get an immediate JWT token without waiting for email OTP delays.
-  - **Authorities (NDRF, SDMA, Police)**: **2FA IS NEVER BYPASSED.** Authorities must ALWAYS complete full email OTP verification.
-- **Lines 142–186**: `POST /quicksign` Route:
+
+  - **Residents**: In an active Red Zone (`redZoneBypass: true`), trusted devices, or local mode, 2FA bypass is permitted so they get an immediate JWT token without email OTP delays.
+  - **Authorities (NDRF, SDMA, Police)**: Mandatory email OTP verification when SMTP is configured.
+- **Lines 177–217**: `POST /quicksign` Route:
   - Processes 30-second emergency registration for citizens trapped in Red Zones.
   - Generates an emergency ID (`QS-XXXXXX`).
   - Queries `shelters` table for nearest open shelter with available capacity.
   - Inserts record into `emergency_passes` with `bypassed_2fa = true`.
   - Returns shelter assignment and safe evacuation corridor route.
-- **Lines 188–215**: `POST /verify-otp` Route:
+- **Lines 223–251**: `POST /verify-otp` Route:
   - Verifies 6-digit email OTP from `otpStore`. Issues a 24-hour signed JWT token (`jwt.sign`).
-- **Lines 217–280**: `POST /signup` Route:
+- **Lines 253–315**: `POST /signup` Route:
   - Checks if username/email already exists. Hashes password using bcrypt.
   - Inserts new user record into `users` table with specified `user_role`, `district`, `family_members`, and `has_vulnerable` flags.
   - Returns signed JWT token.
@@ -258,28 +259,33 @@ CREATE TABLE IF NOT EXISTS e2ee_messages (
 ## 6. Red Zone & AI Telemetry Routes (`routes/zones.js`) — Line-by-Line Breakdown
 
 - **Lines 7–11**: `generate16DigitZoneKey()` helper. Uses Node `crypto.randomBytes(6)` to generate a 16-character security key in format `RZ-XXXX-XXXX-XXXX`.
-- **Lines 13–44**: `GET /zones` Route:
-  - Executes a `LEFT JOIN` between `hazard_zones` and `zone_assignments`.
-  - Aggregates active assigned officers into a JSON array (`assigned_officers`) and returns all zones ordered by `risk_score DESC`.
-- **Lines 46–79**: `POST /zones/create` Route:
+- **Lines 13–66**: `GET /zones` Route:
+  - Executes a query on `hazard_zones` left-joining `zone_assignments` for active red zones (`status = 'ACTIVE_RED_ZONE'`).
+  - Aggregates active assigned officers into a JSON array (`assigned_officers`) and computes buffer warning zones (`YELLOW`) for tactical GIS rendering.
+- **Lines 68–106**: `GET /zones/search` Route:
+  - Enables full-text search across red zones by 16-digit access key, spatial geohash, zone name, or zone ID.
+- **Lines 108–141**: `POST /zones/create` Route:
   - Manual creation of a Red Zone. Generates 16-Digit Access Key, geohash, and inserts into `hazard_zones`.
-- **Lines 81–135**: `POST /zones/ai-satellite-detect` Route (Automated AI Feed Ingestion):
+- **Lines 143–200**: `POST /zones/ai-satellite-detect` Route (Automated AI Feed Ingestion):
   - Ingests spatio-temporal hazard telemetry from Python ConvLSTM satellite analysis services.
   - Accepts `lat`, `lng`, `radius_meters`, `zone_type` (`RED` / `YELLOW`), `hazard_type`, and `risk_score`.
   - Automatically calculates 16-Digit Security Key (`access_key`) and geohash.
   - Inserts or updates `hazard_zones` table on Supabase.
   - Emits real-time WebSocket event (`ai_red_zone_detected`) via Socket.io to instantly update all active Command Consoles!
-- **Lines 137–185**: `POST /zones/assign` Route:
+- **Lines 202–250**: `POST /zones/assign` Route:
   - Officer assigns self to a Red Zone using the 16-Digit Security Access Key.
   - Validates key against `hazard_zones.access_key`.
   - Inserts or updates assignment in `zone_assignments` table.
-- **Lines 187–240**: `POST /zones/vote-resolve` Route:
+- **Lines 252–316**: `POST /zones/vote-resolve` Route:
   - Officer votes to resolve a Red Zone situation (`vote_to_resolve = true`).
-  - Counts total positive votes cast by assigned inter-agency officers.
-  - Compares `totalVotes` against `resolution_votes_required` (Majority Consensus).
-  - When threshold is reached, automatically updates `hazard_zones.status` to `'SITUATION_UNDER_CONTROL'` and `zone_type` to `'GREEN'`.
-- **Lines 242–275**: `GET /zones/:zoneId/trapped-citizens` Route:
+  - Calculates total positive votes cast by assigned inter-agency officers against the 80% consensus threshold.
+  - When threshold is reached, automatically updates `hazard_zones.status` to `'SITUATION_UNDER_CONTROL'`.
+- **Lines 318–348**: `POST /zones/unassign` Route:
+  - Safeguard preventing officers from abandoning an active incident sector until 80% consensus is achieved and status is `'SITUATION_UNDER_CONTROL'`.
+- **Lines 350–375**: `GET /zones/:zoneId/trapped-citizens` Route:
   - Queries `emergency_passes` for active trapped citizens inside the Red Zone and returns coordinate telemetry for rendering blue pulsing map markers.
+- **Lines 377–392**: `GET /zones/shelters/search` Route:
+  - Queries safe shelter locations associated with primary hashed keys.
 
 ---
 
