@@ -5,8 +5,8 @@ out/
 .vite/
 
 # Legacy root folders (removed from main codebase)
-frontend/
-backend/
+/frontend/
+/backend/
 
 # Local Environment Secrets & Overrides
 *.local

@@ -230,13 +230,12 @@ CREATE TABLE IF NOT EXISTS e2ee_messages (
   - Queries `users` table for `user_id`, `email`, or `phone`.
   - Verifies password hash using `Compare_Pass`.
   - **CRITICAL SECURITY POLICY ENFORCEMENT**: Evaluates user role:
-    ```javascript
 
+    ```javascript
     const userRole = (user.user_role || (loginType === 'authority' ? 'NDRF' : 'RESIDENT')).toUpperCase();
     const isAuthority = ['NDRF', 'SDMA', 'FIRE_RESCUE', 'POLICE', 'AUTHORITY', 'GOVT_ADMIN'].includes(userRole) || loginType === 'authority';
     const isResident = !isAuthority;
     const canBypass2FA = isResident && (redZoneBypass || trustedDevice);
-
     ```
   - **Residents**: If trapped inside an active Red Zone (`redZoneBypass: true`), 2FA is bypassed so they get an immediate JWT token without waiting for email OTP delays.
   - **Authorities (NDRF, SDMA, Police)**: **2FA IS NEVER BYPASSED.** Authorities must ALWAYS complete full email OTP verification.

@@ -35,6 +35,7 @@
 **SurakshaDrishti** (*Protection Vision*) is an enterprise-grade geospatial decision-support platform engineered for the **National Disaster Response Force (NDRF)** and **State Disaster Management Authorities (SDMAs)** under Smart India Hackathon **Problem Statement 26191**.
 
 The frontend application features:
+
 - **Floating Shrinking Capsule Navbar:** Docked at top (`z-[9995]`), dynamically shrinking into a compact pill (`w-[94%] max-w-4xl`, `backdrop-blur-2xl`) on scroll past 40px, and automatically unmounting during modal dialogs.
 - **Interactive 3D Physical Tilt Engine:** Cards track mouse coordinates with physical perspective, dynamic rotation (`rotateX`, `rotateY`), and moving specular light glare.
 - **Cinematic Scroll Parallax Reveals:** Sections unmask sequentially on scroll with directional transitions (left-tilt, drop, rise, right-tilt) and dynamic count-up statistics that re-animate on every scroll.
