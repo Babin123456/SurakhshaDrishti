@@ -146,8 +146,8 @@ DATABASE_URL=postgresql://postgres:[PASSWORD]@[HOST]:[PORT]/postgres
 JWT_SECRET=your_super_secret_jwt_key_here
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587
-SMTP_USER=your_email@domain.com
-SMTP_PASS=your_app_password
+EMAIL_USER=your_email@domain.com
+EMAIL_PASS=your_app_password
 ```
 
 ### 3. Installation & Run

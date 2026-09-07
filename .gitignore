@@ -9,6 +9,9 @@ out/
 /backend/
 
 # Local Environment Secrets & Overrides
+.env
+.env.*
+!.env.example
 *.local
 .env.local
 .env.*.local
