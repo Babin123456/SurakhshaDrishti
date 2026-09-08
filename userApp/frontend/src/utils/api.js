@@ -229,5 +229,15 @@ export const apiService = {
       console.error("Failed to cast vote:", e);
       return { success: false, error: e.message };
     }
+  },
+
+  fetchDynamicShelters: async (lat, lng, radius = 7000) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/zones/shelters/dynamic?lat=${lat}&lng=${lng}&radius=${radius}`);
+      return await response.json();
+    } catch (e) {
+      console.error("Failed to fetch dynamic shelters:", e);
+      return { success: false, shelters: [], source: 'error' };
+    }
   }
 };

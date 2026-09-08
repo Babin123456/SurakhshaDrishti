@@ -76,6 +76,10 @@ The `userApp` directory contains a native Electron Desktop/Mobile application us
 * **8-Character Spatial Geohashing**: Sub-meter resolution indexing (`#tdv2n19z`) for instant hazard evaluation across millions of coordinates.
 * **GSM 3.4 Offline Telemetry** *(planned)*: Low-bandwidth geohash SMS alerts through local towers when broadband/cellular internet grids collapse.
 
+### AI & Telemetry Infrastructure
+* **AI Prediction History Logging**: Comprehensive PostgreSQL tracking of all proactive AI-generated Red Zone triggers. Logs include exact coordinate bounds, calculated hazard radii, trigger reasoning (e.g., 'Soil Moisture 88%'), and statistical confidence scores for human-in-the-loop validation and academic review.
+* **Hybrid Dynamic Shelter Allocation**: A dual-layer resilient architecture. The backend actively polls the database for officially registered government shelters (SDMA). If a Red Zone triggers in an undocumented area, the system gracefully falls back to the **OpenStreetMap (Overpass) API**, dynamically scraping nearby schools and hospitals using physical Haversine distance based on the AI's generated radius, and rendering them on the Civilian's UI with realistic assumed capacities and warning overlays.
+
 ---
 
 ## Database Schema Architecture

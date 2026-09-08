@@ -390,4 +390,64 @@ router.get("/shelters/search", async (req, res, next) => {
     }
 });
 
+// 7. GET /zones/shelters/dynamic — Hybrid Dynamic Shelter capacity engine
+router.get("/shelters/dynamic", async (req, res, next) => {
+    const { lat, lng, radius } = req.query;
+    if (!lat || !lng) return res.status(400).json({ success: false, error: "lat and lng required" });
+
+    try {
+        // Step 1: Check officially registered shelters
+        const officialRes = await db.query(`SELECT * FROM shelters WHERE is_officially_registered = true`);
+        
+        // Simple manual distance filter for the hackathon (Haversine)
+        const R = 6371e3;
+        const officialNearby = officialRes.rows.filter(s => {
+            const dLat = (s.lat - lat) * Math.PI / 180;
+            const dLng = (s.lng - lng) * Math.PI / 180;
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(lat * Math.PI / 180) * Math.cos(s.lat * Math.PI / 180) * Math.sin(dLng/2) * Math.sin(dLng/2);
+            const dist = R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+            return dist <= (radius || 7000);
+        });
+
+        if (officialNearby.length > 0) {
+            return res.json({ success: true, shelters: officialNearby, source: 'official_db' });
+        }
+
+        // Step 2: Fallback to Overpass API (OpenStreetMap)
+        const overpassQuery = `[out:json];node(around:${radius || 7000},${lat},${lng})["amenity"~"school|hospital"];out;`;
+        const overpassUrl = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(overpassQuery)}`;
+        
+        // Node 18+ native fetch
+        const fetchRes = await fetch(overpassUrl);
+        const osmData = await fetchRes.json();
+
+        const dynamicShelters = [];
+        for (const node of osmData.elements || []) {
+            if (!node.tags || !node.tags.name) continue; // skip unnamed places
+            const type = node.tags.amenity;
+            const capacity = type === 'hospital' ? 300 : 800; // Mock assumed capacities
+
+            dynamicShelters.push({
+                shelter_id: `OSM-${node.id}`,
+                zone_id: 'DYNAMIC-ZONE',
+                primary_hashed_key: 'N/A',
+                name: node.tags.name + (type === 'hospital' ? ' (Hospital)' : ' (School)'),
+                lat: node.lat,
+                lng: node.lon,
+                capacity_total: capacity,
+                capacity_occupied: 0,
+                status: 'OPEN',
+                evacuation_corridor: 'Dynamic Route',
+                is_officially_registered: false,
+                source_data: 'OpenStreetMap'
+            });
+        }
+
+        return res.json({ success: true, shelters: dynamicShelters.slice(0, 5), source: 'dynamic_osm' }); // return top 5
+    } catch (err) {
+        console.error("Dynamic shelter fetch failed:", err);
+        return res.status(500).json({ success: false, error: "Failed to fetch dynamic shelters" });
+    }
+});
+
 module.exports = router;

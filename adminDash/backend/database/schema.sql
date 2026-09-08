@@ -72,6 +72,8 @@ CREATE TABLE IF NOT EXISTS shelters (
     capacity_occupied INTEGER DEFAULT 0,
     status TEXT DEFAULT 'OPEN',
     evacuation_corridor TEXT,
+    is_officially_registered BOOLEAN DEFAULT false,
+    source_data TEXT,
 
     FOREIGN KEY (zone_id) REFERENCES hazard_zones(zone_id)
 );

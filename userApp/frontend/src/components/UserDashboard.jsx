@@ -30,11 +30,11 @@ export default function UserDashboard({ onLogout, session }) {
       try {
         const response = await apiService.fetchZones();
         if (response.success && response.zones) {
-          const activeZones = response.zones.filter(z => z.status === 'active');
+          const activeZones = response.zones.filter(z => z.status === 'ACTIVE_RED_ZONE' || z.status === 'ACTIVE_WARNING_ZONE');
           setZones(activeZones);
           setIsEmergency(activeZones.length > 0);
         } else if (Array.isArray(response)) {
-          const activeZones = response.filter(z => z.status === 'active');
+          const activeZones = response.filter(z => z.status === 'ACTIVE_RED_ZONE' || z.status === 'ACTIVE_WARNING_ZONE');
           setZones(activeZones);
           setIsEmergency(activeZones.length > 0);
         }
@@ -47,14 +47,6 @@ export default function UserDashboard({ onLogout, session }) {
     const interval = setInterval(fetchZones, 10000);
     return () => clearInterval(interval);
   }, [currentRoute]);
-
-  // Mock Safehouse Array
-  const safehouses = [
-    { id: 'SH1', name: 'Relief Camp Alpha — Sector 7', lat: 11.6850, lng: 76.1300 },
-    { id: 'SH2', name: 'Govt. Hospital Safe Zone', lat: 11.6800, lng: 76.1250 },
-    { id: 'SH3', name: 'High School Evacuation Point', lat: 11.6900, lng: 76.1400 },
-    { id: 'SH4', name: 'Community Hall Shelter', lat: 11.6750, lng: 76.1150 }
-  ];
 
   const [sortedSafehouses, setSortedSafehouses] = useState([]);
   const [selectedSafehouse, setSelectedSafehouse] = useState('');
@@ -70,18 +62,40 @@ export default function UserDashboard({ onLogout, session }) {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
   };
 
+  const [currentRadius, setCurrentRadius] = useState(7000);
+
+  useEffect(() => {
+    if (zones && zones.length > 0 && userLat && userLng) {
+      // Find closest active zone to determine search radius
+      let closestZone = zones[0];
+      let minDist = calculateDistance(userLat, userLng, closestZone.lat, closestZone.lng);
+      for (let i = 1; i < zones.length; i++) {
+        let dist = calculateDistance(userLat, userLng, zones[i].lat, zones[i].lng);
+        if (dist < minDist) {
+          minDist = dist;
+          closestZone = zones[i];
+        }
+      }
+      if (closestZone.radius_meters && closestZone.radius_meters !== currentRadius) {
+        setCurrentRadius(closestZone.radius_meters);
+      }
+    }
+  }, [zones, userLat, userLng, currentRadius]);
+
   useEffect(() => {
     if (userLat && userLng) {
-      const sorted = safehouses.map(sh => ({
-        ...sh,
-        distance: calculateDistance(userLat, userLng, sh.lat, sh.lng)
-      })).sort((a, b) => a.distance - b.distance);
-      setSortedSafehouses(sorted);
-      setSelectedSafehouse(sorted[0].id); // Auto-select nearest
-    } else {
-      setSortedSafehouses(safehouses.map(sh => ({ ...sh, distance: 0 })));
+      apiService.fetchDynamicShelters(userLat, userLng, currentRadius).then(res => {
+        if (res.success && res.shelters) {
+          const sorted = res.shelters.map(sh => ({
+            ...sh,
+            distance: calculateDistance(userLat, userLng, sh.lat, sh.lng)
+          })).sort((a, b) => a.distance - b.distance);
+          setSortedSafehouses(sorted);
+          if (sorted.length > 0) setSelectedSafehouse(sorted[0].shelter_id);
+        }
+      });
     }
-  }, [userLat, userLng]);
+  }, [userLat, userLng, currentRadius]);
 
   // Trigger test alert manually for the Electron demo
   const handleTestAlert = () => {
@@ -126,11 +140,15 @@ export default function UserDashboard({ onLogout, session }) {
             onChange={e => setSelectedSafehouse(e.target.value)}
             className="w-full bg-stone-100 border border-stone-300 text-stone-700 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
           >
-            {sortedSafehouses.map(sh => (
-              <option key={sh.id} value={sh.id}>
-                {sh.name} {sh.distance > 0 ? `(${sh.distance.toFixed(1)} km away)` : ''}
-              </option>
-            ))}
+            {sortedSafehouses.length === 0 && <option>Scanning for nearby safehouses...</option>}
+            {sortedSafehouses.map(sh => {
+              const isFull = sh.status === 'FULL' || sh.capacity_occupied >= sh.capacity_total;
+              return (
+                <option key={sh.shelter_id} value={sh.shelter_id} className={isFull ? "text-red-600 font-bold" : ""}>
+                  {sh.is_officially_registered ? '🏛️' : '🗺️'} {sh.name} {sh.distance > 0 ? `(${sh.distance.toFixed(1)} km)` : ''} {isFull ? ' - MAX CAPACITY (NOT RECOMMENDED)' : ''}
+                </option>
+              );
+            })}
           </select>
         </div>
 
