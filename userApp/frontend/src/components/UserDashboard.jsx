@@ -48,6 +48,41 @@ export default function UserDashboard({ onLogout, session }) {
     return () => clearInterval(interval);
   }, [currentRoute]);
 
+  // Mock Safehouse Array
+  const safehouses = [
+    { id: 'SH1', name: 'Relief Camp Alpha — Sector 7', lat: 11.6850, lng: 76.1300 },
+    { id: 'SH2', name: 'Govt. Hospital Safe Zone', lat: 11.6800, lng: 76.1250 },
+    { id: 'SH3', name: 'High School Evacuation Point', lat: 11.6900, lng: 76.1400 },
+    { id: 'SH4', name: 'Community Hall Shelter', lat: 11.6750, lng: 76.1150 }
+  ];
+
+  const [sortedSafehouses, setSortedSafehouses] = useState([]);
+  const [selectedSafehouse, setSelectedSafehouse] = useState('');
+
+  // Haversine distance helper
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon/2) * Math.sin(dLon/2);
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  };
+
+  useEffect(() => {
+    if (userLat && userLng) {
+      const sorted = safehouses.map(sh => ({
+        ...sh,
+        distance: calculateDistance(userLat, userLng, sh.lat, sh.lng)
+      })).sort((a, b) => a.distance - b.distance);
+      setSortedSafehouses(sorted);
+      setSelectedSafehouse(sorted[0].id); // Auto-select nearest
+    } else {
+      setSortedSafehouses(safehouses.map(sh => ({ ...sh, distance: 0 })));
+    }
+  }, [userLat, userLng]);
+
   // Trigger test alert manually for the Electron demo
   const handleTestAlert = () => {
     if (window.electronAPI) {
@@ -78,17 +113,33 @@ export default function UserDashboard({ onLogout, session }) {
         
         {/* Show detected location */}
         {userLat && userLng && (
-          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-xs text-emerald-800 font-mono">
-            📍 {session.location.address || `${userLat.toFixed(4)}°N, ${userLng.toFixed(4)}°E`}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-2 text-xs text-emerald-800 font-mono flex flex-col gap-1">
+            <span>📍 {session.location.address || `${userLat.toFixed(4)}°N, ${userLng.toFixed(4)}°E`}</span>
           </div>
         )}
 
-        <p className="text-xs text-stone-600 font-mono">
+        {/* Safehouse Dropdown */}
+        <div className="flex flex-col gap-1 mt-1">
+          <label className="text-[10px] font-bold text-stone-500 uppercase tracking-wider">Assigned Evacuation Route</label>
+          <select 
+            value={selectedSafehouse} 
+            onChange={e => setSelectedSafehouse(e.target.value)}
+            className="w-full bg-stone-100 border border-stone-300 text-stone-700 text-xs rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-teal-500"
+          >
+            {sortedSafehouses.map(sh => (
+              <option key={sh.id} value={sh.id}>
+                {sh.name} {sh.distance > 0 ? `(${sh.distance.toFixed(1)} km away)` : ''}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <p className="text-xs text-stone-600 font-mono mt-1">
           Status: {isEmergency ? '🔴 EMERGENCY MODE' : '🟢 STANDBY MODE'}
         </p>
         <button 
           onClick={handleTestAlert}
-          className="w-full py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-xs uppercase"
+          className="w-full py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg text-xs uppercase transition-colors"
         >
           Trigger Push Alert Demo
         </button>

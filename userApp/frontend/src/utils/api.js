@@ -215,5 +215,19 @@ export const apiService = {
       console.error("Failed to fetch zones:", e);
       return { success: false, zones: [] };
     }
+  },
+
+  voteResolveZone: async (zone_id, user_id) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/zones/vote-resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ zone_id, user_id }),
+      });
+      return await response.json();
+    } catch (e) {
+      console.error("Failed to cast vote:", e);
+      return { success: false, error: e.message };
+    }
   }
 };

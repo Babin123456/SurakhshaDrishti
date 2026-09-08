@@ -93,34 +93,74 @@ export default function AgentDashboard({ onLogout, session }) {
           </div>
         </div>
 
-        {/* Zone Consensus Voting Placeholder */}
-        <div className="p-5">
+        {/* Zone Consensus Voting - Dynamic Logic */}
+        <div className="p-5 flex-1 overflow-y-auto">
           <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
             Active 80% Consensus
           </h2>
           
-          <div className="bg-zinc-950 rounded-xl border border-zinc-800 p-4">
-            <div className="text-white font-bold text-sm mb-1">Declare Sector 4 Red Zone</div>
-            <div className="text-zinc-500 text-xs mb-3">Vote requires 80% multi-agency approval.</div>
-            
-            <div className="flex gap-1 mb-3">
-              <div className="h-1.5 flex-1 bg-green-500 rounded-full"></div>
-              <div className="h-1.5 flex-1 bg-green-500 rounded-full"></div>
-              <div className="h-1.5 flex-1 bg-green-500 rounded-full"></div>
-              <div className="h-1.5 flex-1 bg-zinc-800 rounded-full"></div>
-              <div className="h-1.5 flex-1 bg-zinc-800 rounded-full"></div>
+          {zones.filter(z => z.zone_type === 'RED').length === 0 ? (
+            <div className="text-zinc-600 text-xs text-center mt-4">No active Red Zones require your vote.</div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {zones.filter(z => z.zone_type === 'RED').map(zone => {
+                const totalAssigned = zone.active_officers_count || 1; // Prevent div by 0
+                const votesCast = zone.resolution_votes_cast || 0;
+                const required = Math.max(1, Math.ceil(totalAssigned * 0.8));
+                
+                // Determine if this specific officer has voted
+                const myVoteObj = Array.isArray(zone.assigned_officers) 
+                  ? zone.assigned_officers.find(o => o.user_id === (session?.email || 'NDRF_CMD_104'))
+                  : null;
+                const haveIVoted = myVoteObj?.vote_to_resolve === true;
+
+                const handleVote = async () => {
+                  const res = await apiService.voteResolveZone(zone.zone_id, session?.email || 'NDRF_CMD_104');
+                  if (res.success) {
+                    // Force a re-fetch of zones (handled by the polling interval, or we can just wait 10s)
+                    // The UI will update on the next poll.
+                    alert(res.message);
+                  } else {
+                    alert("Vote failed: " + res.error);
+                  }
+                };
+
+                return (
+                  <div key={zone.zone_id} className="bg-zinc-950 rounded-xl border border-zinc-800 p-4">
+                    <div className="text-white font-bold text-sm mb-1 truncate" title={zone.name}>{zone.name}</div>
+                    <div className="text-zinc-500 text-xs mb-3">
+                      {votesCast} / {required} votes cast (Requires 80% consensus)
+                    </div>
+                    
+                    <div className="flex gap-1 mb-3">
+                      {/* Render progress bar blocks based on total required */}
+                      {Array.from({ length: Math.max(5, required) }).map((_, i) => (
+                        <div 
+                          key={i} 
+                          className={`h-1.5 flex-1 rounded-full ${i < votesCast ? 'bg-green-500' : 'bg-zinc-800'}`}
+                        ></div>
+                      ))}
+                    </div>
+                    
+                    <div className="flex gap-2">
+                      <button 
+                        onClick={handleVote}
+                        disabled={haveIVoted}
+                        className={`flex-1 font-bold text-xs py-2 rounded-lg transition-colors border ${
+                          haveIVoted 
+                            ? 'bg-green-900/30 border-green-800 text-green-700 cursor-not-allowed'
+                            : 'bg-green-600/20 hover:bg-green-600/40 border-green-500/50 text-green-400'
+                        }`}
+                      >
+                        {haveIVoted ? 'VOTE RECORDED' : 'APPROVE'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
-            
-            <div className="flex gap-2">
-              <button className="flex-1 bg-green-600/20 hover:bg-green-600/40 border border-green-500/50 text-green-400 font-bold text-xs py-2 rounded-lg transition-colors">
-                APPROVE
-              </button>
-              <button className="flex-1 bg-red-600/20 hover:bg-red-600/40 border border-red-500/50 text-red-400 font-bold text-xs py-2 rounded-lg transition-colors">
-                REJECT
-              </button>
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
