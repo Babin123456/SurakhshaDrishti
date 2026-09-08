@@ -117,6 +117,23 @@ export default function AppLogin({ onLogin }) {
     if (!phone) return setError('Phone or Email is required for Citizen Access.');
 
     setLoading(true);
+
+    // 1. Automatically register an account for the resident using GPS data
+    const isEmail = phone.includes('@');
+    const tempPassword = 'RES-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    
+    await apiService.register({
+      fullName: 'Resident User',
+      email: isEmail ? phone : `${phone.replace(/\s+/g, '')}@suraksha.local`,
+      phone: isEmail ? '' : phone,
+      password: tempPassword,
+      role: 'RESIDENT',
+      district: geoLoc.address || 'Unknown District',
+      familyMembers: 1,
+      hasVulnerable: false
+    });
+
+    // 2. Log them in / generate emergency pass
     const res = await apiService.quickSign({ 
       phone, 
       role: 'resident', 

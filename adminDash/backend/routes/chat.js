@@ -84,7 +84,7 @@ router.post('/conversation/group/create', async (req, res, next) => {
         
 
         for (const link of chain_data) {
-            const role = (link.user_id === groupCreator) ? 'admin' : 'member';
+            const role = (link.user_id === groupCreator) ? 'admin' : 'onsite';
             await db.query(
                 'INSERT INTO conversation_participants (conversation_id, user_id, role, join_order, group_public_key) VALUES ($1, $2, $3, $4, $5)', 
                 [groupID, link.user_id, role, link.join_order, link.group_public_key]
@@ -120,7 +120,7 @@ router.post('/conversation/group/add', async (req, res, next) => {
         }
         await db.query(
             'INSERT INTO conversation_participants (conversation_id, user_id, role, join_order, group_public_key) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING', 
-            [groupID, chain_link.user_id, 'member', chain_link.join_order, chain_link.group_public_key]
+            [groupID, chain_link.user_id, 'onsite', chain_link.join_order, chain_link.group_public_key]
         );
         return res.status(200).json({ message: "User added to group successfully" });
     } catch (err) {
@@ -199,8 +199,8 @@ router.post('/conversation/group/kick', async (req, res, next) => {
             [groupId, currentUser]
         );
 
-        if (roleCheck.rows.length === 0 || roleCheck.rows[0].role === 'member') {
-            return res.status(403).json({ message: "You must be an admin or manager to kick members!" });
+        if (roleCheck.rows.length === 0 || roleCheck.rows[0].role === 'onsite') {
+            return res.status(403).json({ message: "You must be an admin or ondesk to kick members!" });
         }
 
         const targetRoleCheck = await db.query(
@@ -212,8 +212,8 @@ router.post('/conversation/group/kick', async (req, res, next) => {
             return res.status(404).json({ message: "Target user not in group" });
         }
 
-        if (roleCheck.rows[0].role === 'manager' && (targetRoleCheck.rows[0].role === 'admin' || targetRoleCheck.rows[0].role === 'manager')) {
-            return res.status(403).json({ message: "Managers cannot kick admins or other managers" });
+        if (roleCheck.rows[0].role === 'ondesk' && (targetRoleCheck.rows[0].role === 'admin' || targetRoleCheck.rows[0].role === 'ondesk')) {
+            return res.status(403).json({ message: "Ondesk users cannot kick admins or other ondesks" });
         }
 
         await db.query('DELETE FROM conversation_participants WHERE conversation_id = $1 AND user_id = $2', [groupId, targetUser]);
@@ -224,9 +224,9 @@ router.post('/conversation/group/kick', async (req, res, next) => {
     }
 });
 
-//only one admin, but multiple managers. Managers can do EVERYTHING except group deletion or kick admin.
+//only one admin, but multiple ondesks. Ondesks can do EVERYTHING except group deletion or kick admin.
 
-//ROLES: ADMIN [ONLY 1], MANAGER [MULTIPLE], MEMBER[MULTIPLER]
+//ROLES: ADMIN [ONLY 1], ONDESK [MULTIPLE], ONSITE [MULTIPLE]
 router.post('/conversations/group/setRole', async (req, res, next) => {
     const { target_user, groupID, newRole } = req.body;
     const currentUser = req.user.username;
@@ -240,12 +240,12 @@ router.post('/conversations/group/setRole', async (req, res, next) => {
             [groupID, currentUser]
         );
 
-        if (roleCheck.rows.length === 0 || roleCheck.rows[0].role === 'member') {
-            return res.status(403).json({ message: "members can NOT set roles" });
+        if (roleCheck.rows.length === 0 || roleCheck.rows[0].role === 'onsite') {
+            return res.status(403).json({ message: "onsite members can NOT set roles" });
         }
 
-        if (roleCheck.rows[0].role === "manager" && newRole === "admin") {
-            return res.status(403).json({ message: "managers can NOT set admin role" });
+        if (roleCheck.rows[0].role === "ondesk" && newRole === "admin") {
+            return res.status(403).json({ message: "ondesks can NOT set admin role" });
         }
 
         await db.query(`UPDATE conversation_participants SET role = $1 WHERE user_id = $2 AND conversation_id = $3`, [newRole, target_user, groupID]);
@@ -299,7 +299,7 @@ router.get('/conversation/group/members/:groupId', async (req, res, next) => {
             ORDER BY 
                 CASE role 
                     WHEN 'admin' THEN 1 
-                    WHEN 'manager' THEN 2 
+                    WHEN 'ondesk' THEN 2 
                     ELSE 3 
                 END, p.join_order ASC
         `, [groupId]);
