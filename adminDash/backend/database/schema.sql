@@ -74,6 +74,9 @@ CREATE TABLE IF NOT EXISTS shelters (
     evacuation_corridor TEXT,
     is_officially_registered BOOLEAN DEFAULT false,
     source_data TEXT,
+    district TEXT,
+    emergency_phone TEXT,
+    password_hash TEXT, -- For Official Shelter Administrators to log in
 
     FOREIGN KEY (zone_id) REFERENCES hazard_zones(zone_id)
 );

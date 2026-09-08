@@ -47,8 +47,8 @@ let localStore = {
   history_red_zones: [],
   zone_assignments: [],
   shelters: [
-    { shelter_id: 'SH-01', zone_id: 'RZ-WAYANAD-04', primary_hashed_key: 'RZ-89A4-91F2-3B7C', name: 'Nilambur Foothill Base Camp', lat: 11.2764, lng: 76.2241, capacity_total: 1420, capacity_occupied: 420, status: 'OPEN', evacuation_corridor: 'Via SH-28 (Clearing Teams Active)', is_officially_registered: true, source_data: 'SDMA' },
-    { shelter_id: 'SH-02', zone_id: 'RZ-WAYANAD-04', primary_hashed_key: 'RZ-89A4-91F2-3B7C', name: 'Pipalkoti Relief Center', lat: 30.4285, lng: 79.4312, capacity_total: 850, capacity_occupied: 210, status: 'OPEN', evacuation_corridor: 'Via NH-07 (Bypass Operational)', is_officially_registered: true, source_data: 'SDMA' }
+    { shelter_id: 'SH-01', zone_id: 'RZ-WAYANAD-04', primary_hashed_key: 'RZ-89A4-91F2-3B7C', name: 'Nilambur Foothill Base Camp', lat: 11.2764, lng: 76.2241, capacity_total: 1420, capacity_occupied: 420, status: 'OPEN', evacuation_corridor: 'Via SH-28 (Clearing Teams Active)', is_officially_registered: true, source_data: 'SDMA', district: 'Malappuram, Kerala', emergency_phone: '+91 80000 11111' },
+    { shelter_id: 'SH-02', zone_id: 'RZ-WAYANAD-04', primary_hashed_key: 'RZ-89A4-91F2-3B7C', name: 'Pipalkoti Relief Center', lat: 30.4285, lng: 79.4312, capacity_total: 850, capacity_occupied: 210, status: 'OPEN', evacuation_corridor: 'Via NH-07 (Bypass Operational)', is_officially_registered: true, source_data: 'SDMA', district: 'Chamoli, Uttarakhand', emergency_phone: '+91 80000 22222' }
   ],
   emergency_passes: [],
   e2ee_conversations: [],
