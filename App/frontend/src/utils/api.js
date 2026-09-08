@@ -89,6 +89,7 @@ export const apiService = {
     } catch {
       return {
         success: true,
+        requires2FA: credentials.loginType === 'authority',
         bypassed2FA: isRedZoneHabitation,
         user: {
           username: credentials.username || 'NDRF_Officer',
@@ -97,6 +98,22 @@ export const apiService = {
         },
         token: 'mock-jwt-token-sih2026',
       };
+    }
+  },
+
+  verifyOtp: async (username, otp) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, otp }),
+      });
+      return await response.json();
+    } catch {
+      if (otp === '123456') {
+        return { success: true, token: 'mock-token', message: 'Auth successful' };
+      }
+      return { success: false, error: 'Invalid OTP' };
     }
   },
 
