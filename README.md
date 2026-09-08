@@ -29,123 +29,96 @@
 
 ---
 
+## Executive System Workflow
+
+**SurakshaDrishti** is split into two physically distinct operating platforms to separate Central Authority commands from field operations.
+
+### 1. `adminDash` (The Central Command Server & Dashboard)
+The `adminDash` directory contains the core intelligence of the system. 
+- **The Backend (`adminDash/backend`)**: An Express.js & Socket.io server that powers the entire ecosystem. It connects to the Supabase PostgreSQL database, handles OTP and 2FA authentication logic, tracks global telemetry, and processes O(1) map locatives.
+- **The Web Dashboard (`adminDash/frontend`)**: A React/Vite web platform locked down exclusively for Central Command Desk Access (NDRF / SDMA). It provides a bird's-eye tactical GIS view of all active red zones and allows inter-agency consensus voting.
+
+### 2. `userApp` (The Field Officer & Civilian Client App)
+The `userApp` directory contains a native Electron Desktop/Mobile application used by people physically on the ground.
+- It connects remotely to the `adminDash` backend. 
+- **Citizen Access**: Civilians log in with an instant QuickSign OTP, which automatically geolocates their IP/GPS and assigns them an immediate evacuation route or safe shelter.
+- **Field Officer Access**: Ground battalions log in securely using a 2-Step Email/Password + OTP flow to access the tactical GIS HUD and secure End-to-End Encrypted (E2EE) chat relay.
+
+---
+
 ## Tech Stack & Architecture
 
 <div align="center">
 
-| Frontend & Visualization | Backend & Engine | Database & Real-Time | AI & Spatial Telemetry |
+| Frontend & App | Backend & Engine | Database & Real-Time | AI & Spatial Telemetry |
 | :---: | :---: | :---: | :---: |
 | ![React](https://img.shields.io/badge/React_18-61DAFB?style=flat-square&logo=react&logoColor=black) | ![Node.js](https://img.shields.io/badge/Node.js_v20-339933?style=flat-square&logo=nodedotjs&logoColor=white) | ![PostgreSQL](https://img.shields.io/badge/PostgreSQL_17-4169E1?style=flat-square&logo=postgresql&logoColor=white) | ![PyTorch](https://img.shields.io/badge/PyTorch_ConvLSTM-EE4C2C?style=flat-square&logo=pytorch&logoColor=white) |
-| ![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white) | ![Express.js](https://img.shields.io/badge/Express.js-000000?style=flat-square&logo=express&logoColor=white) | ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=black) | ![Spatial GIS](https://img.shields.io/badge/GIS_Engine-Open_Spatial_Vectors-199900?style=flat-square&logoColor=white) |
+| ![Electron](https://img.shields.io/badge/Electron-47848F?style=flat-square&logo=electron&logoColor=white) | ![Express.js](https://img.shields.io/badge/Express.js-000000?style=flat-square&logo=express&logoColor=white) | ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?style=flat-square&logo=supabase&logoColor=black) | ![Spatial GIS](https://img.shields.io/badge/GIS_Engine-Open_Spatial_Vectors-199900?style=flat-square&logoColor=white) |
 | ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white) | ![JWT](https://img.shields.io/badge/JWT_Auth-000000?style=flat-square&logo=jsonwebtokens&logoColor=white) | ![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=flat-square&logo=socketdotio&logoColor=white) | ![ISRO](https://img.shields.io/badge/ISRO_EOS--4-FF9933?style=flat-square&logoColor=white) |
 
 </div>
 
 ---
 
-## Infrastructure Layout
-
-```mermaid
-flowchart TD
-    Frontend[React Frontend Vite] -- HTTP POST & WSS --> Backend[Express API Server]
-    Backend -- SQL Read/Write --> DB[(Supabase PostgreSQL 17.6)]
-    Backend -- Event Emitter --> SocketHub[Socket.io Real-Time Hub]
-    Backend -- AI Inference API --> AI[PyTorch ConvLSTM Engine]
-    ISRO[ISRO & Sentinel-2 Feeds] -- Telemetry Stream --> AI
-    GSM[GSM 3.4 Gateway] -- Low-Bandwidth Alerts --> Backend
-```
-
----
-
 ## Core System Capabilities
 
-### 1. Official Command & Consensus Console (NDRF / SDMA)
-
-* **16-Digit Cryptographic Zone Passkeys**: Each active red zone generates an isolated 16-character access key (e.g. `RZ-89A4-91F2-3B7C`) required for authorized battalion officers to join incident dispatch.
-* **Inter-Agency Consensus Voting**: Red Zones transition to "Situation Controlled" only when all assigned multi-agency commanders (NDRF, SDMA, Fire, Police) cast an authenticated consensus vote.
+### Central Command Console (NDRF / SDMA)
+* **16-Digit Cryptographic Zone Passkeys**: Each active red zone generates an isolated 16-character access key required for authorized battalion officers to join incident dispatch.
+* **Inter-Agency Consensus Voting**: Red Zones transition to "Situation Controlled" only when all assigned multi-agency commanders cast an authenticated consensus vote.
 * **Multi-Layer Tactical GIS HUD**: Open-source GIS rendering (OpenStreetMap, CARTO Dark, Esri Satellite) plotting red hazard perimeters alongside real-time civilian SOS coordinates.
-* **Native Browser GPS Calibration**: Automated field officer coordinate sync without external geolocation API costs or failure points.
 
----
-
-### 2. Resident Emergency & Evacuation Ecosystem
-
+### Resident Emergency & Evacuation Ecosystem
 * **QuickSign 30-Second Emergency Pass**: Generates authenticated digital evacuation passes instantly without standard 2FA bottlenecks during landslides or flash floods.
-* **GSM 3.4 Offline Telemetry Mesh**: Dispatches low-bandwidth geohash SMS alerts through local towers when broadband/cellular internet grids collapse.
+* **Multi-Strategy GPS Cascade**: Location detection uses a 3-tier fallback: Browser GPS → HTTPS IP Geolocation → Hardcoded default. This ensures the app works on phones (with GPS), laptops (via IP), and even air-gapped devices.
+* **Red Zone Alarm System**: When the server detects that a user's coordinates fall inside a Red Zone circle (Haversine distance ≤ zone radius), it pushes a persistent Electron alert overlay with evacuation coordinates. The alert cannot be dismissed without acknowledgment.
+* **H3 Geohash Pathfinding**: Evacuation routes are computed using Uber's H3 hexagonal grid. The backend sends the user a list of safehouse coordinates, and the app resolves an offline-capable path using H3 cell adjacency — no GPS required during transit, only the initial fix.
 * **Dynamic Shelter Carrying Capacity**: Multi-objective spatial algorithms allocate residents across safe sites to avoid road bottlenecks or overloaded relief camps.
 * **8-Character Spatial Geohashing**: Sub-meter resolution indexing (`#tdv2n19z`) for instant hazard evaluation across millions of coordinates.
-
----
-
-### Recent Updates (Changelog)
-
-* **Sector Resolution Workflow**: Fixed backend resolution state desync preventing resolved zones from correctly disappearing from the main dashboard feed.
-* **Map Rendering Fixes**: Reordered map layers to guarantee Active Red Zones are perpetually rendered above warning and informational zones.
-* **Split View Tactical Comms**: Redesigned the deep-focus layout to natively incorporate the Tactical Mesh Channel into the side panel during active sector assignment.
-* **Focus Recenter System**: Replaced the legacy map expansion toggle with an immediate `flyTo` coordinate refocus system.
+* **GSM 3.4 Offline Telemetry** *(planned)*: Low-bandwidth geohash SMS alerts through local towers when broadband/cellular internet grids collapse.
 
 ---
 
 ## Database Schema Architecture
 
-The relational data backbone operates on **Supabase PostgreSQL 17.6** across 11 synchronized tables:
+The relational data backbone operates on **Supabase PostgreSQL 17.6** across synchronized tables:
 
 | Table | Primary Responsibility |
 | :--- | :--- |
-| `users` | Role-based accounts (`RESIDENT`, `NDRF`, `SDMA`, `POLICE`) & operating modes (`ON_SITE`, `OFF_SITE`). |
-| `hazard_zones` | AI hazard perimeters, risk scores (0–100), H3/S2 spatial geohashes, and 16-digit access keys. |
-| `zone_assignments` | Inter-agency battalion rosters, deployment tracking, and multi-officer consensus resolution votes. |
-| `shelters` | Safe haven carrying capacities, real-time bed occupancy, food/medical supply indices, and corridors. |
+| `users` | Role-based accounts (`RESIDENT`, `NDRF`, `SDMA`, `POLICE`) & operating modes. |
+| `hazard_zones` | AI hazard perimeters, risk scores (0–100), H3/S2 spatial geohashes, and access keys. |
+| `zone_assignments` | Inter-agency battalion rosters, and multi-officer consensus resolution votes. |
+| `shelters` | Safe haven carrying capacities, real-time bed occupancy, and corridors. |
 | `emergency_passes` | QuickSign digital SOS evacuation tokens and offline passes. |
-| `e2ee_conversations` | End-to-end encrypted dispatch channels between field battalions and district magistrates. |
-| `e2ee_messages` | Zero-knowledge encrypted message payloads. |
-| `gsm_telemetry_logs` | Low-bandwidth disaster SMS packet archives. |
+| `e2ee_conversations` | End-to-end encrypted dispatch channels between field battalions. |
 
 ---
 
 ## Quick Start & Local Development
 
-### Prerequisites
-
-* **Node.js**: v18.0.0 or higher (v20+ recommended)
-* **npm**: v9.0.0+
-
-### 1. Clone the Repository
-
+### 1. Start the Central Backend Server (adminDash)
+The backend MUST be running for authentication, map data, and telemetry to work.
 ```bash
-git clone https://github.com/Kashcx-dev/SurakshaDrishti.git
-cd SurakshaDrishti
-```
-
-### 2. Website Backend API & Telemetry Server
-
-```bash
-cd Website/backend
+cd adminDash/backend
 npm install
 npm start
 ```
+> Server starts on port `5000` with an active WebSocket listener.
 
-> Server starts on port `5000` (or `process.env.PORT`) with active WebSocket listener (`node src/main.js`).
-
-### 3. Website Frontend Client
-
+### 2. Start the Civilian / Officer Client App (userApp)
+Open a **second terminal window** to boot the Electron Desktop application.
 ```bash
-cd Website/frontend
-npm install
-npm run dev
-```
-
-> Access the live web interface at `http://localhost:5173`
-
-### 4. Desktop Electron App (Optional Command Center)
-
-```bash
-cd App
+cd userApp
 npm install
 npm run electron
 ```
+> This concurrently serves Vite on `http://localhost:5173` and boots the native Electron window. Hardware acceleration is disabled by default in `main.cjs` to ensure compatibility across all Windows drivers.
 
-> Launches the integrated Electron desktop command client connected to local Vite dev server.
+*(Optional)* To start the Central Web Dashboard:
+```bash
+cd adminDash/frontend
+npm install
+npm run dev
+```
 
 ---
 
@@ -155,23 +128,12 @@ For granular architectural diagrams, file-by-file working principles, and subsys
 
 | Document | Description |
 | :--- | :--- |
-| [**INSTRUCTIONS.md**](./INSTRUCTIONS.md) | Comprehensive file-by-file breakdown explaining the exact working principle, inputs, and outputs of every component, handler, route, and utility. |
-| [**ARCHITECTURE.md**](./ARCHITECTURE.md) | In-depth Mermaid sequence and flow diagrams detailing high-level topology, multi-agency consensus resolution voting, and shelter carrying capacity balancing. |
+| [**INSTRUCTIONS.md**](./INSTRUCTIONS.md) | Comprehensive file-by-file breakdown explaining the exact working principle, inputs, and outputs of every component. |
+| [**ARCHITECTURE.md**](./ARCHITECTURE.md) | In-depth Mermaid sequence and flow diagrams detailing high-level topology, and multi-agency consensus resolution voting. |
 | [**AI Prediction Architecture**](./ai_prediction_architecture.md) | Deep learning specifications for time-series ConvLSTM, ViViT spatio-temporal modeling, and H3/S2 geohash anomaly heatmaps. |
-| [**Detailed Backend Architecture**](./BACKEND_ARCHITECTURE.md) | Line-by-line breakdown of Express route handlers, PostgreSQL DDL migrations, transaction integrity, and Socket.io channel topology. |
-| [**Website Frontend README**](./Website/frontend/README.md) | Client-side architecture, 3D tilt engine, shrinking capsule navbar, design system tokens, and component directory tree. |
-| [**Website Backend README**](./Website/backend/README.md) | Server-side command engine, Socket.io event channels, PostgreSQL schema matrix, and REST API route registry. |
-| [**Desktop App README**](./App/README.md) | Electron desktop client integration, multi-monitor configuration, and local telemetry dispatch. |
+| [**Detailed Backend Architecture**](./BACKEND_ARCHITECTURE.md) | Line-by-line breakdown of Express route handlers, PostgreSQL DDL migrations, and Socket.io channel topology. |
+| [**TECH WOW AND NOVELTY**](./TECH_WOW_AND_NOVELTY.md) | Novelty features detailing GSM Offline modes, Encrypted Mesh Nets, and the Custom 3D Tilt Graphics Engine. |
 | [**LICENSE**](./LICENSE) | Official Open-Source MIT License attributed to ADAMAS University (SIH 2026). |
-
----
-
-## License & Acknowledgements
-
-* **Hackathon**: Developed for Smart India Hackathon (SIH 2026) under Problem Statement **26191**.
-* **Institution**: **ADAMAS University** — SurakshaDrishti Team.
-* **Governing Body**: Ministry of Home Affairs (MHA), National Disaster Response Force (NDRF), and State Disaster Management Authorities (SDMA).
-* **License**: Released under the permissive [MIT License](./LICENSE).
 
 <br/>
 

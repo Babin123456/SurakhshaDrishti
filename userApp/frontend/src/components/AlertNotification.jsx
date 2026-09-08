@@ -58,25 +58,35 @@ export default function AlertNotification() {
 
   return (
     <div 
-      className="w-screen h-screen flex flex-col justify-center items-center text-center text-white bg-gradient-to-br from-[#cc0000] to-[#8b0000] border-[3px] border-[#ff4d4d] rounded-xl shadow-[0_10px_30px_rgba(0,0,0,0.8),_0_0_40px_rgba(255,0,0,0.4)] animate-[pulse-border_1s_infinite_alternate]"
+      className="w-screen h-screen flex flex-col justify-center items-center text-center bg-stone-100 border-[4px] border-red-600 shadow-[0_0_50px_rgba(220,38,38,0.5)] rounded-lg relative overflow-hidden"
       style={{ WebkitAppRegion: 'drag' }}
     >
-      <h1 className="m-0 mb-2 text-2xl uppercase tracking-widest font-bold">🚨 RED ALERT 🚨</h1>
-      <p className="m-0 mb-5 text-base opacity-90 font-mono max-w-[80%] mx-auto">{message}</p>
-      <button 
-        onClick={handleAcknowledge}
-        disabled={isAcknowledging}
-        className="bg-white text-[#cc0000] border-none py-3 px-8 text-lg font-bold rounded-lg cursor-pointer uppercase shadow-md transition-all hover:bg-[#ffe6e6] hover:scale-105"
-        style={{ WebkitAppRegion: 'no-drag' }}
-      >
-        {isAcknowledging ? 'Closing...' : 'Acknowledge'}
-      </button>
+      {/* Flashing Warning Bar at Top */}
+      <div className="absolute top-0 left-0 w-full h-2 bg-red-600 animate-[pulse_1s_infinite]"></div>
+      
+      <div className="flex flex-col items-center max-w-sm px-6">
+        <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4 border-2 border-red-200">
+          <svg className="w-8 h-8 text-red-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+        </div>
+        
+        <h1 className="text-xl text-stone-900 font-extrabold tracking-tight uppercase mb-2">Emergency Alert</h1>
+        <p className="text-sm text-stone-600 font-medium mb-6 leading-relaxed">
+          {message}
+        </p>
+        
+        <button 
+          onClick={handleAcknowledge}
+          disabled={isAcknowledging}
+          className="w-full bg-red-600 hover:bg-red-700 text-white border-none py-3 px-6 text-sm font-bold rounded-xl cursor-pointer uppercase shadow-md transition-colors"
+          style={{ WebkitAppRegion: 'no-drag' }}
+        >
+          {isAcknowledging ? 'Acknowledging...' : 'Acknowledge & Close'}
+        </button>
+      </div>
       
       <style>{`
-        @keyframes pulse-border {
-          0% { border-color: #ff4d4d; box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 20px rgba(255, 0, 0, 0.4); }
-          100% { border-color: #ffb3b3; box-shadow: 0 10px 30px rgba(0,0,0,0.8), 0 0 60px rgba(255, 0, 0, 0.9); }
-        }
         body { margin: 0; padding: 0; overflow: hidden; user-select: none; background: transparent; }
       `}</style>
     </div>

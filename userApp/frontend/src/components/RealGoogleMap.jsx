@@ -62,7 +62,8 @@ export default function RealGoogleMap({
   zoom,
   standalone = false,
   selectedZoneId = null,
-  activeHazardType = null
+  activeHazardType = null,
+  userLocationOverride = null
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -201,6 +202,64 @@ export default function RealGoogleMap({
     }).addTo(mapInstanceRef.current);
   }, [activeLayerType]);
 
+  // Auto-render user location marker from override prop (passed from login GPS)
+  useEffect(() => {
+    if (!mapInstanceRef.current || !userLocationLayerRef.current || !userLocationOverride) return;
+
+    const { lat, lng, address } = userLocationOverride;
+    if (!lat || !lng) return;
+
+    const uGroup = userLocationLayerRef.current;
+    uGroup.clearLayers();
+
+    // Accuracy circle
+    const accCircle = L.circle([lat, lng], {
+      radius: 500,
+      color: '#3B82F6',
+      fillColor: '#60A5FA',
+      fillOpacity: 0.12,
+      weight: 1.5,
+    });
+    uGroup.addLayer(accCircle);
+
+    // Pulsing blue GPS pin
+    const userPinHtml = `
+      <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+        <div style="position: absolute; width: 40px; height: 40px; border-radius: 50%; background: rgba(59, 130, 246, 0.35); animation: ping 2s cubic-bezier(0,0,0.2,1) infinite;"></div>
+        <div style="position: absolute; width: 28px; height: 28px; border-radius: 50%; background: rgba(59, 130, 246, 0.2); animation: ping 2s cubic-bezier(0,0,0.2,1) 0.5s infinite;"></div>
+        <div style="position: relative; width: 18px; height: 18px; border-radius: 50%; background: #2563EB; border: 3px solid #FFFFFF; box-shadow: 0 4px 14px rgba(37,99,235,0.7); display: flex; align-items: center; justify-content: center; color: white; font-size: 8px; font-weight: 900;">
+          YOU
+        </div>
+      </div>
+    `;
+
+    const userIcon = L.divIcon({
+      className: 'custom-user-pin',
+      html: userPinHtml,
+      iconSize: [40, 40],
+      iconAnchor: [20, 20],
+    });
+
+    const userMarker = L.marker([lat, lng], { icon: userIcon });
+
+    const userPopup = `
+      <div style="font-family: Inter, system-ui, sans-serif; min-width: 200px; color: #0f172a; padding: 2px;">
+        <div style="font-size: 9px; font-weight: 800; color: #2563eb; text-transform: uppercase;">
+          📍 YOUR LOCATION
+        </div>
+        <div style="font-size: 12px; font-weight: 800; margin: 4px 0; color: #0f172a;">
+          ${address || `${lat.toFixed(5)}°N, ${lng.toFixed(5)}°E`}
+        </div>
+        <div style="font-size: 10px; color: #64748b;">Coordinates: ${lat.toFixed(5)}, ${lng.toFixed(5)}</div>
+      </div>
+    `;
+
+    userMarker.bindPopup(userPopup).openPopup();
+    uGroup.addLayer(userMarker);
+
+    // Fly to user location
+    mapInstanceRef.current.flyTo([lat, lng], zoom || 14, { duration: 1.5 });
+  }, [userLocationOverride?.lat, userLocationOverride?.lng]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !layersGroupRef.current) return;
@@ -372,111 +431,144 @@ export default function RealGoogleMap({
   };
 
 
-  const handleDetectLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationError('Geolocation is not supported by your browser.');
-      return;
-    }
-
+  const handleDetectLocation = async () => {
     setIsLocating(true);
     setLocationError(null);
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude, accuracy } = position.coords;
+    let latitude, longitude, accuracy;
+    let gotLocation = false;
 
-        let minDistance = Infinity;
-        let nearest = zones.length > 0 ? zones[0] : null;
-
-        zones.forEach((zone) => {
-          const dist = getHaversineDistanceKm(latitude, longitude, zone.lat, zone.lng);
-          if (dist < minDistance) {
-            minDistance = dist;
-            nearest = zone;
-          }
+    // Strategy 1: Browser native GPS (3 second timeout — fails fast on laptops)
+    if (navigator.geolocation) {
+      try {
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false,
+            timeout: 3000,
+            maximumAge: 300000
+          });
         });
-
-        const isInsideHazard = minDistance <= (nearest.radiusMeters / 1000);
-
-        const locData = {
-          lat: latitude,
-          lng: longitude,
-          accuracy: Math.round(accuracy),
-          nearestZone: nearest,
-          distanceKm: minDistance.toFixed(1),
-          isInsideHazard,
-          timestamp: new Date().toLocaleTimeString()
-        };
-
-        setUserLocation(locData);
-        setSelectedZone(null);
-        if (onLocationDetect) onLocationDetect(locData);
-        setIsLocating(false);
-
-        if (mapInstanceRef.current && userLocationLayerRef.current) {
-          const uGroup = userLocationLayerRef.current;
-          uGroup.clearLayers();
-
-          const accCircle = L.circle([latitude, longitude], {
-            radius: Math.max(accuracy, 100),
-            color: '#3B82F6',
-            fillColor: '#60A5FA',
-            fillOpacity: 0.15,
-            weight: 1.5,
-          });
-          uGroup.addLayer(accCircle);
-
-          const userPinHtml = `
-            <div style="position: relative; display: flex; align-items: center; justify-content: center;">
-              <div style="position: absolute; width: 36px; height: 36px; border-radius: 50%; background: rgba(59, 130, 246, 0.4); animation: ping 1.8s cubic-bezier(0,0,0.2,1) infinite;"></div>
-              <div style="width: 18px; height: 18px; border-radius: 50%; background: #2563EB; border: 2.5px solid #FFFFFF; box-shadow: 0 4px 12px rgba(37,99,235,0.6); display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: bold;">
-                GPS
-              </div>
-            </div>
-          `;
-
-          const userIcon = L.divIcon({
-            className: 'custom-user-pin',
-            html: userPinHtml,
-            iconSize: [36, 36],
-            iconAnchor: [18, 18],
-          });
-
-          const userMarker = L.marker([latitude, longitude], { icon: userIcon });
-
-          const userPopup = `
-            <div style="font-family: Inter, system-ui, sans-serif; min-width: 200px; color: #0f172a; padding: 2px;">
-              <div style="font-size: 9px; font-weight: 800; color: #2563eb; text-transform: uppercase;">
-                EXACT GPS LOCATION
-              </div>
-              <div style="font-size: 11px; font-weight: 800; margin: 3px 0; color: #0f172a;">
-                ${latitude.toFixed(5)}° N, ${longitude.toFixed(5)}° E
-              </div>
-              <div style="font-size: 9px; color: #64748b; margin-bottom: 5px;">GPS Accuracy: ±${Math.round(accuracy)}m</div>
-              <div style="padding: 4px 6px; border-radius: 5px; font-size: 10px; background: ${isInsideHazard ? '#fee2e2' : '#f0fdf4'}; border: 1px solid ${isInsideHazard ? '#f87171' : '#86efac'}; color: ${isInsideHazard ? '#991b1b' : '#166534'}; font-weight: bold;">
-                ${isInsideHazard ? `Alert: Inside ${nearest?.shortName || 'Unknown'} Red Zone!` : `Safe Zone${nearest ? `: Nearest is ${nearest.shortName} (${minDistance.toFixed(1)} km)` : ''}`}
-              </div>
-            </div>
-          `;
-
-          userMarker.bindPopup(userPopup).openPopup();
-          uGroup.addLayer(userMarker);
-
-          mapInstanceRef.current.flyTo([latitude, longitude], 12, {
-            duration: 1.5
-          });
-        }
-      },
-      (error) => {
-        setIsLocating(false);
-        setLocationError(error.code === 1 ? 'Location access was denied. Please allow GPS permission.' : 'Location request failed.');
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
+        latitude = pos.coords.latitude;
+        longitude = pos.coords.longitude;
+        accuracy = pos.coords.accuracy;
+        gotLocation = true;
+      } catch (e) {
+        // Browser GPS failed (expected on desktop). Fall through to IP.
       }
-    );
+    }
+
+    // Strategy 2: IP-based geolocation (works on laptops)
+    if (!gotLocation) {
+      const ipEndpoints = [
+        { url: 'https://ipapi.co/json/', parse: (d) => ({ lat: d.latitude, lng: d.longitude }) },
+        { url: 'https://ipwho.is/', parse: (d) => ({ lat: d.latitude, lng: d.longitude }) },
+      ];
+      for (const endpoint of ipEndpoints) {
+        try {
+          const res = await fetch(endpoint.url);
+          const data = await res.json();
+          const parsed = endpoint.parse(data);
+          if (parsed.lat && parsed.lng) {
+            latitude = parsed.lat;
+            longitude = parsed.lng;
+            accuracy = 5000; // IP accuracy is ~5km
+            gotLocation = true;
+            break;
+          }
+        } catch (e) {
+          // Try next endpoint
+        }
+      }
+    }
+
+    if (!gotLocation) {
+      setIsLocating(false);
+      setLocationError('Could not detect location. Check network connection.');
+      return;
+    }
+
+    // Calculate nearest zone
+    let minDistance = Infinity;
+    let nearest = zones.length > 0 ? zones[0] : null;
+
+    zones.forEach((zone) => {
+      const dist = getHaversineDistanceKm(latitude, longitude, zone.lat, zone.lng);
+      if (dist < minDistance) {
+        minDistance = dist;
+        nearest = zone;
+      }
+    });
+
+    const isInsideHazard = nearest ? minDistance <= (nearest.radiusMeters / 1000) : false;
+
+    const locData = {
+      lat: latitude,
+      lng: longitude,
+      accuracy: Math.round(accuracy),
+      nearestZone: nearest,
+      distanceKm: minDistance === Infinity ? '—' : minDistance.toFixed(1),
+      isInsideHazard,
+      timestamp: new Date().toLocaleTimeString()
+    };
+
+    setUserLocation(locData);
+    setSelectedZone(null);
+    if (onLocationDetect) onLocationDetect(locData);
+    setIsLocating(false);
+
+    if (mapInstanceRef.current && userLocationLayerRef.current) {
+      const uGroup = userLocationLayerRef.current;
+      uGroup.clearLayers();
+
+      const accCircle = L.circle([latitude, longitude], {
+        radius: Math.max(accuracy, 100),
+        color: '#3B82F6',
+        fillColor: '#60A5FA',
+        fillOpacity: 0.15,
+        weight: 1.5,
+      });
+      uGroup.addLayer(accCircle);
+
+      const userPinHtml = `
+        <div style="position: relative; display: flex; align-items: center; justify-content: center;">
+          <div style="position: absolute; width: 36px; height: 36px; border-radius: 50%; background: rgba(59, 130, 246, 0.4); animation: ping 1.8s cubic-bezier(0,0,0.2,1) infinite;"></div>
+          <div style="width: 18px; height: 18px; border-radius: 50%; background: #2563EB; border: 2.5px solid #FFFFFF; box-shadow: 0 4px 12px rgba(37,99,235,0.6); display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: bold;">
+            GPS
+          </div>
+        </div>
+      `;
+
+      const userIcon = L.divIcon({
+        className: 'custom-user-pin',
+        html: userPinHtml,
+        iconSize: [36, 36],
+        iconAnchor: [18, 18],
+      });
+
+      const userMarker = L.marker([latitude, longitude], { icon: userIcon });
+
+      const userPopup = `
+        <div style="font-family: Inter, system-ui, sans-serif; min-width: 200px; color: #0f172a; padding: 2px;">
+          <div style="font-size: 9px; font-weight: 800; color: #2563eb; text-transform: uppercase;">
+            EXACT GPS LOCATION
+          </div>
+          <div style="font-size: 11px; font-weight: 800; margin: 3px 0; color: #0f172a;">
+            ${latitude.toFixed(5)}° N, ${longitude.toFixed(5)}° E
+          </div>
+          <div style="font-size: 9px; color: #64748b; margin-bottom: 5px;">GPS Accuracy: ±${Math.round(accuracy)}m</div>
+          <div style="padding: 4px 6px; border-radius: 5px; font-size: 10px; background: ${isInsideHazard ? '#fee2e2' : '#f0fdf4'}; border: 1px solid ${isInsideHazard ? '#f87171' : '#86efac'}; color: ${isInsideHazard ? '#991b1b' : '#166534'}; font-weight: bold;">
+            ${isInsideHazard ? `Alert: Inside ${nearest?.shortName || 'Unknown'} Red Zone!` : `Safe Zone${nearest ? `: Nearest is ${nearest.shortName} (${minDistance.toFixed(1)} km)` : ''}`}
+          </div>
+        </div>
+      `;
+
+      userMarker.bindPopup(userPopup).openPopup();
+      uGroup.addLayer(userMarker);
+
+      mapInstanceRef.current.flyTo([latitude, longitude], 12, {
+        duration: 1.5
+      });
+    }
   };
 
   if (standalone) {
@@ -636,8 +728,8 @@ export default function RealGoogleMap({
                   )}
                   <span className="truncate">
                     {userLocation.isInsideHazard
-                      ? `Alert: Inside ${userLocation.nearestZone.shortName}!`
-                      : `Safe: ${userLocation.distanceKm} km to ${userLocation.nearestZone.shortName}`}
+                      ? `Alert: Inside ${userLocation.nearestZone?.shortName || 'Unknown'}!`
+                      : `Safe: ${userLocation.distanceKm} km to ${userLocation.nearestZone?.shortName || 'Unknown'}`}
                   </span>
                 </div>
               </div>
@@ -935,8 +1027,8 @@ export default function RealGoogleMap({
                   )}
                   <span className="truncate">
                     {userLocation.isInsideHazard
-                      ? `Inside ${userLocation.nearestZone.shortName} Red Zone!`
-                      : `Safe Zone • ${userLocation.distanceKm} km to ${userLocation.nearestZone.shortName}`}
+                      ? `Inside ${userLocation.nearestZone?.shortName || 'Unknown'} Red Zone!`
+                      : `Safe Zone • ${userLocation.distanceKm === '—' ? '' : userLocation.distanceKm + ' km to'} ${userLocation.nearestZone?.shortName || 'Unknown'}`}
                   </span>
                 </div>
               </div>

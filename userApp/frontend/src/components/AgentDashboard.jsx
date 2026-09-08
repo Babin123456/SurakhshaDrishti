@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import RealGoogleMap from './RealGoogleMap';
 import AlertNotification from './AlertNotification';
-import { api } from '../utils/api';
+import { apiService } from '../utils/api';
 
 export default function AgentDashboard({ onLogout, session }) {
   const [isEmergency, setIsEmergency] = useState(false);
@@ -12,10 +12,16 @@ export default function AgentDashboard({ onLogout, session }) {
   useEffect(() => {
     const fetchZones = async () => {
       try {
-        const response = await api.get('/zones');
-        const activeZones = response.data.filter(z => z.status === 'active');
-        setZones(activeZones);
-        setIsEmergency(activeZones.length > 0);
+        const response = await apiService.fetchZones();
+        if (response.success && response.zones) {
+          const activeZones = response.zones.filter(z => z.status === 'active');
+          setZones(activeZones);
+          setIsEmergency(activeZones.length > 0);
+        } else if (Array.isArray(response)) {
+          const activeZones = response.filter(z => z.status === 'active');
+          setZones(activeZones);
+          setIsEmergency(activeZones.length > 0);
+        }
       } catch (err) {
         console.error("Failed to fetch zones for Agent dashboard:", err);
       }
