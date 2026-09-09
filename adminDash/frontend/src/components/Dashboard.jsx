@@ -552,21 +552,21 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                     <span className="whitespace-nowrap">Focus</span>
                   </button>
 
-                  {/* View Mode Toggle Button */}
+                  {/* View Mode Toggle Button (Full View / Split View) */}
                   <button
                     type="button"
                     onClick={() => setIsFullMapView(!isFullMapView)}
-                    className="group shrink-0 px-3.5 py-2 rounded-xl bg-white hover:bg-[#2C2A29] hover:text-[#FDFBF7] border border-[#E8E1D5] hover:border-[#2C2A29] text-xs font-semibold text-[#1A1A1A] transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="group shrink-0 px-3.5 py-2 rounded-xl bg-white hover:bg-[#2C2A29] border border-[#E8E1D5] hover:border-[#2C2A29] text-xs font-semibold text-[#1A1A1A] hover:text-[#FDFBF7] transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-2xs active:scale-95"
                     title={isFullMapView ? "Switch to Split Tactical View" : "Expand Map to Full Width"}
                   >
-                    <span>
+                    <span className="flex items-center justify-center w-4 h-4 shrink-0 text-[#8B7355] group-hover:text-white transition-colors">
                       {isFullMapView ? (
-                        <Minimize2 className="w-3.5 h-3.5 text-[#8B7355] group-hover:text-[#FDFBF7] transition-colors" />
+                        <Minimize2 className="w-4 h-4 stroke-[2.5]" />
                       ) : (
-                        <Maximize2 className="w-3.5 h-3.5 text-[#8B7355] group-hover:text-[#FDFBF7] transition-colors" />
+                        <Maximize2 className="w-4 h-4 stroke-[2.5]" />
                       )}
                     </span>
-                    <span className="whitespace-nowrap transition-colors">
+                    <span className="whitespace-nowrap transition-colors font-medium">
                       {isFullMapView ? 'Split View' : 'Full View'}
                     </span>
                   </button>
