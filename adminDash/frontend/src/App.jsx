@@ -432,8 +432,13 @@ export default function App() {
           <HowItWorks />
 
           <CTASection
-            onExplore={() => handleOpenAuth('signin')}
+            userSession={userSession}
+            onExplore={() => {
+              if (userSession) navigate('/dashboard');
+              else handleOpenAuth('signin');
+            }}
             onSignUp={() => handleOpenAuth('signup')}
+            onNavigateDashboard={() => navigate('/dashboard')}
             onEmergencyAccess={() => setShowEmergency(true)}
             onQuickSign={() => setShowQuickSign(true)}
           />
