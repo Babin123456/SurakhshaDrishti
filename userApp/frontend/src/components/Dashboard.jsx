@@ -515,10 +515,10 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                 </div>
 
                 {/* Right: Sector Selector Dropdown, Focus Button & View Toggle */}
-                <div className="flex items-center gap-2 w-full lg:w-auto shrink-0 justify-end">
+                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 justify-start sm:justify-end">
                   {/* Sector Selector Dropdown */}
                   {!isOfficerAssigned && (
-                    <div className="relative flex-1 sm:flex-initial min-w-[210px] max-w-sm">
+                    <div className="relative flex-1 sm:flex-initial min-w-[200px] max-w-xs">
                       <select
                         value={selectedZoneId}
                         onChange={(e) => {
@@ -541,20 +541,15 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                     </div>
                   )}
 
-                  {/* Focus Button */}
+                  {/* Focus Sector Button - always visible and functional */}
                   <button
                     type="button"
-                    onClick={() => isOfficerAssigned && setFocusTrigger(f => f + 1)}
-                    disabled={!isOfficerAssigned}
-                    className={`group shrink-0 px-3 py-2 rounded-xl border text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs ${
-                      isOfficerAssigned
-                        ? 'bg-white hover:bg-[#F6F4F0] border-[#E8E1D5] text-[#1A1A1A] cursor-pointer'
-                        : 'bg-[#F6F4F0] border-[#E8E1D5] text-[#A89F91] cursor-not-allowed opacity-60'
-                    }`}
-                    title="Recenter Map on Assigned Sector"
+                    onClick={() => setFocusTrigger(f => f + 1)}
+                    className="group shrink-0 px-3.5 py-2 rounded-xl bg-white hover:bg-[#8B7355] hover:text-white border border-[#8B7355]/40 text-[#2C2A29] text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95"
+                    title="Center and zoom map on current sector"
                   >
-                    <Sparkles className="w-3.5 h-3.5" />
-                    <span className="inline">Focus</span>
+                    <Sparkles className="w-3.5 h-3.5 text-[#8B7355] group-hover:text-white transition-colors" />
+                    <span className="whitespace-nowrap">Focus</span>
                   </button>
 
                   {/* View Mode Toggle Button */}
