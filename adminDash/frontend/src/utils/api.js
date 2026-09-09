@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_BASE_URL = 'http://localhost:5000';
 
 const KNOWN_RED_ZONES = [
   { name: 'Wayanad Sector 4', lat: 11.5583, lng: 76.1384, radiusMeters: 4000 },
