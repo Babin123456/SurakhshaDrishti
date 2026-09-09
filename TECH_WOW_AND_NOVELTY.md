@@ -72,3 +72,14 @@ During a critical evacuation (e.g., a dam failure), a resident cannot waste 5 mi
 Browser-based web dashboards are easily closed by accident and are limited by strict browser security policies regarding background processes.
 *   **Technical Novelty:** The SDMA/NDRF control rooms operate our dedicated **Electron Desktop Environment**. 
 *   **Impact:** It acts as a persistent, multi-monitor incident hardware hub. It utilizes native OS APIs and the Web Audio API to bypass browser tab-sleeping, ensuring that high-decibel European Hi-Lo sirens physically alert operators the exact second a critical hazard anomaly is detected.
+
+---
+
+<div align="center">
+
+**SurakshaDrishti Technical Novelties**  
+*SIH 2026 Problem Statement 26191 • Developed by ADAMAS University Team*  
+*Repository: [`Kashcx-dev/SurakshaDrishti`](https://github.com/Kashcx-dev/SurakshaDrishti)*
+
+</div>
+

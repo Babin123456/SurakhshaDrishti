@@ -92,6 +92,7 @@ To build a convincing prototype for the judges:
 <img src="https://capsule-render.vercel.app/api?type=waving&color=timeGradient&height=120&section=footer" width="100%" alt="AI Footer Wave"/>
 
 **SurakshaDrishti Predictive AI Architecture**  
-*SIH 2026 Problem Statement 26191 • Developed by ADAMAS University Team*
+*SIH 2026 Problem Statement 26191 • Developed by ADAMAS University Team*  
+*Repository: [`Kashcx-dev/SurakshaDrishti`](https://github.com/Kashcx-dev/SurakshaDrishti)*
 
 </div>
