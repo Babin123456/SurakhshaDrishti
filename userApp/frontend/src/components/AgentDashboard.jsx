@@ -7,6 +7,9 @@ export default function AgentDashboard({ onLogout, session }) {
   const [isEmergency, setIsEmergency] = useState(false);
   const [zones, setZones] = useState([]);
   const [chatMessage, setChatMessage] = useState('');
+  const [chatMode, setChatMode] = useState('E2EE'); // 'E2EE' or 'GSM'
+  const [safehouses, setSafehouses] = useState([]);
+  const [trappedCitizens, setTrappedCitizens] = useState([]);
   
   // Poll for zones
   useEffect(() => {
@@ -14,11 +17,11 @@ export default function AgentDashboard({ onLogout, session }) {
       try {
         const response = await apiService.fetchZones();
         if (response.success && response.zones) {
-          const activeZones = response.zones.filter(z => z.status === 'active');
+          const activeZones = response.zones.filter(z => z.status === 'ACTIVE_RED_ZONE' || z.status === 'ACTIVE_WARNING_ZONE');
           setZones(activeZones);
           setIsEmergency(activeZones.length > 0);
         } else if (Array.isArray(response)) {
-          const activeZones = response.filter(z => z.status === 'active');
+          const activeZones = response.filter(z => z.status === 'ACTIVE_RED_ZONE' || z.status === 'ACTIVE_WARNING_ZONE');
           setZones(activeZones);
           setIsEmergency(activeZones.length > 0);
         }
@@ -31,6 +34,42 @@ export default function AgentDashboard({ onLogout, session }) {
     const interval = setInterval(fetchZones, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  // Fetch Safehouses globally for the map
+  useEffect(() => {
+    if (zones.length === 0) return;
+    const fetchSafehouses = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/zones/shelters/dynamic?lat=${zones[0].lat}&lng=${zones[0].lng}&radius=30000`);
+        const data = await response.json();
+        if (data.success) {
+          setSafehouses(data.shelters);
+        }
+      } catch (err) {
+        console.error("Agent safehouse fetch failed:", err);
+      }
+    };
+    fetchSafehouses();
+  }, [zones]);
+
+  // Fetch Trapped Citizens
+  useEffect(() => {
+    if (zones.length === 0) return;
+    const fetchCitizens = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/zones/${zones[0].id || zones[0].zone_id}/trapped-citizens`);
+        const data = await response.json();
+        if (data.success) {
+          setTrappedCitizens(data.citizens);
+        }
+      } catch (err) {
+        console.error("Agent citizen fetch failed:", err);
+      }
+    };
+    fetchCitizens();
+    const interval = setInterval(fetchCitizens, 15000); // Poll every 15s
+    return () => clearInterval(interval);
+  }, [zones]);
 
   return (
     <div className="w-screen h-screen flex bg-zinc-950 font-sans overflow-hidden">
@@ -60,23 +99,57 @@ export default function AgentDashboard({ onLogout, session }) {
 
         {/* E2EE Chat Placeholder */}
         <div className="flex-1 flex flex-col p-5 border-b border-zinc-800 overflow-hidden">
-          <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
-            E2EE Secure Relay
-          </h2>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-bold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path></svg>
+              Comms Relay
+            </h2>
+            <select 
+              value={chatMode} 
+              onChange={e => setChatMode(e.target.value)}
+              className="bg-zinc-800 border border-zinc-700 text-zinc-300 text-[10px] uppercase font-bold rounded px-1.5 py-0.5 focus:outline-none focus:border-blue-500"
+            >
+              <option value="E2EE">E2EE Secure</option>
+              <option value="GSM">GSM Fallback</option>
+            </select>
+          </div>
           
           <div className="flex-1 bg-zinc-950 rounded-lg border border-zinc-800 p-3 overflow-y-auto mb-3 flex flex-col gap-3">
-            <div className="text-[10px] text-center text-zinc-600 font-mono uppercase my-1">Encrypted Tunnel Established</div>
-            
-            <div className="bg-zinc-800 rounded-lg p-2 text-xs text-zinc-300 w-[90%]">
-              <span className="text-blue-400 font-bold text-[10px] block mb-1">HQ Command</span>
-              Sector 4 riverbank has breached. Deploying SAR teams now.
+            <div className={`text-[10px] text-center font-mono uppercase my-1 ${chatMode === 'E2EE' ? 'text-zinc-600' : 'text-orange-500/70'}`}>
+              {chatMode === 'E2EE' ? 'Encrypted Tunnel Established' : 'WARNING: Unencrypted GSM Channel'}
             </div>
             
-            <div className="bg-blue-900/50 border border-blue-800 rounded-lg p-2 text-xs text-blue-100 w-[90%] self-end">
-              <span className="text-blue-300 font-bold text-[10px] block mb-1">You</span>
-              Copy that. ETA 12 minutes. Initiating evacuation protocols.
-            </div>
+            {chatMode === 'E2EE' ? (
+              <>
+                <div className="bg-zinc-800 rounded-lg p-2 text-xs text-zinc-300 w-[90%]">
+                  <span className="text-blue-400 font-bold text-[10px] block mb-1 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    HQ Command
+                  </span>
+                  Sector 4 riverbank has breached. Deploying SAR teams now.
+                </div>
+                
+                <div className="bg-blue-900/50 border border-blue-800 rounded-lg p-2 text-xs text-blue-100 w-[90%] self-end">
+                  <span className="text-blue-300 font-bold text-[10px] block mb-1">You</span>
+                  Copy that. ETA 12 minutes. Initiating evacuation protocols.
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-orange-950/30 border border-orange-900/50 rounded-lg p-2 text-xs text-orange-200 w-[90%]">
+                  <span className="text-orange-400 font-bold text-[10px] block mb-1 flex items-center gap-1">
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path></svg>
+                    Local Govt Relay
+                  </span>
+                  Power grid failure in Sector 4. Cellular towers switching to backup generators. Expect spotty coverage.
+                </div>
+
+                <div className="bg-orange-900/40 border border-orange-800/60 rounded-lg p-2 text-xs text-orange-100 w-[90%] self-end">
+                  <span className="text-orange-300 font-bold text-[10px] block mb-1">You</span>
+                  Acknowledged. Shifting non-essential comms to GSM to save E2EE bandwidth.
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex gap-2">
@@ -84,10 +157,10 @@ export default function AgentDashboard({ onLogout, session }) {
               type="text" 
               value={chatMessage}
               onChange={(e) => setChatMessage(e.target.value)}
-              placeholder="Transmit securely..."
-              className="flex-1 bg-zinc-950 border border-zinc-800 text-white text-xs rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500"
+              placeholder={chatMode === 'E2EE' ? "Transmit securely..." : "Send SMS text..."}
+              className={`flex-1 bg-zinc-950 border text-xs rounded-lg px-3 py-2 focus:outline-none ${chatMode === 'E2EE' ? 'border-zinc-800 text-white focus:border-blue-500' : 'border-orange-900/50 text-orange-100 focus:border-orange-500'}`}
             />
-            <button className="bg-blue-600 hover:bg-blue-500 text-white rounded-lg px-3 py-2 transition-colors">
+            <button className={`${chatMode === 'E2EE' ? 'bg-blue-600 hover:bg-blue-500' : 'bg-orange-600 hover:bg-orange-500'} text-white rounded-lg px-3 py-2 transition-colors`}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
             </button>
           </div>
@@ -180,9 +253,11 @@ export default function AgentDashboard({ onLogout, session }) {
           </div>
         </div>
 
-        <RealGoogleMap
-          standalone={true}
-          zones={zones}
+        <RealGoogleMap 
+          zones={zones} 
+          safehouses={safehouses}
+          citizens={trappedCitizens}
+          standalone={false} 
           zoom={isEmergency ? 11 : 13}
         />
       </div>

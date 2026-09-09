@@ -13,6 +13,8 @@ function distance(latlng1, latlng2) {
  * @param {Array} obstacles - Array of H3 hex indexes to avoid
  * @param {Number} res - H3 resolution (e.g. 10)
  */
+
+
 function findPath(startLatLng, endLatLng, obstacles, res = 10) {
     const startHex = h3.latLngToCell(startLatLng[0], startLatLng[1], res);
     const endHex = h3.latLngToCell(endLatLng[0], endLatLng[1], res);

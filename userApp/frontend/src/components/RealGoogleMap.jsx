@@ -54,16 +54,19 @@ function getHaversineDistanceKm(lat1, lon1, lat2, lon2) {
 
 export default function RealGoogleMap({
   zones = [],
+  safehouses = [],
+  citizens = [],
   onZoneSelect,
   onAssignSelf,
   onLocationDetect,
   focusTrigger,
-  center,
-  zoom,
   standalone = false,
+  zoom = 5,
+  center = [22.5937, 78.9629], // Center of India default
+  userLocationOverride = null,
+  topBarAccessory = null,
   selectedZoneId = null,
-  activeHazardType = null,
-  userLocationOverride = null
+  activeHazardType = null
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -277,8 +280,8 @@ export default function RealGoogleMap({
         const circle = L.circle([zone.lat, zone.lng], {
           color: isRed ? '#DC2626' : '#D97706',
           fillColor: isRed ? '#EF4444' : '#F59E0B',
-          fillOpacity: isSelected ? 0.35 : 0.2,
-          weight: isSelected ? 3 : 1.5,
+          fillOpacity: standalone ? (isSelected ? 0.15 : 0.08) : (isSelected ? 0.35 : 0.2),
+          weight: standalone ? (isSelected ? 2 : 1) : (isSelected ? 3 : 1.5),
           dashArray: isSelected ? undefined : '4, 4',
           radius: zone.radiusMeters,
         });
@@ -327,13 +330,15 @@ export default function RealGoogleMap({
           </div>
           <h4 style="margin: 2px 0 3px 0; font-size: 13px; font-weight: 800; color: #0f172a;">${zone.name}</h4>
           <div style="font-size: 10px; color: #475569; margin-bottom: 6px;">Threat: <strong>${zone.hazard}</strong></div>
+          ${!standalone ? `
           <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px; border-radius: 6px; font-size: 10px; margin-bottom: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
             <div><span style="color: #64748b; font-size: 9px;">Threat Score:</span><br/><strong style="color: ${isRed ? '#dc2626' : '#d97706'}; font-size: 12px;">${zone.riskScore}/100</strong></div>
-            <div><span style="color: #64748b; font-size: 9px;">At-Risk Population:</span><br/><strong style="color: #0f172a; font-size: 12px;">${zone.populationRisk.toLocaleString()}</strong></div>
+            <div><span style="color: #64748b; font-size: 9px;">At-Risk Population:</span><br/><strong style="color: #0f172a; font-size: 12px;">${zone.populationRisk?.toLocaleString() || 0}</strong></div>
           </div>
+          ` : ''}
           <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 5px 6px; border-radius: 5px; font-size: 10px; color: #065f46;">
-            <strong>Target Safe Hub:</strong> ${zone.safeSite.name}<br/>
-            <span style="font-size: 9px; color: #047857;">Capacity: ${zone.safeSite.capacity} | ETA: ${zone.evacEta}</span>
+            <strong>Target Safe Hub:</strong> ${zone.safeSite?.name || 'Scanning...'}<br/>
+            <span style="font-size: 9px; color: #047857;">Capacity: ${zone.safeSite?.capacity || '...'} | ETA: ${zone.evacEta || 'Calculating...'}</span>
           </div>
         </div>
       `;
@@ -375,18 +380,75 @@ export default function RealGoogleMap({
 
       if (showRoutes && zone.wayroute) {
         const polyline = L.polyline(zone.wayroute, {
-          color: isSelected ? '#0284C7' : '#94A3B8',
-          weight: isSelected ? 4 : 2,
-          dashArray: isSelected ? '6, 6' : '4, 6',
-          opacity: isSelected ? 1 : 0.5,
+          color: standalone ? '#1D4ED8' : (isSelected ? '#0284C7' : '#94A3B8'), // Deep blue for standalone
+          weight: standalone ? 6 : (isSelected ? 4 : 2), // Thicker for standalone
+          dashArray: standalone ? undefined : (isSelected ? '6, 6' : '4, 6'), // Solid line for standalone
+          opacity: standalone ? 0.9 : (isSelected ? 1 : 0.5),
+          lineCap: 'round',
+          lineJoin: 'round'
         });
 
         polyline.bindTooltip(`<b>Evacuation Corridor:</b> ${zone.corridorName}<br/>${zone.shortName} to ${zone.safeSite.name} (${zone.evacEta})`);
         group.addLayer(polyline);
       }
     });
-  }, [selectedZone, showRedZones, showSafeSites, showRoutes]);
 
+    // Render Global Safehouses for Agent Dashboard
+    if (!standalone && safehouses && safehouses.length > 0) {
+      safehouses.forEach((sh) => {
+        const shLat = parseFloat(sh.lat);
+        const shLng = parseFloat(sh.lng);
+        if (isNaN(shLat) || isNaN(shLng)) return;
+
+        const safeHtml = `
+          <div style="width: 18px; height: 18px; border-radius: 50%; background: #16A34A; border: 2px solid #FFFFFF; box-shadow: 0 3px 8px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 900; cursor: pointer;">
+            S
+          </div>
+        `;
+        const safeIcon = L.divIcon({
+          className: 'custom-safe-pin',
+          html: safeHtml,
+          iconSize: [20, 20],
+          iconAnchor: [10, 10],
+        });
+
+        const safeMarker = L.marker([shLat, shLng], { icon: safeIcon });
+        safeMarker.bindTooltip(`<b>SAFE RELOCATION HUB:</b><br/>${sh.name}<br/><strong>Capacity: ${sh.capacity_total}</strong>`, {
+          direction: 'top',
+        });
+        group.addLayer(safeMarker);
+      });
+    }
+
+    // Render Live Trapped Citizens for Agent Dashboard
+    if (!standalone && citizens && citizens.length > 0) {
+      citizens.forEach((cit) => {
+        const cLat = parseFloat(cit.lat);
+        const cLng = parseFloat(cit.lng);
+        if (isNaN(cLat) || isNaN(cLng)) return;
+
+        const citHtml = `
+          <div style="position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+            <div style="position: absolute; width: 24px; height: 24px; border-radius: 50%; background: rgba(56,189,248,0.5); animation: ping 1.5s cubic-bezier(0,0,0.2,1) infinite;"></div>
+            <div style="position: relative; width: 12px; height: 12px; border-radius: 50%; background: #0EA5E9; border: 2px solid #FFFFFF; box-shadow: 0 2px 5px rgba(0,0,0,0.3);"></div>
+          </div>
+        `;
+        const citIcon = L.divIcon({
+          className: 'custom-citizen-pin',
+          html: citHtml,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+        });
+
+        const citMarker = L.marker([cLat, cLng], { icon: citIcon });
+        citMarker.bindTooltip(`<b>Civilian SOS Location</b><br/>User: ${cit.user_id || 'Unknown'}<br/>Status: ${cit.status}`, {
+          direction: 'top',
+        });
+        group.addLayer(citMarker);
+      });
+    }
+
+  }, [zones, safehouses, citizens, selectedZone, showRedZones, showSafeSites, showRoutes, standalone]);
 
   const handleFlyTo = (zone) => {
     setSelectedZone(zone);
@@ -651,6 +713,11 @@ export default function RealGoogleMap({
                 <Navigation className="w-3 h-3 text-[#2563EB] shrink-0" />
                 <span>Corridors</span>
               </button>
+              {topBarAccessory && (
+                <div className="ml-1 pl-1.5 border-l border-[#E8E1D5] flex items-center shrink-0">
+                  {topBarAccessory}
+                </div>
+              )}
             </div>
           </div>
 
@@ -751,13 +818,15 @@ export default function RealGoogleMap({
                 </div>
                 <div className="font-bold text-xs sm:text-sm text-[#1A1A1A] truncate">{selectedZone.name}</div>
                 <div className="text-[10px] text-[#B85C38] font-medium truncate">{selectedZone.hazard}</div>
-                <div className="flex items-center gap-1.5 pt-1 text-[10px] text-[#5C544D] border-t border-[#E8E1D5]">
-                  <span>Score: <strong className="text-[#B85C38]">{selectedZone.riskScore}/100</strong></span>
-                  <span>•</span>
-                  <span>Pop: <strong className="text-[#1A1A1A]">{selectedZone.populationRisk.toLocaleString()}</strong></span>
-                  <span>•</span>
-                  <span>Evac: <strong className="text-[#2D7A4F]">{selectedZone.evacEta}</strong></span>
-                </div>
+                {!standalone && (
+                  <div className="flex items-center gap-1.5 pt-1 text-[10px] text-[#5C544D] border-t border-[#E8E1D5]">
+                    <span>Score: <strong className="text-[#B85C38]">{selectedZone.riskScore}/100</strong></span>
+                    <span>•</span>
+                    <span>Pop: <strong className="text-[#1A1A1A]">{selectedZone.populationRisk?.toLocaleString() || 0}</strong></span>
+                    <span>•</span>
+                    <span>Evac: <strong className="text-[#2D7A4F]">{selectedZone.evacEta}</strong></span>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -981,6 +1050,12 @@ export default function RealGoogleMap({
                 <Navigation className="w-2.5 h-2.5 text-cyan-400" />
                 <span>Routes</span>
               </button>
+              
+              {topBarAccessory && (
+                <div className="ml-1 border-l border-slate-700 pl-1.5 flex items-center">
+                  {topBarAccessory}
+                </div>
+              )}
             </div>
 
           </div>

@@ -127,6 +127,15 @@ CREATE TABLE IF NOT EXISTS chat_logs (
     timestamp BIGINT
 );
 
+-- GSM CHAT LOGS (Unencrypted Fallback)
+CREATE TABLE IF NOT EXISTS gsm_chat_logs (
+    chat_id SERIAL PRIMARY KEY,
+    conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
+    sender_id TEXT,
+    message TEXT NOT NULL, -- Plaintext Cellular Payload
+    timestamp BIGINT
+);
+
 -- MESSAGE REACTIONS
 CREATE TABLE IF NOT EXISTS message_reactions (
     id SERIAL PRIMARY KEY,

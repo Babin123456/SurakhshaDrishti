@@ -193,6 +193,24 @@
       "special_needs": [],
       "status": "ACTIVE_RED_ZONE",
       "created_at": "2026-09-08T12:46:42.145Z"
+    },
+    {
+      "pass_id": "QS-6080QZ",
+      "user_id": "9433087827",
+      "phone": "9433087827",
+      "assigned_shelter_id": null,
+      "special_needs": [],
+      "status": "ACTIVE_RED_ZONE",
+      "created_at": "2026-09-09T15:40:51.451Z"
+    },
+    {
+      "pass_id": "QS-NC7BAX",
+      "user_id": "9433087827",
+      "phone": "9433087827",
+      "assigned_shelter_id": null,
+      "special_needs": [],
+      "status": "ACTIVE_RED_ZONE",
+      "created_at": "2026-09-09T15:42:43.504Z"
     }
   ],
   "e2ee_conversations": [],
