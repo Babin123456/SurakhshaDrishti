@@ -496,104 +496,106 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
           <div className="bg-white/80 border border-[#E8E1D5] rounded-3xl p-4 sm:p-5 flex flex-col justify-between min-h-[720px] relative overflow-hidden backdrop-blur-md shadow-sm transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]">
             
             {/* Map Header & Zone Selector with 16-Digit Search & Focus Mode (#13) */}
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#F6F4F0] p-3 sm:p-3.5 rounded-2xl border border-[#E8E1D5] transition-all duration-300 shadow-2xs">
-              {/* Left: Viewport Title & Focus Mode Badge */}
-              <div className="flex items-center gap-2.5 shrink-0">
-                <div className="w-8 h-8 rounded-xl bg-white border border-[#E8E1D5] flex items-center justify-center shadow-2xs shrink-0">
-                  <Map className="w-4 h-4 text-[#8B7355]" />
+            <div className="relative z-10 bg-[#F6F4F0] p-3 sm:p-4 rounded-2xl border border-[#E8E1D5] transition-all duration-300 shadow-2xs space-y-3">
+              {/* Row 1: Single-Line Title, Status Badge, Sector Dropdown & Focus Button */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                {/* Left: Viewport Title (strictly single line, no wrap) & Mode Badge */}
+                <div className="flex items-center gap-2.5 shrink-0 whitespace-nowrap min-w-0">
+                  <div className="w-8 h-8 rounded-xl bg-white border border-[#E8E1D5] flex items-center justify-center shadow-2xs shrink-0">
+                    <Map className="w-4 h-4 text-[#8B7355]" />
+                  </div>
+                  <div className="flex items-center gap-2 whitespace-nowrap">
+                    <span className="text-sm font-bold text-[#1A1A1A] tracking-tight whitespace-nowrap">
+                      Active GIS Red Zone Viewport
+                    </span>
+                    <span className="hidden lg:inline-flex px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#E8E1D5] text-[#4A4238] shadow-2xs shrink-0 whitespace-nowrap">
+                      {isFullMapView ? 'Full View' : 'Split View'}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="text-xs sm:text-sm font-bold text-[#1A1A1A] truncate">
-                    Active GIS Red Zone Viewport
-                  </span>
-                  <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#E8E1D5] text-[#4A4238] shadow-2xs shrink-0">
-                    {isFullMapView ? 'Full View' : 'Split View'}
-                  </span>
+
+                {/* Right: Sector Selector Dropdown & Focus Button */}
+                <div className="flex items-center gap-2 w-full sm:w-auto shrink-0 justify-start sm:justify-end">
+                  {/* Sector Selector Dropdown */}
+                  {!isOfficerAssigned && (
+                    <div className="relative flex-1 sm:flex-initial min-w-[200px] max-w-xs">
+                      <select
+                        value={selectedZoneId}
+                        onChange={(e) => {
+                          setSelectedZoneId(e.target.value);
+                          setDynamicCoordinates(null);
+                          setAssignSuccessMsg(null);
+                          setAssignErrorMsg(null);
+                        }}
+                        className="w-full bg-white text-[#1A1A1A] text-xs font-bold pl-3 pr-8 py-2 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] cursor-pointer transition-all shadow-2xs hover:border-[#8B7355]/50 appearance-none truncate"
+                      >
+                        {zones.map(z => (
+                          <option key={z.zone_id} value={z.zone_id}>
+                            {z.name} ({z.status === 'SITUATION_UNDER_CONTROL' ? 'SAFE' : 'RED ZONE'})
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#8B7355]">
+                        <ChevronRight className="w-3.5 h-3.5 rotate-90" />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Focus Sector Button */}
+                  <button
+                    type="button"
+                    onClick={() => setFocusTrigger(f => f + 1)}
+                    className="group shrink-0 px-3.5 py-2 rounded-xl bg-white hover:bg-[#8B7355] hover:text-white border border-[#8B7355]/40 text-[#2C2A29] text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95"
+                    title="Center and zoom map on current sector"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#8B7355] group-hover:text-white transition-colors shrink-0" />
+                    <span className="whitespace-nowrap">Focus</span>
+                  </button>
                 </div>
               </div>
 
-              {/* Center & Right Controls Toolbar */}
-              <div className="flex flex-wrap items-center gap-2.5 flex-1 justify-end min-w-0">
-                {/* 16-Digit Red Zone Key Search Fallback System (#13) */}
-                {!isOfficerAssigned && (
-                  <form onSubmit={handleSearchKey} className="flex items-center gap-1.5 flex-1 sm:flex-initial min-w-[220px] max-w-sm">
-                    <div className="relative flex-1">
+              {/* Row 2: Search Key Box + Locate Zone Button + Full View / Split View Toggle (Desktop only) */}
+              <div className="flex items-center gap-2 w-full pt-0.5">
+                {!isOfficerAssigned ? (
+                  <form onSubmit={handleSearchKey} className="flex items-center gap-2 flex-1 min-w-0">
+                    <div className="relative flex-1 min-w-0">
                       <input
                         type="text"
                         value={searchKey}
                         onChange={(e) => setSearchKey(e.target.value)}
-                        placeholder="Search 16-Digit Key..."
-                        className="w-full bg-white text-[#1A1A1A] font-mono text-xs pl-8 pr-3 py-2 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs placeholder:text-[#9C948A]"
+                        placeholder="Search 16-Digit Key (e.g. RZ-89A4-91F2-3B7C) or Geohash..."
+                        className="w-full bg-white text-[#1A1A1A] font-mono text-xs pl-9 pr-4 py-2.5 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs placeholder:text-[#9C948A] truncate"
                       />
-                      <Key className="w-3.5 h-3.5 text-[#8B7355] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      <Key className="w-4 h-4 text-[#8B7355] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                     <button
                       type="submit"
-                      className="px-3 py-2 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-white text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors shadow-2xs cursor-pointer"
+                      className="px-4 sm:px-5 py-2.5 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-white text-xs font-semibold flex items-center gap-2 shrink-0 transition-all shadow-2xs hover:shadow-md cursor-pointer active:scale-95"
                       title="Locate Issue on Map by 16-Digit Key"
                     >
                       <Search className="w-3.5 h-3.5" />
-                      <span className="inline">Locate</span>
+                      <span className="whitespace-nowrap">Locate Zone</span>
                     </button>
                   </form>
+                ) : (
+                  <div className="flex-1" />
                 )}
 
-                {/* Sector Selector Dropdown */}
-                {!isOfficerAssigned && (
-                  <div className="relative flex-1 sm:flex-initial min-w-[200px] max-w-xs">
-                    <select
-                      value={selectedZoneId}
-                      onChange={(e) => {
-                        setSelectedZoneId(e.target.value);
-                        setDynamicCoordinates(null);
-                        setAssignSuccessMsg(null);
-                        setAssignErrorMsg(null);
-                      }}
-                      className="w-full bg-white text-[#1A1A1A] text-xs font-bold pl-3 pr-8 py-2 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] cursor-pointer transition-all shadow-2xs hover:border-[#8B7355]/50 appearance-none truncate"
-                    >
-                      {zones.map(z => (
-                        <option key={z.zone_id} value={z.zone_id}>
-                          {z.name} ({z.status === 'SITUATION_UNDER_CONTROL' ? 'SAFE' : 'RED ZONE'})
-                        </option>
-                      ))}
-                    </select>
-                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#8B7355]">
-                      <ChevronRight className="w-3.5 h-3.5 rotate-90" />
-                    </div>
-                  </div>
-                )}
-
-                {/* Focus Button */}
-                <button
-                  type="button"
-                  onClick={() => isOfficerAssigned && setFocusTrigger(f => f + 1)}
-                  disabled={!isOfficerAssigned}
-                  className={`group shrink-0 px-3 py-2 rounded-xl border text-xs font-semibold transition-colors flex items-center gap-1.5 shadow-2xs ${
-                    isOfficerAssigned
-                      ? 'bg-white hover:bg-[#F6F4F0] border-[#E8E1D5] text-[#1A1A1A] cursor-pointer'
-                      : 'bg-[#F6F4F0] border-[#E8E1D5] text-[#A89F91] cursor-not-allowed opacity-60'
-                  }`}
-                  title="Recenter Map on Assigned Sector"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span className="inline">Focus</span>
-                </button>
-
-                {/* View Mode Toggle Button */}
+                {/* View Mode Toggle Button (Hidden on mobile, only shown on lg+ desktop) */}
                 <button
                   type="button"
                   onClick={() => setIsFullMapView(!isFullMapView)}
-                  className="group shrink-0 px-3 py-2 rounded-xl bg-white hover:bg-[#2C2A29] hover:text-[#FDFBF7] border border-[#E8E1D5] hover:border-[#2C2A29] text-xs font-semibold text-[#1A1A1A] transition-colors flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                  className="hidden lg:flex group shrink-0 px-3.5 py-2.5 rounded-xl bg-white hover:bg-[#2C2A29] border border-[#E8E1D5] hover:border-[#2C2A29] text-xs font-semibold text-[#1A1A1A] hover:text-[#FDFBF7] transition-all duration-200 items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95"
                   title={isFullMapView ? "Switch to Split Tactical View" : "Expand Map to Full Width"}
                 >
-                  <span>
+                  <span className="flex items-center justify-center w-3.5 h-3.5 shrink-0 text-[#8B7355] group-hover:text-white transition-colors">
                     {isFullMapView ? (
-                      <Minimize2 className="w-3.5 h-3.5 text-[#8B7355] group-hover:text-[#FDFBF7] transition-colors" />
+                      <Minimize2 className="w-3.5 h-3.5 stroke-[2.5]" />
                     ) : (
-                      <Maximize2 className="w-3.5 h-3.5 text-[#8B7355] group-hover:text-[#FDFBF7] transition-colors" />
+                      <Maximize2 className="w-3.5 h-3.5 stroke-[2.5]" />
                     )}
                   </span>
-                  <span className="whitespace-nowrap transition-colors">
+                  <span className="whitespace-nowrap transition-colors font-medium">
                     {isFullMapView ? 'Split View' : 'Full View'}
                   </span>
                 </button>
