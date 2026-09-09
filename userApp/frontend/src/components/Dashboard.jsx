@@ -113,16 +113,22 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
   };
 
   // Selected Zone Details
-  const activeZone = zones.find(z => z.zone_id === selectedZoneId) || zones[0] || fallbackZone;
+  const rawActiveZone = zones.find(z => z.zone_id === selectedZoneId) || zones[0] || fallbackZone;
+  const activeZone = {
+    ...rawActiveZone,
+    assigned_officers: Array.isArray(rawActiveZone?.assigned_officers) ? rawActiveZone.assigned_officers : []
+  };
+  const assignedOfficers = activeZone.assigned_officers;
+
   // Current Officer Info
   const currentOfficerId = user?.userId || user?.user_id || user?.username || 'ndrf_admin';
   const currentOfficerName = user?.fullName || user?.name || user?.username || 'NDRF Commander Chief';
   const currentDept = user?.role || 'NDRF Tactical Command';
 
-  const isOfficerAssigned = activeZone?.assigned_officers?.some(
+  const isOfficerAssigned = assignedOfficers.some(
     o => o.user_id === currentOfficerId
   );
-  const hasOfficerVoted = activeZone?.assigned_officers?.some(
+  const hasOfficerVoted = assignedOfficers.some(
     o => o.user_id === currentOfficerId && o.vote_to_resolve
   );
 
@@ -242,10 +248,11 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
 
     setZones(prev => prev.map(z => {
       if (z.zone_id === selectedZoneId) {
-        const alreadyIn = z.assigned_officers.some(o => o.user_id === currentOfficerId);
+        const officers = Array.isArray(z.assigned_officers) ? z.assigned_officers : [];
+        const alreadyIn = officers.some(o => o.user_id === currentOfficerId);
         const updatedList = alreadyIn 
-          ? z.assigned_officers 
-          : [...z.assigned_officers, { user_id: currentOfficerId, officer_name: currentOfficerName, department: currentDept, vote_to_resolve: false }];
+          ? officers 
+          : [...officers, { user_id: currentOfficerId, officer_name: currentOfficerName, department: currentDept, vote_to_resolve: false }];
         return { ...z, assigned_officers: updatedList };
       }
       return z;
@@ -274,10 +281,11 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
 
     setZones(prev => prev.map(z => {
       if (z.zone_id === target.zone_id) {
-        const alreadyIn = z.assigned_officers.some(o => o.user_id === currentOfficerId);
+        const officers = Array.isArray(z.assigned_officers) ? z.assigned_officers : [];
+        const alreadyIn = officers.some(o => o.user_id === currentOfficerId);
         const updatedList = alreadyIn 
-          ? z.assigned_officers 
-          : [...z.assigned_officers, { user_id: currentOfficerId, officer_name: currentOfficerName, department: currentDept, vote_to_resolve: false }];
+          ? officers 
+          : [...officers, { user_id: currentOfficerId, officer_name: currentOfficerName, department: currentDept, vote_to_resolve: false }];
         return { ...z, assigned_officers: updatedList };
       }
       return z;
@@ -359,7 +367,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
   const stats = [
     { title: 'Active Red Zones', value: `${zones.filter(z=>z.status==='ACTIVE_RED_ZONE').length} Sectors`, change: '16-Digit Encrypted Keys', color: 'text-[#B85C38]', bg: 'bg-white/70 border-[#FADED4]' },
     { title: 'Trapped Citizens Monitored', value: `${trappedCitizens.length * 710}`, change: 'Blue GPS Telemetry Pulses', color: 'text-[#C05621]', bg: 'bg-white/70 border-[#FEEBC8]' },
-    { title: 'Assigned Command Officers', value: `${activeZone.assigned_officers.length} Officers`, change: `${activeZone.assigned_officers.map(o=>o.department).join(', ') || 'Awaiting Assignment'}`, color: 'text-[#2D7A4F]', bg: 'bg-white/70 border-[#D4EDDA]' },
+    { title: 'Assigned Command Officers', value: `${assignedOfficers.length} Officers`, change: `${assignedOfficers.map(o=>o.department).join(', ') || 'Awaiting Assignment'}`, color: 'text-[#2D7A4F]', bg: 'bg-white/70 border-[#D4EDDA]' },
     { title: 'Sector Resolution Status', value: activeZone.status === 'SITUATION_UNDER_CONTROL' ? 'SAFE — RESOLVED' : 'ACTIVE EMERGENCY', change: `Consensus: ${activeZone.resolution_votes_cast}/${activeZone.resolution_votes_required} Votes`, color: activeZone.status === 'SITUATION_UNDER_CONTROL' ? 'text-[#2D7A4F]' : 'text-[#8B7355]', bg: 'bg-white/70 border-[#E8E1D5]' },
   ];
 
@@ -488,11 +496,11 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
           <div className="bg-white/80 border border-[#E8E1D5] rounded-3xl p-4 sm:p-5 flex flex-col justify-between min-h-[720px] relative overflow-hidden backdrop-blur-md shadow-sm transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]">
             
             {/* Map Header & Zone Selector with 16-Digit Search & Focus Mode (#13) */}
-            <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-3 bg-[#F6F4F0] p-3 sm:p-3.5 rounded-2xl border border-[#E8E1D5] transition-all duration-300 shadow-2xs">
+            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-[#F6F4F0] p-3 sm:p-3.5 rounded-2xl border border-[#E8E1D5] transition-all duration-300 shadow-2xs">
               {/* Left: Viewport Title & Focus Mode Badge */}
-              <div className="flex flex-wrap items-center gap-2.5 min-w-0">
-                <div className="w-7 h-7 rounded-xl bg-white border border-[#E8E1D5] flex items-center justify-center shadow-2xs shrink-0">
-                  <Map className="w-3.5 h-3.5 text-[#8B7355]" />
+              <div className="flex items-center gap-2.5 shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-white border border-[#E8E1D5] flex items-center justify-center shadow-2xs shrink-0">
+                  <Map className="w-4 h-4 text-[#8B7355]" />
                 </div>
                 <div className="flex items-center gap-2 min-w-0">
                   <span className="text-xs sm:text-sm font-bold text-[#1A1A1A] truncate">
@@ -504,55 +512,55 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                 </div>
               </div>
 
-              {/* Center/Right: 16-Digit Red Zone Key Search Fallback System (#13) */}
-              {!isOfficerAssigned && (
-              <form onSubmit={handleSearchKey} className="flex items-center gap-1.5 flex-1 max-w-md w-full">
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={searchKey}
-                    onChange={(e) => setSearchKey(e.target.value)}
-                    placeholder="Search 16-Digit Key (e.g. RZ-89A4-91F2-3B7C)..."
-                    className="w-full bg-white text-[#1A1A1A] font-mono text-xs pl-8 pr-3 py-2 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs placeholder:text-[#9C948A]"
-                  />
-                  <Key className="w-3.5 h-3.5 text-[#8B7355] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
-                <button
-                  type="submit"
-                  className="px-3 py-2 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-white text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors shadow-2xs cursor-pointer"
-                  title="Locate Issue on Map by 16-Digit Key"
-                >
-                  <Search className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Locate</span>
-                </button>
-              </form>
-              )}
+              {/* Center & Right Controls Toolbar */}
+              <div className="flex flex-wrap items-center gap-2.5 flex-1 justify-end min-w-0">
+                {/* 16-Digit Red Zone Key Search Fallback System (#13) */}
+                {!isOfficerAssigned && (
+                  <form onSubmit={handleSearchKey} className="flex items-center gap-1.5 flex-1 sm:flex-initial min-w-[220px] max-w-sm">
+                    <div className="relative flex-1">
+                      <input
+                        type="text"
+                        value={searchKey}
+                        onChange={(e) => setSearchKey(e.target.value)}
+                        placeholder="Search 16-Digit Key..."
+                        className="w-full bg-white text-[#1A1A1A] font-mono text-xs pl-8 pr-3 py-2 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs placeholder:text-[#9C948A]"
+                      />
+                      <Key className="w-3.5 h-3.5 text-[#8B7355] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                    <button
+                      type="submit"
+                      className="px-3 py-2 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-white text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors shadow-2xs cursor-pointer"
+                      title="Locate Issue on Map by 16-Digit Key"
+                    >
+                      <Search className="w-3.5 h-3.5" />
+                      <span className="inline">Locate</span>
+                    </button>
+                  </form>
+                )}
 
-              {/* Right: Sector Selector & View Mode Toggle */}
-              <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
                 {/* Sector Selector Dropdown */}
                 {!isOfficerAssigned && (
-                <div className="relative flex-1 sm:flex-initial min-w-[170px] max-w-full">
-                  <select
-                    value={selectedZoneId}
-                    onChange={(e) => {
-                      setSelectedZoneId(e.target.value);
-                      setDynamicCoordinates(null);
-                      setAssignSuccessMsg(null);
-                      setAssignErrorMsg(null);
-                    }}
-                    className="w-full bg-white text-[#1A1A1A] text-xs font-bold pl-3 pr-8 py-2 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] cursor-pointer transition-all shadow-2xs hover:border-[#8B7355]/50 appearance-none truncate"
-                  >
-                    {zones.map(z => (
-                      <option key={z.zone_id} value={z.zone_id}>
-                        {z.name} ({z.status === 'SITUATION_UNDER_CONTROL' ? 'SAFE' : 'RED ZONE'})
-                      </option>
-                    ))}
-                  </select>
-                  <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#8B7355]">
-                    <ChevronRight className="w-3.5 h-3.5 rotate-90" />
+                  <div className="relative flex-1 sm:flex-initial min-w-[200px] max-w-xs">
+                    <select
+                      value={selectedZoneId}
+                      onChange={(e) => {
+                        setSelectedZoneId(e.target.value);
+                        setDynamicCoordinates(null);
+                        setAssignSuccessMsg(null);
+                        setAssignErrorMsg(null);
+                      }}
+                      className="w-full bg-white text-[#1A1A1A] text-xs font-bold pl-3 pr-8 py-2 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] cursor-pointer transition-all shadow-2xs hover:border-[#8B7355]/50 appearance-none truncate"
+                    >
+                      {zones.map(z => (
+                        <option key={z.zone_id} value={z.zone_id}>
+                          {z.name} ({z.status === 'SITUATION_UNDER_CONTROL' ? 'SAFE' : 'RED ZONE'})
+                        </option>
+                      ))}
+                    </select>
+                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-[#8B7355]">
+                      <ChevronRight className="w-3.5 h-3.5 rotate-90" />
+                    </div>
                   </div>
-                </div>
                 )}
 
                 {/* Focus Button */}
@@ -568,7 +576,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                   title="Recenter Map on Assigned Sector"
                 >
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Focus</span>
+                  <span className="inline">Focus</span>
                 </button>
 
                 {/* View Mode Toggle Button */}
@@ -737,17 +745,17 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                 <Users className="w-4 h-4 text-[#8B7355]" /> Assigned Inter-Agency Team
               </h3>
               <span className="text-xs text-[#7A726A] font-mono">
-                {activeZone.assigned_officers.length} Active
+                {assignedOfficers.length} Active
               </span>
             </div>
 
             <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
-              {activeZone.assigned_officers.length === 0 ? (
+              {assignedOfficers.length === 0 ? (
                 <div className="text-xs text-[#8C847A] italic py-2 text-center">
                   No officers assigned to this zone yet. Use the key assignment above to join.
                 </div>
               ) : (
-                activeZone.assigned_officers.map((officer, idx) => (
+                assignedOfficers.map((officer, idx) => (
                   <div key={idx} className="p-2.5 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-between text-xs">
                     <div>
                       <div className="font-bold text-[#1A1A1A]">{officer.officer_name}</div>

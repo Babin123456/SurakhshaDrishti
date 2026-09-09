@@ -39,10 +39,14 @@ router.get("/", async (req, res, next) => {
         const combinedZones = [];
 
         for (const zone of activeZones) {
-            combinedZones.push(zone);
+            const formattedZone = {
+                ...zone,
+                assigned_officers: Array.isArray(zone.assigned_officers) ? zone.assigned_officers : []
+            };
+            combinedZones.push(formattedZone);
             if (zone.zone_type === 'RED') {
                 const yellowZone = {
-                    ...zone,
+                    ...formattedZone,
                     zone_id: zone.zone_id + '-YELLOW-BUFFER',
                     name: zone.name + ' (Warning Buffer)',
                     zone_type: 'YELLOW',
@@ -96,9 +100,14 @@ router.get("/search", async (req, res, next) => {
             ORDER BY z.risk_score DESC
         `, [searchTerm]);
 
+        const formatted = (result.rows || []).map(zone => ({
+            ...zone,
+            assigned_officers: Array.isArray(zone.assigned_officers) ? zone.assigned_officers : []
+        }));
+
         return res.json({
             success: true,
-            zones: result.rows
+            zones: formatted
         });
     } catch (err) {
         return next(err);

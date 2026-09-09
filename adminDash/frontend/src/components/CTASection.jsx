@@ -1,10 +1,11 @@
 import React from 'react';
-import { ArrowRight, Zap, Shield, UserPlus } from 'lucide-react';
+import { ArrowRight, Zap, Shield, UserPlus, Map } from 'lucide-react';
 import { useScrollReveal } from '../utils/useScrollReveal';
 import Interactive3DCard from './Interactive3DCard';
 
-export default function CTASection({ onExplore, onEmergencyAccess, onSignUp, onQuickSign }) {
+export default function CTASection({ userSession, onExplore, onEmergencyAccess, onSignUp, onQuickSign, onNavigateDashboard }) {
   const [ref, revealed] = useScrollReveal();
+  const currentUser = userSession?.user || userSession;
 
   return (
     <section id="cta" className="relative py-20 sm:py-28 scroll-mt-20" aria-label="Call to action">
@@ -53,14 +54,26 @@ export default function CTASection({ onExplore, onEmergencyAccess, onSignUp, onQ
 
             {/* Primary Action Buttons */}
             <div className="relative z-20 flex flex-col sm:flex-row items-center justify-center gap-3.5 sm:gap-4">
-              <button
-                type="button"
-                onClick={onSignUp}
-                className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all hover:-translate-y-0.5 active:scale-[0.99]"
-              >
-                <UserPlus className="w-4 h-4 opacity-80" />
-                <span>Create Official / Resident Account</span>
-              </button>
+              {currentUser ? (
+                <button
+                  type="button"
+                  onClick={onNavigateDashboard || onExplore}
+                  className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all hover:-translate-y-0.5 active:scale-[0.99] group"
+                >
+                  <Map className="w-4 h-4 text-[#8B7355]" />
+                  <span>Open Command Console</span>
+                  <ArrowRight className="w-4 h-4 text-[#8B7355] group-hover:translate-x-0.5 transition-transform" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={onSignUp}
+                  className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all hover:-translate-y-0.5 active:scale-[0.99]"
+                >
+                  <UserPlus className="w-4 h-4 opacity-80" />
+                  <span>Create Official / Resident Account</span>
+                </button>
+              )}
 
               <button
                 type="button"
