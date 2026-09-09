@@ -498,7 +498,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
             {/* Map Header & Zone Selector with 16-Digit Search & Focus Mode (#13) */}
             <div className="relative z-10 bg-[#F6F4F0] p-3 sm:p-4 rounded-2xl border border-[#E8E1D5] transition-all duration-300 shadow-2xs space-y-3">
               {/* Row 1: Single-Line Title, Status Badge, Sector Dropdown & View Mode Controls */}
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div className="flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-3">
                 {/* Left: Viewport Title (strictly single line, no wrap) & Mode Badge */}
                 <div className="flex items-center gap-2.5 shrink-0 whitespace-nowrap min-w-0">
                   <div className="w-8 h-8 rounded-xl bg-white border border-[#E8E1D5] flex items-center justify-center shadow-2xs shrink-0">
@@ -515,10 +515,10 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                 </div>
 
                 {/* Right: Sector Selector Dropdown, Focus Button & View Toggle */}
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full lg:w-auto shrink-0 justify-start sm:justify-end">
+                <div className="flex flex-wrap items-center gap-2 w-full 2xl:w-auto shrink-0 justify-start 2xl:justify-end">
                   {/* Sector Selector Dropdown */}
                   {!isOfficerAssigned && (
-                    <div className="relative flex-1 sm:flex-initial min-w-[200px] max-w-xs">
+                    <div className="relative flex-1 min-w-[170px] max-w-xs">
                       <select
                         value={selectedZoneId}
                         onChange={(e) => {
@@ -541,14 +541,14 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                     </div>
                   )}
 
-                  {/* Focus Sector Button - always visible and functional */}
+                  {/* Focus Sector Button */}
                   <button
                     type="button"
                     onClick={() => setFocusTrigger(f => f + 1)}
-                    className="group shrink-0 px-3.5 py-2 rounded-xl bg-white hover:bg-[#8B7355] hover:text-white border border-[#8B7355]/40 text-[#2C2A29] text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95"
+                    className="group shrink-0 px-3 py-2 rounded-xl bg-white hover:bg-[#8B7355] hover:text-white border border-[#8B7355]/40 text-[#2C2A29] text-xs font-semibold transition-all duration-200 flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95"
                     title="Center and zoom map on current sector"
                   >
-                    <Sparkles className="w-3.5 h-3.5 text-[#8B7355] group-hover:text-white transition-colors" />
+                    <Sparkles className="w-3.5 h-3.5 text-[#8B7355] group-hover:text-white transition-colors shrink-0" />
                     <span className="whitespace-nowrap">Focus</span>
                   </button>
 
@@ -556,14 +556,14 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                   <button
                     type="button"
                     onClick={() => setIsFullMapView(!isFullMapView)}
-                    className="group shrink-0 px-3.5 py-2 rounded-xl bg-white hover:bg-[#2C2A29] border border-[#E8E1D5] hover:border-[#2C2A29] text-xs font-semibold text-[#1A1A1A] hover:text-[#FDFBF7] transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-2xs active:scale-95"
+                    className="group shrink-0 px-3 py-2 rounded-xl bg-white hover:bg-[#2C2A29] border border-[#E8E1D5] hover:border-[#2C2A29] text-xs font-semibold text-[#1A1A1A] hover:text-[#FDFBF7] transition-all duration-200 flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95"
                     title={isFullMapView ? "Switch to Split Tactical View" : "Expand Map to Full Width"}
                   >
-                    <span className="flex items-center justify-center w-4 h-4 shrink-0 text-[#8B7355] group-hover:text-white transition-colors">
+                    <span className="flex items-center justify-center w-3.5 h-3.5 shrink-0 text-[#8B7355] group-hover:text-white transition-colors">
                       {isFullMapView ? (
-                        <Minimize2 className="w-4 h-4 stroke-[2.5]" />
+                        <Minimize2 className="w-3.5 h-3.5 stroke-[2.5]" />
                       ) : (
-                        <Maximize2 className="w-4 h-4 stroke-[2.5]" />
+                        <Maximize2 className="w-3.5 h-3.5 stroke-[2.5]" />
                       )}
                     </span>
                     <span className="whitespace-nowrap transition-colors font-medium">
