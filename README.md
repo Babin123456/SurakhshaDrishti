@@ -20,6 +20,10 @@
   <a href="#core-system-capabilities">
     <img src="https://img.shields.io/badge/Spatial_Index-8--Char_Geohash_Sub--Meter-B85C38?style=for-the-badge&labelColor=2C2A29" alt="Geohash Submeter"/>
   </a>
+  &nbsp;
+  <a href="https://github.com/Kashcx-dev/SurakshaDrishti">
+    <img src="https://img.shields.io/badge/GitHub-Kashcx--dev%2FSurakshaDrishti-181717?style=for-the-badge&logo=github&logoColor=white" alt="GitHub Repository"/>
+  </a>
 </p>
 
 <!-- Problem Statement Card -->
@@ -137,6 +141,7 @@ For granular architectural diagrams, file-by-file working principles, and subsys
 | [**AI Prediction Architecture**](./ai_prediction_architecture.md) | Deep learning specifications for time-series ConvLSTM, ViViT spatio-temporal modeling, and H3/S2 geohash anomaly heatmaps. |
 | [**Detailed Backend Architecture**](./BACKEND_ARCHITECTURE.md) | Line-by-line breakdown of Express route handlers, PostgreSQL DDL migrations, and Socket.io channel topology. |
 | [**TECH WOW AND NOVELTY**](./TECH_WOW_AND_NOVELTY.md) | Novelty features detailing GSM Offline modes, Encrypted Mesh Nets, and the Custom 3D Tilt Graphics Engine. |
+| [**Main Repository**](https://github.com/Kashcx-dev/SurakshaDrishti) | Official GitHub repository source code, issues, and release tracking. |
 | [**LICENSE**](./LICENSE) | Official Open-Source MIT License attributed to ADAMAS University (SIH 2026). |
 
 <br/>
