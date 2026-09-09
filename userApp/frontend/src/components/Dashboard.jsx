@@ -508,7 +508,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                     <span className="text-sm font-bold text-[#1A1A1A] tracking-tight whitespace-nowrap">
                       Active GIS Red Zone Viewport
                     </span>
-                    <span className="px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#E8E1D5] text-[#4A4238] shadow-2xs shrink-0 whitespace-nowrap">
+                    <span className="hidden lg:inline-flex px-2.5 py-0.5 rounded-md text-[10px] font-bold bg-[#E8E1D5] text-[#4A4238] shadow-2xs shrink-0 whitespace-nowrap">
                       {isFullMapView ? 'Full View' : 'Split View'}
                     </span>
                   </div>
@@ -554,7 +554,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                 </div>
               </div>
 
-              {/* Row 2: Search Key Box + Locate Zone Button + Full View / Split View Toggle */}
+              {/* Row 2: Search Key Box + Locate Zone Button + Full View / Split View Toggle (Desktop only) */}
               <div className="flex items-center gap-2 w-full pt-0.5">
                 {!isOfficerAssigned ? (
                   <form onSubmit={handleSearchKey} className="flex items-center gap-2 flex-1 min-w-0">
@@ -581,11 +581,11 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                   <div className="flex-1" />
                 )}
 
-                {/* View Mode Toggle Button (Placed right beside Locate Zone) */}
+                {/* View Mode Toggle Button (Hidden on mobile, only shown on lg+ desktop) */}
                 <button
                   type="button"
                   onClick={() => setIsFullMapView(!isFullMapView)}
-                  className="group shrink-0 px-3.5 py-2.5 rounded-xl bg-white hover:bg-[#2C2A29] border border-[#E8E1D5] hover:border-[#2C2A29] text-xs font-semibold text-[#1A1A1A] hover:text-[#FDFBF7] transition-all duration-200 flex items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95"
+                  className="hidden lg:flex group shrink-0 px-3.5 py-2.5 rounded-xl bg-white hover:bg-[#2C2A29] border border-[#E8E1D5] hover:border-[#2C2A29] text-xs font-semibold text-[#1A1A1A] hover:text-[#FDFBF7] transition-all duration-200 items-center gap-1.5 cursor-pointer shadow-2xs active:scale-95"
                   title={isFullMapView ? "Switch to Split Tactical View" : "Expand Map to Full Width"}
                 >
                   <span className="flex items-center justify-center w-3.5 h-3.5 shrink-0 text-[#8B7355] group-hover:text-white transition-colors">
