@@ -119,11 +119,37 @@ async function executeLocalQuery(text, params = []) {
 
   // SELECT FROM hazard_zones
   if (lower.startsWith('select') && lower.includes('from hazard_zones')) {
+    let zonesToReturn = localStore.hazard_zones;
     if (lower.includes('where zone_id =') && params.length > 0) {
-      const match = localStore.hazard_zones.filter(z => z.zone_id === params[0]);
-      return { rows: match };
+      zonesToReturn = localStore.hazard_zones.filter(z => z.zone_id === params[0]);
+    } else if (lower.includes('where z.access_key ilike') || lower.includes('z.access_key ilike')) {
+      const qClean = params[0] ? String(params[0]).replace(/%/g, '').toLowerCase() : '';
+      zonesToReturn = localStore.hazard_zones.filter(z => 
+        (z.access_key && z.access_key.toLowerCase().includes(qClean)) ||
+        (z.name && z.name.toLowerCase().includes(qClean)) ||
+        (z.geohash && z.geohash.toLowerCase().includes(qClean)) ||
+        (z.zone_id && z.zone_id.toLowerCase().includes(qClean))
+      );
     }
-    return { rows: localStore.hazard_zones };
+
+    const populated = zonesToReturn.map(zone => {
+      const assigned = (localStore.zone_assignments || [])
+        .filter(a => a.zone_id === zone.zone_id)
+        .map(a => ({
+          user_id: a.user_id,
+          officer_name: a.officer_name,
+          department: a.department,
+          assigned_at: a.assigned_at || new Date().toISOString(),
+          vote_to_resolve: !!a.vote_to_resolve
+        }));
+      return {
+        ...zone,
+        active_officers_count: assigned.length,
+        assigned_officers: assigned
+      };
+    });
+
+    return { rows: populated };
   }
 
   // SELECT FROM shelters
