@@ -43,11 +43,11 @@ export default function UserDashboard({ onLogout, session }) {
   const [userLng, setUserLng] = useState(session?.location?.lng);
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // Initial Telemetry & Satellite Sync Loader on user page load
+  // In-app loader: small round spiral icon for 1 second
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsInitializing(false);
-    }, 1100);
+    }, 1000);
     return () => clearTimeout(timer);
   }, []);
 
@@ -277,40 +277,14 @@ export default function UserDashboard({ onLogout, session }) {
 
   return (
     <div className="w-screen h-screen relative overflow-hidden bg-[#FDFBF7] font-sans select-none">
-      {/* Telemetry Initialization Loader Overlay */}
+      {/* In-app loader: small round spiral icon for 1 second */}
       {isInitializing && (
-        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#FDFBF7]/95 backdrop-blur-md transition-opacity duration-700 animate-fade-in-up">
-          <div className="paper-texture" />
-          <div className="absolute inset-0 bg-creme-mesh opacity-70 pointer-events-none" />
-          
-          <div className="relative z-10 flex flex-col items-center text-center max-w-sm px-6">
-            {/* Animated Radar Shield Loader Icon */}
-            <div className="relative w-20 h-20 mb-5 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border border-[#8B7355]/25 animate-ping opacity-50" />
-              <div className="absolute inset-1.5 rounded-full border-2 border-dashed border-[#8B7355]/40 animate-spin" style={{ animationDuration: '8s' }} />
-              <div className="w-12 h-12 rounded-2xl bg-white border border-[#E8E1D5] flex items-center justify-center shadow-sm">
-                <ShieldCheck className="w-6 h-6 text-[#8B7355]" />
-              </div>
-            </div>
-
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 border border-[#E8E1D5] mb-2 shadow-2xs">
-              <Sparkles className="w-3 h-3 text-[#8B7355] animate-spin" style={{ animationDuration: '3s' }} />
-              <span className="text-[10px] font-mono font-bold tracking-wider text-[#5C544D] uppercase">
-                GIS Telemetry Radar Sync
-              </span>
-            </div>
-
-            <h3 className="text-base font-bold text-[#1A1A1A] tracking-tight mb-1">
-              Calibrating Safe Corridors
-            </h3>
-            <p className="text-xs text-[#7A726A] font-mono mb-4">
-              {session?.phone ? `+91 ${session.phone}` : (session?.email || 'Live Connected')} • Sector GPS Active
-            </p>
-
-            {/* Smooth Progress Bar */}
-            <div className="w-48 bg-[#E8E1D5]/60 border border-[#D9D0C1] rounded-full h-1.5 overflow-hidden shadow-inner">
-              <div className="bg-gradient-to-r from-[#8B7355] via-[#B85C38] to-[#2C2A29] h-full rounded-full animate-pulse w-full" />
-            </div>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/10 backdrop-blur-[2px] transition-all duration-300">
+          <div className="bg-white/95 border border-[#E8E1D5] px-4 py-3 rounded-2xl shadow-[0_10px_30px_rgba(44,42,41,0.15)] flex items-center gap-2.5 animate-scale-in select-none">
+            <Loader2 className="w-4 h-4 text-[#8B7355] animate-spin shrink-0" />
+            <span className="text-xs font-mono font-semibold text-[#2C2A29] tracking-tight">
+              Calibrating Radar...
+            </span>
           </div>
         </div>
       )}
