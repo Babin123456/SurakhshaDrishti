@@ -1,4 +1,24 @@
-# SurakshaDrishti — Civilian Incident Hub & Tactical Client (userApp)
+<div align="center">
+
+<!-- Animated Header Wave with Title -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:2D7A4F,50:B85C38,100:8B7355&height=200&section=header&text=SurakshaDrishti%20UserApp&fontSize=42&fontColor=ffffff&fontAlignY=38&desc=Civilian%20Incident%20Hub%20%26%20Tactical%20Field%20Client&descSize=16&descColor=f3ede2&descAlignY=58" width="100%" alt="SurakshaDrishti userApp Header"/>
+
+<!-- Animated Dynamic Typing Subtitle -->
+<img src="https://readme-typing-svg.demolab.com?font=Outfit&weight=700&size=18&duration=3000&pause=1000&color=D4AF37&center=true&vCenter=true&width=650&lines=Civilian+Rapid+Evacuation+and+Alert+Client;Offline-Capable+Dynamic+OSRM+Corridor+Routing;Real-Time+Proximity+Geofencing+and+Audio+Siren;Cross-Platform+Electron+Desktop+and+Mobile+Web" alt="Typing Subtitle" />
+
+<br/>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Electron_Desktop_%2F_Vite_Web-2D7A4F?style=for-the-badge&labelColor=1A1A1A" alt="Platform"/>
+  &nbsp;
+  <img src="https://img.shields.io/badge/Routing-OSRM_Dynamic_Corridor-B85C38?style=for-the-badge&labelColor=2C2A29" alt="Routing"/>
+  &nbsp;
+  <img src="https://img.shields.io/badge/GIS-Leaflet_1.9_%2F_Multi--Layer-8B7355?style=for-the-badge&labelColor=2C2A29" alt="GIS"/>
+</p>
+
+</div>
+
+---
 
 A cross-platform disaster response desktop and web client for civilians and field tactical personnel. Built on **Electron**, **React**, and **Leaflet GIS**, this application provides real-time multi-hazard proximity monitoring, dynamic evacuation corridor routing via OSRM, instant civil defense sirens, and zero-knowledge tactical field coordination.
 
@@ -173,3 +193,14 @@ sequenceDiagram
 - **Styling:** TailwindCSS v3 (Dark Matte / Warm Creme Palette)
 - **Icons:** Lucide React
 - **Audio Engine:** Web Audio API (OscillatorNode Synthesizer)
+
+<br/>
+
+<div align="center">
+
+<!-- Animated Footer Wave -->
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:2D7A4F,50:B85C38,100:8B7355&height=120&section=footer" width="100%" alt="SurakshaDrishti userApp Footer Wave"/>
+
+**SurakshaDrishti UserApp — Rapid Civil Defense. Direct Evacuation. Built for Resilient Survival.**
+
+</div>
