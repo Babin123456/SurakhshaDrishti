@@ -16,3 +16,4 @@ out/
 *.local
 .env.local
 .env.*.local
+ROADMAP.md

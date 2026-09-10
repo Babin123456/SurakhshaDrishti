@@ -110,15 +110,29 @@ export default function RealGoogleMap({
               bounds.extend([match.safeSite.lat, match.safeSite.lng]);
             }
             bounds.extend([match.lat, match.lng]);
-            mapInstanceRef.current.fitBounds(bounds, {
-              paddingTopLeft: [50, 50],
-              paddingBottomRight: [50, 50],
-              maxZoom: 12,
-              animate: true,
-              duration: 1.2
-            });
+            if (mapInstanceRef.current.flyToBounds) {
+              mapInstanceRef.current.flyToBounds(bounds, {
+                paddingTopLeft: [50, 50],
+                paddingBottomRight: [50, 50],
+                maxZoom: 13,
+                duration: 1.8,
+                easeLinearity: 0.25
+              });
+            } else {
+              mapInstanceRef.current.fitBounds(bounds, {
+                paddingTopLeft: [50, 50],
+                paddingBottomRight: [50, 50],
+                maxZoom: 13,
+                animate: true,
+                duration: 1.8
+              });
+            }
           } else {
-            mapInstanceRef.current.flyTo([match.lat, match.lng], zoom || 11, { animate: true, duration: 1.2 });
+            mapInstanceRef.current.flyTo([match.lat, match.lng], zoom || 12, { 
+              animate: true, 
+              duration: 1.8,
+              easeLinearity: 0.25
+            });
           }
 
           setTimeout(() => {
@@ -126,7 +140,7 @@ export default function RealGoogleMap({
             if (markersMapRef.current[match.id]) {
               markersMapRef.current[match.id].openPopup();
             }
-          }, 600);
+          }, 900);
         }
       }
     }
@@ -134,7 +148,11 @@ export default function RealGoogleMap({
 
   useEffect(() => {
     if (focusTrigger > 0 && selectedZone && mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo([selectedZone.lat, selectedZone.lng], 14, { animate: true, duration: 1.2 });
+      mapInstanceRef.current.flyTo([selectedZone.lat, selectedZone.lng], 14, { 
+        animate: true, 
+        duration: 1.8,
+        easeLinearity: 0.25 
+      });
     }
   }, [focusTrigger, selectedZone]);
 
@@ -154,13 +172,23 @@ export default function RealGoogleMap({
               bounds.extend([targetZone.safeSite.lat, targetZone.safeSite.lng]);
             }
             bounds.extend([targetZone.lat, targetZone.lng]);
-            mapInstanceRef.current.fitBounds(bounds, {
-              paddingTopLeft: [40, 40],
-              paddingBottomRight: [40, 40],
-              maxZoom: 14,
-              animate: true,
-              duration: 1.2
-            });
+            if (mapInstanceRef.current.flyToBounds) {
+              mapInstanceRef.current.flyToBounds(bounds, {
+                paddingTopLeft: [50, 50],
+                paddingBottomRight: [50, 50],
+                maxZoom: 14,
+                duration: 1.8,
+                easeLinearity: 0.25
+              });
+            } else {
+              mapInstanceRef.current.fitBounds(bounds, {
+                paddingTopLeft: [50, 50],
+                paddingBottomRight: [50, 50],
+                maxZoom: 14,
+                animate: true,
+                duration: 1.8
+              });
+            }
           }
         }
       }
@@ -221,10 +249,14 @@ export default function RealGoogleMap({
 
   useEffect(() => {
     if (mapInstanceRef.current && center && Array.isArray(center) && center.length === 2) {
-      mapInstanceRef.current.flyTo(center, zoom || 13, { animate: true, duration: 1 });
+      mapInstanceRef.current.flyTo(center, zoom || 13, { 
+        animate: true, 
+        duration: 1.8,
+        easeLinearity: 0.25 
+      });
       setTimeout(() => {
         if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
-      }, 250);
+      }, 300);
     }
   }, [center?.[0], center?.[1], zoom]);
 
@@ -305,11 +337,11 @@ export default function RealGoogleMap({
     markersMapRef.current = {};
 
     zones.forEach((zone) => {
+      const isSafeZone = zone.type === 'safe';
       const isRed = zone.type === 'red';
       const isSelected = selectedZone?.id === zone.id;
 
-
-      if (showRedZones) {
+      if (!isSafeZone && showRedZones) {
         const circle = L.circle([zone.lat, zone.lng], {
           color: isRed ? '#DC2626' : '#D97706',
           fillColor: isRed ? '#EF4444' : '#F59E0B',
@@ -348,7 +380,7 @@ export default function RealGoogleMap({
         iconAnchor: [18, 18],
       });
 
-      if (showRedZones) {
+      if (!isSafeZone && showRedZones) {
         const marker = L.marker([zone.lat, zone.lng], { icon: hazardIcon });
         markersMapRef.current[zone.id] = marker;
 
@@ -500,16 +532,28 @@ export default function RealGoogleMap({
         }
         bounds.extend([zone.lat, zone.lng]);
 
-        mapInstanceRef.current.fitBounds(bounds, {
-          paddingTopLeft: [30, 40],
-          paddingBottomRight: [30, 160],
-          maxZoom: 12,
-          animate: true,
-          duration: 1.2
-        });
+        if (mapInstanceRef.current.flyToBounds) {
+          mapInstanceRef.current.flyToBounds(bounds, {
+            paddingTopLeft: [50, 50],
+            paddingBottomRight: [50, 160],
+            maxZoom: 13,
+            duration: 1.8,
+            easeLinearity: 0.25
+          });
+        } else {
+          mapInstanceRef.current.fitBounds(bounds, {
+            paddingTopLeft: [50, 50],
+            paddingBottomRight: [50, 160],
+            maxZoom: 13,
+            animate: true,
+            duration: 1.8
+          });
+        }
       } else {
-        mapInstanceRef.current.flyTo([zone.lat, zone.lng], 11, {
-          duration: 1.2,
+        mapInstanceRef.current.flyTo([zone.lat, zone.lng], 12, {
+          animate: true,
+          duration: 1.8,
+          easeLinearity: 0.25
         });
       }
 
@@ -517,7 +561,7 @@ export default function RealGoogleMap({
         if (markersMapRef.current[zone.id]) {
           markersMapRef.current[zone.id].openPopup();
         }
-      }, 500);
+      }, 900);
     }
     if (onZoneSelect) onZoneSelect(zone);
   };

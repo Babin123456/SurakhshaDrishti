@@ -13,7 +13,9 @@ import {
   AlertTriangle, 
   Sparkles,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Bell,
+  Loader2
 } from 'lucide-react';
 import RealGoogleMap from './RealGoogleMap';
 import AlertNotification from './AlertNotification';
@@ -39,6 +41,15 @@ export default function UserDashboard({ onLogout, session }) {
   // Extract user's GPS from the session that was passed from login, allow updates from live GPS
   const [userLat, setUserLat] = useState(session?.location?.lat);
   const [userLng, setUserLng] = useState(session?.location?.lng);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // In-app loader: small round spiral icon for 1 second
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => setCurrentRoute(window.location.pathname + window.location.hash);
@@ -104,7 +115,7 @@ export default function UserDashboard({ onLogout, session }) {
     fetchZones();
     const interval = setInterval(fetchZones, 10000);
     return () => clearInterval(interval);
-  }, [currentRoute]);
+  }, [currentRoute, userLat, userLng]);
 
   const [sortedSafehouses, setSortedSafehouses] = useState([]);
   const [selectedSafehouse, setSelectedSafehouse] = useState('');
@@ -266,6 +277,18 @@ export default function UserDashboard({ onLogout, session }) {
 
   return (
     <div className="w-screen h-screen relative overflow-hidden bg-[#FDFBF7] font-sans select-none">
+      {/* In-app loader: small round spiral icon for 1 second */}
+      {isInitializing && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/10 backdrop-blur-[2px] transition-all duration-300">
+          <div className="bg-white/95 border border-[#E8E1D5] px-4 py-3 rounded-2xl shadow-[0_10px_30px_rgba(44,42,41,0.15)] flex items-center gap-2.5 animate-scale-in select-none">
+            <Loader2 className="w-4 h-4 text-[#8B7355] animate-spin shrink-0" />
+            <span className="text-xs font-mono font-semibold text-[#2C2A29] tracking-tight">
+              Calibrating Radar...
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Civilian Status HUD Floating Card (Collapsible & Non-blocking) */}
       <div className={`absolute top-14 left-10 sm:left-12 z-[1000] bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_15px_35px_rgba(44,42,41,0.12)] border border-[#E8E1D5] transition-all duration-300 ${
         isHudCollapsed ? 'p-2 max-w-fit' : 'p-3.5 max-w-xs sm:max-w-sm w-full'
@@ -319,13 +342,20 @@ export default function UserDashboard({ onLogout, session }) {
               </div>
 
               <div className="flex items-center gap-1.5 shrink-0">
-                <button 
+                <button
                   type="button"
-                  onClick={() => setIsHudCollapsed(true)}
-                  className="p-1 rounded-lg bg-[#F6F4F0] hover:bg-[#E8E1D5] text-[#5C544D] hover:text-[#1A1A1A] border border-[#E8E1D5] text-[10px] transition-colors cursor-pointer"
-                  title="Minimize to pill"
+                  onClick={() => {
+                    if (window.electronAPI) {
+                      window.electronAPI.triggerAlert("CRITICAL TEST ALERT: Emergency siren and hazard perimeter evacuation protocol active.");
+                    } else {
+                      window.open('/alert', '_blank', 'width=500,height=280');
+                    }
+                  }}
+                  className="px-2 py-1 rounded-lg bg-[#FFF5F2] hover:bg-[#B85C38] text-[#B85C38] hover:text-white border border-[#FADED4] text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  title="Test Siren & Emergency Alert Window"
                 >
-                  <ChevronUp className="w-3 h-3" />
+                  <Bell className="w-3 h-3 animate-bounce" />
+                  <span>Test Siren</span>
                 </button>
                 <button 
                   type="button"
@@ -335,6 +365,14 @@ export default function UserDashboard({ onLogout, session }) {
                 >
                   <LogOut className="w-3 h-3" />
                   <span>Logout</span>
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setIsHudCollapsed(true)}
+                  className="p-1 rounded-lg bg-[#F6F4F0] hover:bg-[#E8E1D5] text-[#5C544D] hover:text-[#1A1A1A] border border-[#E8E1D5] text-[10px] transition-colors cursor-pointer shrink-0"
+                  title="Minimize Citizen Radar Console"
+                >
+                  <ChevronUp className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>

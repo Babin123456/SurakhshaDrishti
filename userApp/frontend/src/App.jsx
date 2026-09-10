@@ -3,8 +3,14 @@ import AppLogin from './components/AppLogin';
 import UserDashboard from './components/UserDashboard';
 import AgentDashboard from './components/AgentDashboard';
 import AlertNotification from './components/AlertNotification';
+import IntroSequence from './components/IntroSequence';
 
 export default function App() {
+  const [showIntro, setShowIntro] = useState(() => {
+    // Show intro on initial application boot
+    return !sessionStorage.getItem('suraksha_intro_shown');
+  });
+
   const [session, setSession] = useState(() => {
     try {
       const saved = localStorage.getItem('suraksha_app_session');
@@ -20,6 +26,17 @@ export default function App() {
   const isAlertRoute = window.location.pathname === '/alert' || window.location.hash === '#/alert';
   if (isAlertRoute) {
     return <AlertNotification />;
+  }
+
+  if (showIntro) {
+    return (
+      <IntroSequence 
+        onComplete={() => {
+          sessionStorage.setItem('suraksha_intro_shown', 'true');
+          setShowIntro(false);
+        }} 
+      />
+    );
   }
 
   const handleLogin = (userData) => {
