@@ -14,7 +14,8 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
-  Bell
+  Bell,
+  Loader2
 } from 'lucide-react';
 import RealGoogleMap from './RealGoogleMap';
 import AlertNotification from './AlertNotification';
@@ -40,6 +41,15 @@ export default function UserDashboard({ onLogout, session }) {
   // Extract user's GPS from the session that was passed from login, allow updates from live GPS
   const [userLat, setUserLat] = useState(session?.location?.lat);
   const [userLng, setUserLng] = useState(session?.location?.lng);
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // Initial Telemetry & Satellite Sync Loader on user page load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsInitializing(false);
+    }, 1100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const handlePopState = () => setCurrentRoute(window.location.pathname + window.location.hash);
@@ -267,6 +277,44 @@ export default function UserDashboard({ onLogout, session }) {
 
   return (
     <div className="w-screen h-screen relative overflow-hidden bg-[#FDFBF7] font-sans select-none">
+      {/* Telemetry Initialization Loader Overlay */}
+      {isInitializing && (
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#FDFBF7]/95 backdrop-blur-md transition-opacity duration-700 animate-fade-in-up">
+          <div className="paper-texture" />
+          <div className="absolute inset-0 bg-creme-mesh opacity-70 pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col items-center text-center max-w-sm px-6">
+            {/* Animated Radar Shield Loader Icon */}
+            <div className="relative w-20 h-20 mb-5 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border border-[#8B7355]/25 animate-ping opacity-50" />
+              <div className="absolute inset-1.5 rounded-full border-2 border-dashed border-[#8B7355]/40 animate-spin" style={{ animationDuration: '8s' }} />
+              <div className="w-12 h-12 rounded-2xl bg-white border border-[#E8E1D5] flex items-center justify-center shadow-sm">
+                <ShieldCheck className="w-6 h-6 text-[#8B7355]" />
+              </div>
+            </div>
+
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/80 border border-[#E8E1D5] mb-2 shadow-2xs">
+              <Sparkles className="w-3 h-3 text-[#8B7355] animate-spin" style={{ animationDuration: '3s' }} />
+              <span className="text-[10px] font-mono font-bold tracking-wider text-[#5C544D] uppercase">
+                GIS Telemetry Radar Sync
+              </span>
+            </div>
+
+            <h3 className="text-base font-bold text-[#1A1A1A] tracking-tight mb-1">
+              Calibrating Safe Corridors
+            </h3>
+            <p className="text-xs text-[#7A726A] font-mono mb-4">
+              {session?.phone ? `+91 ${session.phone}` : (session?.email || 'Live Connected')} • Sector GPS Active
+            </p>
+
+            {/* Smooth Progress Bar */}
+            <div className="w-48 bg-[#E8E1D5]/60 border border-[#D9D0C1] rounded-full h-1.5 overflow-hidden shadow-inner">
+              <div className="bg-gradient-to-r from-[#8B7355] via-[#B85C38] to-[#2C2A29] h-full rounded-full animate-pulse w-full" />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Civilian Status HUD Floating Card (Collapsible & Non-blocking) */}
       <div className={`absolute top-14 left-10 sm:left-12 z-[1000] bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_15px_35px_rgba(44,42,41,0.12)] border border-[#E8E1D5] transition-all duration-300 ${
         isHudCollapsed ? 'p-2 max-w-fit' : 'p-3.5 max-w-xs sm:max-w-sm w-full'
