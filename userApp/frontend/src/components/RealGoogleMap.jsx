@@ -494,6 +494,7 @@ export default function RealGoogleMap({
 
 
   const handleDetectLocation = async () => {
+    setShowRoutes(false); // When user clicks My GPS, immediately hide route paths
     setIsLocating(true);
     setLocationError(null);
 
@@ -575,6 +576,7 @@ export default function RealGoogleMap({
 
     setUserLocation(locData);
     setSelectedZone(null);
+    setShowRoutes(false); // When user clicks My GPS, hide route paths
     if (onLocationDetect) onLocationDetect(locData);
     setIsLocating(false);
 
