@@ -305,11 +305,11 @@ export default function RealGoogleMap({
     markersMapRef.current = {};
 
     zones.forEach((zone) => {
+      const isSafeZone = zone.type === 'safe';
       const isRed = zone.type === 'red';
       const isSelected = selectedZone?.id === zone.id;
 
-
-      if (showRedZones) {
+      if (!isSafeZone && showRedZones) {
         const circle = L.circle([zone.lat, zone.lng], {
           color: isRed ? '#DC2626' : '#D97706',
           fillColor: isRed ? '#EF4444' : '#F59E0B',
@@ -348,7 +348,7 @@ export default function RealGoogleMap({
         iconAnchor: [18, 18],
       });
 
-      if (showRedZones) {
+      if (!isSafeZone && showRedZones) {
         const marker = L.marker([zone.lat, zone.lng], { icon: hazardIcon });
         markersMapRef.current[zone.id] = marker;
 

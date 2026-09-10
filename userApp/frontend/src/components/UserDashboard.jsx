@@ -104,7 +104,7 @@ export default function UserDashboard({ onLogout, session }) {
     fetchZones();
     const interval = setInterval(fetchZones, 10000);
     return () => clearInterval(interval);
-  }, [currentRoute]);
+  }, [currentRoute, userLat, userLng]);
 
   const [sortedSafehouses, setSortedSafehouses] = useState([]);
   const [selectedSafehouse, setSelectedSafehouse] = useState('');
