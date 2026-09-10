@@ -266,7 +266,7 @@ export default function UserDashboard({ onLogout, session }) {
   return (
     <div className="w-screen h-screen relative overflow-hidden bg-[#FDFBF7] font-sans select-none">
       {/* Civilian Status HUD Floating Card (Collapsible & Non-blocking) */}
-      <div className={`absolute top-14 left-4 z-[1000] bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_15px_35px_rgba(44,42,41,0.12)] border border-[#E8E1D5] transition-all duration-300 ${
+      <div className={`absolute top-14 left-10 sm:left-12 z-[1000] bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_15px_35px_rgba(44,42,41,0.12)] border border-[#E8E1D5] transition-all duration-300 ${
         isHudCollapsed ? 'p-2 max-w-fit' : 'p-3.5 max-w-xs sm:max-w-sm w-full'
       }`}>
         
