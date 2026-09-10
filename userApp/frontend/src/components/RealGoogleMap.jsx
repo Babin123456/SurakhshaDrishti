@@ -247,8 +247,8 @@ export default function RealGoogleMap({
 
     const userPopup = `
       <div style="font-family: Inter, system-ui, sans-serif; min-width: 200px; color: #0f172a; padding: 2px;">
-        <div style="font-size: 9px; font-weight: 800; color: #2563eb; text-transform: uppercase;">
-          📍 YOUR LOCATION
+        <div style="font-size: 9px; font-weight: 800; color: #2563eb; text-transform: uppercase; display: flex; align-items: center; gap: 4px;">
+          <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#2563eb;"></span> CURRENT POSITION
         </div>
         <div style="font-size: 12px; font-weight: 800; margin: 4px 0; color: #0f172a;">
           ${address || `${lat.toFixed(5)}°N, ${lng.toFixed(5)}°E`}

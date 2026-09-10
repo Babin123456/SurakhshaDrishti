@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { ShieldAlert, BellRing, CheckCircle2 } from 'lucide-react';
 
 export default function AlertNotification() {
   const [message, setMessage] = useState('Emergency detected in your immediate vicinity.');
@@ -58,31 +59,42 @@ export default function AlertNotification() {
 
   return (
     <div 
-      className="w-screen h-screen flex flex-col justify-center items-center text-center bg-stone-100 border-[4px] border-red-600 shadow-[0_0_50px_rgba(220,38,38,0.5)] rounded-lg relative overflow-hidden"
+      className="w-screen h-screen flex flex-col justify-center items-center text-center bg-[#FDFBF7] border-[3px] border-[#B85C38] shadow-[0_20px_50px_rgba(184,92,56,0.35)] rounded-2xl relative overflow-hidden font-sans"
       style={{ WebkitAppRegion: 'drag' }}
     >
       {/* Flashing Warning Bar at Top */}
-      <div className="absolute top-0 left-0 w-full h-2 bg-red-600 animate-[pulse_1s_infinite]"></div>
+      <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-[#B85C38] via-[#DC2626] to-[#B85C38] animate-pulse"></div>
       
-      <div className="flex flex-col items-center max-w-sm px-6">
-        <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mb-4 border-2 border-red-200">
-          <svg className="w-8 h-8 text-red-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-          </svg>
+      <div className="flex flex-col items-center max-w-sm px-7 py-6 w-full">
+        <div className="relative mb-4">
+          <div className="w-16 h-16 rounded-2xl bg-[#FFF5F2] flex items-center justify-center border border-[#FADED4] shadow-sm">
+            <ShieldAlert className="w-8 h-8 text-[#B85C38] animate-pulse" />
+          </div>
+          <span className="absolute -top-1 -right-1 flex h-4 w-4">
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-[#DC2626]"></span>
+          </span>
         </div>
         
-        <h1 className="text-xl text-stone-900 font-extrabold tracking-tight uppercase mb-2">Emergency Alert</h1>
-        <p className="text-sm text-stone-600 font-medium mb-6 leading-relaxed">
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#FFF5F2] border border-[#FADED4] text-[10px] font-mono font-bold tracking-wider text-[#B85C38] uppercase mb-2">
+          <BellRing className="w-3 h-3" /> Priority Civil Defense Alert
+        </div>
+
+        <h1 className="text-xl text-[#2C2A29] font-black tracking-tight uppercase mb-2">
+          Emergency Warning
+        </h1>
+        <p className="text-xs text-[#5C544D] font-medium mb-6 leading-relaxed bg-[#F6F4F0] p-3.5 rounded-xl border border-[#E8E1D5] w-full text-left">
           {message}
         </p>
         
         <button 
           onClick={handleAcknowledge}
           disabled={isAcknowledging}
-          className="w-full bg-red-600 hover:bg-red-700 text-white border-none py-3 px-6 text-sm font-bold rounded-xl cursor-pointer uppercase shadow-md transition-colors"
+          className="w-full bg-[#B85C38] hover:bg-[#A04D2E] text-white py-3 px-6 text-xs font-bold tracking-wider rounded-xl cursor-pointer uppercase shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-70 active:scale-[0.98]"
           style={{ WebkitAppRegion: 'no-drag' }}
         >
-          {isAcknowledging ? 'Acknowledging...' : 'Acknowledge & Close'}
+          <CheckCircle2 className="w-4 h-4" />
+          <span>{isAcknowledging ? 'Acknowledging...' : 'Acknowledge & Dismiss'}</span>
         </button>
       </div>
       
