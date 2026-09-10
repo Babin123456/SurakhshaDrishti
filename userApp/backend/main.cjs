@@ -43,12 +43,12 @@ function triggerEmergencyAlert(message) {
 
   alertWindow = new BrowserWindow({
     width: 500,
-    height: 180,
+    height: 280,
     x: Math.round((width - 500) / 2),
-    y: height - 200,
+    y: Math.max(20, height - 310),
     frame: false,
     transparent: false,       // CHANGED: No transparency — fixes Windows rendering glitch
-    backgroundColor: '#cc0000', // Solid red background while page loads
+    backgroundColor: '#FDFBF7', // Matches theme background while page loads
     alwaysOnTop: true,
     resizable: false,
     movable: false,
