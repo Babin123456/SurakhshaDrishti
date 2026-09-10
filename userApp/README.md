@@ -1,19 +1,17 @@
 <div align="center">
 
-<!-- Animated Header Wave with Title -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:2D7A4F,50:B85C38,100:8B7355&height=200&section=header&text=SurakshaDrishti%20UserApp&fontSize=42&fontColor=ffffff&fontAlignY=38&desc=Civilian%20Incident%20Hub%20%26%20Tactical%20Field%20Client&descSize=16&descColor=f3ede2&descAlignY=58" width="100%" alt="SurakshaDrishti userApp Header"/>
+![SurakshaDrishti userApp Header](https://capsule-render.vercel.app/api?type=waving&color=0:0B192C,45:1E3E62,80:008DDA,100:41C9E2&height=220&section=header&text=SurakshaDrishti%20UserApp&fontSize=42&fontColor=ffffff&fontAlignY=36&desc=Civilian%20Incident%20Hub%20%26%20Tactical%20Field%20Client&descSize=16&descColor=ACE2E1&descAlignY=58)
 
-<!-- Animated Dynamic Typing Subtitle -->
-<img src="https://readme-typing-svg.demolab.com?font=Outfit&weight=700&size=18&duration=3000&pause=1000&color=D4AF37&center=true&vCenter=true&width=650&lines=Civilian+Rapid+Evacuation+and+Alert+Client;Offline-Capable+Dynamic+OSRM+Corridor+Routing;Real-Time+Proximity+Geofencing+and+Audio+Siren;Cross-Platform+Electron+Desktop+and+Mobile+Web" alt="Typing Subtitle" />
+![Typing Subtitle](https://readme-typing-svg.demolab.com?font=Outfit&weight=700&size=18&duration=3000&pause=1000&color=41C9E2&center=true&vCenter=true&width=650&lines=Civilian+Rapid+Evacuation+and+Alert+Client;Offline-Capable+Dynamic+OSRM+Corridor+Routing;Real-Time+Proximity+Geofencing+and+Audio+Siren;Cross-Platform+Electron+Desktop+and+Mobile+Web)
 
 <br/>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Platform-Electron_Desktop_%2F_Vite_Web-2D7A4F?style=for-the-badge&labelColor=1A1A1A" alt="Platform"/>
+  <img src="https://img.shields.io/badge/Platform-Electron_Desktop_%2F_Vite_Web-008DDA?style=for-the-badge&labelColor=0B192C" alt="Platform"/>
   &nbsp;
-  <img src="https://img.shields.io/badge/Routing-OSRM_Dynamic_Corridor-B85C38?style=for-the-badge&labelColor=2C2A29" alt="Routing"/>
+  <img src="https://img.shields.io/badge/Routing-OSRM_Dynamic_Corridor-1E3E62?style=for-the-badge&labelColor=0B192C" alt="Routing"/>
   &nbsp;
-  <img src="https://img.shields.io/badge/GIS-Leaflet_1.9_%2F_Multi--Layer-8B7355?style=for-the-badge&labelColor=2C2A29" alt="GIS"/>
+  <img src="https://img.shields.io/badge/GIS-Leaflet_1.9_%2F_Multi--Layer-41C9E2?style=for-the-badge&labelColor=0B192C&logoColor=white" alt="GIS"/>
 </p>
 
 </div>
@@ -198,8 +196,7 @@ sequenceDiagram
 
 <div align="center">
 
-<!-- Animated Footer Wave -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:2D7A4F,50:B85C38,100:8B7355&height=120&section=footer" width="100%" alt="SurakshaDrishti userApp Footer Wave"/>
+![SurakshaDrishti userApp Footer Wave](https://capsule-render.vercel.app/api?type=waving&color=0:41C9E2,35:008DDA,70:1E3E62,100:0B192C&height=120&section=footer)
 
 **SurakshaDrishti UserApp — Rapid Civil Defense. Direct Evacuation. Built for Resilient Survival.**
 
