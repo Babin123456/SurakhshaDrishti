@@ -13,7 +13,8 @@ import {
   AlertTriangle, 
   Sparkles,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Bell
 } from 'lucide-react';
 import RealGoogleMap from './RealGoogleMap';
 import AlertNotification from './AlertNotification';
@@ -319,6 +320,21 @@ export default function UserDashboard({ onLogout, session }) {
               </div>
 
               <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (window.electronAPI) {
+                      window.electronAPI.triggerAlert("CRITICAL TEST ALERT: Emergency siren and hazard perimeter evacuation protocol active.");
+                    } else {
+                      window.open('/alert', '_blank', 'width=500,height=280');
+                    }
+                  }}
+                  className="px-2 py-1 rounded-lg bg-[#FFF5F2] hover:bg-[#B85C38] text-[#B85C38] hover:text-white border border-[#FADED4] text-[10px] font-bold transition-all flex items-center gap-1 cursor-pointer"
+                  title="Test Siren & Emergency Alert Window"
+                >
+                  <Bell className="w-3 h-3 animate-bounce" />
+                  <span>Test Siren</span>
+                </button>
                 <button 
                   type="button"
                   onClick={() => setIsHudCollapsed(true)}
