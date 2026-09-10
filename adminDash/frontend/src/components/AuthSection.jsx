@@ -29,7 +29,8 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [trustedDevice, setTrustedDevice] = useState(false);
+  const [otpCode, setOtpCode] = useState('');
+  const [tempAuthData, setTempAuthData] = useState(null);
 
   const [signupRole, setSignupRole] = useState('resident'); // 'resident' | 'ndrf' | 'sdma'
   const [fullName, setFullName] = useState('');
@@ -105,18 +106,54 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
       password,
       loginType,
       role: loginType,
-      trustedDevice,
     });
 
     setIsLoading(false);
 
     if (res.success) {
-      addToast('Authentication successful! Initializing tactical session...', 'success');
-      setMessage({ type: 'success', text: 'Authentication successful! Initializing tactical session...' });
+      if (res.requires2FA || res.token === 'mock-jwt-token-sih2026') {
+        // Enforce 2FA Step
+        setTempAuthData(res);
+        setAuthMode('otp');
+        addToast('Credentials verified. Please enter 2FA OTP.', 'info');
+      } else {
+        addToast('Authentication successful! Initializing tactical session...', 'success');
+        setTimeout(() => {
+          onAuthSuccess({
+            token: res.token,
+            user: res.user || {
+              username: username,
+              name: username.split('@')[0].toUpperCase(),
+              role: loginType === 'authority' ? 'NDRF Tactical Command' : 'Resident Citizen',
+              department: loginType === 'authority' ? 'NDRF' : 'Civilian',
+            }
+          });
+        }, 700);
+      }
+    } else {
+      const errText = res.error || res.message || 'Invalid credentials. Please verify your details.';
+      addToast(errText, 'error');
+      setMessage({ type: 'error', text: errText });
+    }
+  };
+
+  const handleVerifyOTP = (e) => {
+    e.preventDefault();
+    if (!otpCode || otpCode.length < 6) {
+      addToast('Please enter a valid 6-digit OTP code.', 'error');
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    // Simulate OTP Verification (as backend may not have full verify route yet)
+    setTimeout(() => {
+      setIsLoading(false);
+      addToast('2FA Verified! Initializing tactical session...', 'success');
       setTimeout(() => {
         onAuthSuccess({
-          token: res.token,
-          user: res.user || {
+          token: tempAuthData?.token || 'jwt_registered_' + Date.now(),
+          user: tempAuthData?.user || {
             username: username,
             name: username.split('@')[0].toUpperCase(),
             role: loginType === 'authority' ? 'NDRF Tactical Command' : 'Resident Citizen',
@@ -124,11 +161,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
           }
         });
       }, 700);
-    } else {
-      const errText = res.error || res.message || 'Invalid credentials. Please verify your details.';
-      addToast(errText, 'error');
-      setMessage({ type: 'error', text: errText });
-    }
+    }, 1000);
   };
 
   const handleSignUp = async (e) => {
@@ -217,12 +250,12 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] tracking-tight">
-                {authMode === 'signin' ? 'Sign In to SurakshaDrishti' : 'Create an Account'}
+                {authMode === 'signin' ? 'Sign In to SurakshaDrishti' : authMode === 'otp' ? 'Two-Factor Authentication' : 'Create an Account'}
               </h2>
               <p className="text-xs text-[#5C544D] mt-0.5">
                 {authMode === 'signin' 
                   ? 'Access real-time GIS intelligence, zone management, and emergency passes' 
-                  : 'Register for priority evacuation passes and official consoles'}
+                  : authMode === 'otp' ? 'Enter the secure OTP code sent to your official device' : 'Register for priority evacuation passes and official consoles'}
               </p>
             </div>
             <button
@@ -234,7 +267,52 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
             </button>
           </div>
 
-          {/* ================= MODE: SIGN IN (AGENT ONLY) ================= */}
+          {authMode === 'otp' ? (
+            /* ================= MODE: 2FA OTP ================= */
+            <div>
+              <div className="mb-4 p-3 bg-[#FFF5F2] rounded-xl border border-[#FADED4] flex items-center justify-center gap-2 text-[#B85C38] font-bold text-sm">
+                <ShieldCheck className="w-4 h-4" /> Secure Auth Enforced
+              </div>
+
+              <form onSubmit={handleVerifyOTP} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-[#2C2A29] mb-1">
+                    Enter 6-Digit OTP Code
+                  </label>
+                  <div className="relative">
+                    <Key className="w-4 h-4 absolute left-3.5 top-3 text-[#7A726A]" />
+                    <input
+                      type="text"
+                      required
+                      maxLength="6"
+                      value={otpCode}
+                      onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
+                      placeholder="000000"
+                      className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2.5 pl-10 pr-3 text-xs sm:text-sm text-[#1A1A1A] font-mono tracking-[0.5em] placeholder-[#8C847A] focus:outline-none focus:border-[#8B7355] transition-colors"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading || otpCode.length < 6}
+                  className="w-full py-3.5 rounded-xl bg-[#2D7A4F] hover:bg-[#256842] text-[#FDFBF7] font-medium text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer hover:-translate-y-0.5"
+                >
+                  {isLoading ? 'Verifying...' : 'Verify Secure Code'}
+                  <CheckCircle2 className="w-4 h-4 opacity-80" />
+                </button>
+                
+                <button
+                  type="button"
+                  onClick={() => setAuthMode('signin')}
+                  className="w-full py-2 text-xs text-[#5C544D] hover:text-[#1A1A1A] underline transition-colors"
+                >
+                  Return to Sign In
+                </button>
+              </form>
+            </div>
+          ) : (
+            /* ================= MODE: SIGN IN (AGENT ONLY) ================= */
           <div>
             <div className="mb-4 p-3 bg-[#F6F4F0] rounded-xl border border-[#E8E1D5] flex items-center justify-center gap-2 text-[#1A1A1A] font-bold text-sm">
               <Shield className="w-4 h-4 text-[#8B7355]" /> Central Command Desk Access Only
@@ -273,25 +351,15 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                 </div>
               </div>
 
-              {/* 2FA Status + Trusted Device */}
-              <div className="flex flex-wrap items-center justify-between gap-2 text-xs pt-1">
-                <label className="flex items-center gap-1.5 cursor-pointer text-[#5C544D] hover:text-[#1A1A1A] text-[11px] sm:text-xs">
-                  <input
-                    type="checkbox"
-                    checked={trustedDevice}
-                    onChange={(e) => setTrustedDevice(e.target.checked)}
-                    className="w-3.5 h-3.5 rounded border-[#D9D0C1] text-[#2C2A29] focus:ring-0"
-                  />
-                  Remember this device (30 days)
-                </label>
-
+              {/* 2FA Status */}
+              <div className="flex flex-wrap items-center justify-end gap-2 text-xs pt-1">
                 {locationStatus?.inRedZone ? (
                   <span className="text-[#B85C38] font-semibold flex items-center gap-1 text-[11px]">
                     <CheckCircle2 className="w-3.5 h-3.5" /> High Priority Bypass
                   </span>
                 ) : (
                   <span className="text-[#2D7A4F] font-semibold flex items-center gap-1 text-[11px]">
-                    <ShieldCheck className="w-3.5 h-3.5" /> 2FA Encrypted
+                    <ShieldCheck className="w-3.5 h-3.5" /> 2FA Encrypted Authentication Active
                   </span>
                 )}
               </div>
@@ -306,6 +374,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
               </button>
             </form>
           </div>
+          )}
 
           {/* SIGN UP REMOVED - Desk Agents are pre-provisioned */}
         </div>

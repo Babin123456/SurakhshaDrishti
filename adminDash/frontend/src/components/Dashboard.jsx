@@ -77,6 +77,23 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
   const [assignErrorMsg, setAssignErrorMsg] = useState(null);
   const [broadcastSent, setBroadcastSent] = useState(false);
   const [backupRequested, setBackupRequested] = useState(false);
+  const [safehouses, setSafehouses] = useState([]);
+
+  // Fetch Safehouses globally for the map
+  useEffect(() => {
+    const fetchSafehouses = async () => {
+      try {
+        const response = await fetch(`http://localhost:5000/api/zones/shelters/dynamic?lat=22.9734&lng=78.6569&radius=10000000`);
+        const data = await response.json();
+        if (data.success) {
+          setSafehouses(data.shelters);
+        }
+      } catch (err) {
+        console.error("Failed to fetch safehouses:", err);
+      }
+    };
+    fetchSafehouses();
+  }, []);
 
   // Deep Focus Mode & Side Menu states (#13)
   const [focusTrigger, setFocusTrigger] = useState(0);
@@ -614,6 +631,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                 center={[activeZone.lat, activeZone.lng]}
                 zoom={13}
                 selectedZoneId={activeZone.zone_id}
+                safehouses={safehouses}
                 zones={(isOfficerAssigned ? [activeZone] : zones).map(z => ({
                   ...z,
                   id: z.zone_id,
