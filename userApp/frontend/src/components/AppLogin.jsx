@@ -396,9 +396,9 @@ export default function AppLogin({ onLogin }) {
                 <span className="text-[10px] text-[#7A726A] font-mono font-medium">10 Digits (Numeric Only)</span>
               </div>
               <div className="relative flex items-center">
-                <div className="absolute left-3 flex items-center gap-1.5 text-xs font-bold text-[#5C544D] pointer-events-none border-r border-[#E8E1D5] pr-2.5">
-                  <Phone className="w-3.5 h-3.5 text-[#8B7355]" />
-                  <span>+91</span>
+                <div className="absolute left-3.5 flex items-center gap-1.5 text-xs font-bold text-[#5C544D] pointer-events-none border-r border-[#E8E1D5] pr-2.5 z-10 select-none">
+                  <Phone className="w-3.5 h-3.5 text-[#8B7355] shrink-0" />
+                  <span className="font-mono tracking-tight">+91</span>
                 </div>
                 <input 
                   type="tel" 
@@ -410,7 +410,8 @@ export default function AppLogin({ onLogin }) {
                     const onlyInts = e.target.value.replace(/\D/g, '');
                     setPhone(onlyInts);
                   }}
-                  className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pl-18 pr-3 py-2.5 text-sm tracking-wider font-mono focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs font-semibold placeholder:text-[#A89F91]"
+                  style={{ paddingLeft: '4.75rem' }}
+                  className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pr-3.5 py-2.5 text-sm tracking-wider font-mono focus:outline-none focus:border-[#8B7355] focus:ring-2 focus:ring-[#8B7355]/10 transition-all shadow-2xs font-semibold placeholder:text-[#A89F91]"
                   placeholder="9876543210"
                   autoFocus
                 />
