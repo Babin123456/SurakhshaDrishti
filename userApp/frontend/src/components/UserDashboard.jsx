@@ -311,8 +311,8 @@ export default function UserDashboard({ onLogout, session }) {
                   <h2 className="text-[#1A1A1A] font-bold text-xs tracking-tight truncate">
                     Citizen Radar Console
                   </h2>
-                  <p className="text-[10px] text-[#7A726A] truncate">
-                    {session?.phone || session?.email || 'Live Connected'}
+                  <p className="text-[10px] text-[#7A726A] font-mono truncate">
+                    {session?.phone ? `+91 ${session.phone}` : (session?.email || 'Live Connected')}
                   </p>
                 </div>
               </div>
