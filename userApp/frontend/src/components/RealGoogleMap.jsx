@@ -376,6 +376,11 @@ export default function RealGoogleMap({
         safeMarker.bindTooltip(`<b>SAFE RELOCATION HUB:</b><br/>${zone.safeSite.name}<br/><strong>${zone.safeSite.capacity}</strong>`, {
           direction: 'top',
         });
+        safeMarker.on('click', () => {
+          setShowRoutes(true);
+          setShowSafeSites(true);
+          handleFlyTo(zone);
+        });
         group.addLayer(safeMarker);
       }
 
@@ -704,7 +709,11 @@ export default function RealGoogleMap({
 
               <button
                 type="button"
-                onClick={() => setShowSafeSites(!showSafeSites)}
+                onClick={() => {
+                  const nextState = !showSafeSites;
+                  setShowSafeSites(nextState);
+                  if (nextState) setShowRoutes(true); // Automatically show paths when Safe Hubs is enabled
+                }}
                 className={`px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${showSafeSites
                     ? 'bg-[#EBF7EE] border-[#D4EDDA] text-[#2D7A4F]'
                     : 'bg-white border-[#E8E1D5] text-[#7A726A] opacity-60'
@@ -1045,7 +1054,11 @@ export default function RealGoogleMap({
 
               <button
                 type="button"
-                onClick={() => setShowSafeSites(!showSafeSites)}
+                onClick={() => {
+                  const nextState = !showSafeSites;
+                  setShowSafeSites(nextState);
+                  if (nextState) setShowRoutes(true);
+                }}
                 className={`px-2 py-1 rounded-lg transition-colors flex items-center gap-1 ${showSafeSites ? 'bg-emerald-950/80 border border-emerald-800 text-emerald-300 font-bold' : 'text-slate-400'
                   }`}
               >
