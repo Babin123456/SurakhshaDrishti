@@ -24,6 +24,34 @@ The application uses a microservices architecture to separate the heavy AI workl
 - **Backend (Node.js / Express):** Handles user auth, WebSockets (Socket.io) for real-time alerts, and routing.
 - **AI Microservice (Python / FastAPI):** Dedicated to ingesting satellite imagery, running inference, and broadcasting predictive GeoHashes back to the Node backend.
 
+```mermaid
+flowchart TD
+    subgraph DataIngestion ["Satellite Data Ingestion"]
+        A1["SAR Imagery Ground Deformation"]
+        A2["Thermal and Infrared Bands"]
+        A3["Optical Visible Spectrum"]
+        A1 & A2 & A3 --> B["Compressed Time-Series Feed (5-10 FPS)"]
+    end
+
+    subgraph AIService ["AI Microservice (Python / FastAPI)"]
+        B --> C["Spatio-Temporal Model (ConvLSTM / ViViT)"]
+        C --> D["Probability Matrix Heatmap"]
+        D --> E["H3 / S2 Spatial Indexing & Geohashing"]
+        E --> F["Risk Classification (Red / Yellow Zones)"]
+    end
+
+    subgraph CoreBackend ["Core Backend (Node.js / Express)"]
+        F -->|"HTTP POST / Redis Channel"| G["Prediction Ingestion API"]
+        G --> H["PostgreSQL / PostGIS Database"]
+        G --> I["Socket.io Real-Time Broadcast"]
+    end
+
+    subgraph ClientApps ["Presentation Layer"]
+        I --> J["Admin Command Dashboard"]
+        I --> K["Civilian Mobile / Desktop App"]
+    end
+```
+
 ## 2. Data Ingestion (The "5-10 FPS" Feed)
 
 To predict geological (landslides) or meteorological (cyclones) events, the AI requires a sequence of images representing change over time.
@@ -74,6 +102,30 @@ Pixel coordinates from the AI output must be translated into real-world, queryab
    ```
 
 3. **Broadcast:** Node.js receives the payload and uses Socket.io to instantly push the updated zones to the Administrator Dashboard and cross-references user GPS pings to send targeted alerts to affected users.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Sat as Satellite Time-Series Feed
+    participant Py as AI Engine (FastAPI)
+    participant Node as Core Backend (Node.js)
+    participant DB as Database (PostGIS)
+    participant Admin as Admin Dashboard
+    participant User as Civilian Client App
+
+    Sat->>Py: Ingest 5-10 FPS Image Sequence
+    Py->>Py: Spatio-Temporal Inference (ConvLSTM/ViViT)
+    Py->>Py: Generate Heatmap & H3 Geohashes
+    Py->>Node: POST /api/predictions (JSON Payload)
+    Node->>DB: Persist Hazard Perimeter & Geohashes
+    par Real-Time Broadcast
+        Node->>Admin: Socket.io ("prediction_update")
+        Admin->>Admin: Render Forecast Corridor on GIS Map
+    and Citizen Geofencing
+        Node->>Node: Cross-reference Active User GPS Coordinates
+        Node->>User: Targeted Emergency Evacuation Alert
+    end
+```
 
 ## 6. Hackathon Demo Execution Plan
 
