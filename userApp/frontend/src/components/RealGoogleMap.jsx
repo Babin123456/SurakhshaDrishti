@@ -315,46 +315,48 @@ export default function RealGoogleMap({
         iconAnchor: [18, 18],
       });
 
-      const marker = L.marker([zone.lat, zone.lng], { icon: hazardIcon });
-      markersMapRef.current[zone.id] = marker;
+      if (showRedZones) {
+        const marker = L.marker([zone.lat, zone.lng], { icon: hazardIcon });
+        markersMapRef.current[zone.id] = marker;
 
-      const popupContent = `
-        <div style="font-family: Inter, system-ui, sans-serif; min-width: 220px; color: #0f172a; padding: 2px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
-            <span style="font-size: 9px; font-weight: 800; color: ${isRed ? '#dc2626' : '#d97706'}; text-transform: uppercase;">
-              ● ${isRed ? 'CRITICAL RED ZONE' : 'HIGH RISK BUFFER'}
-            </span>
-            <span style="font-size: 9px; font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 1px 4px; border-radius: 4px;">
-              #${zone.geohash}
-            </span>
+        const popupContent = `
+          <div style="font-family: Inter, system-ui, sans-serif; min-width: 220px; color: #0f172a; padding: 2px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
+              <span style="font-size: 9px; font-weight: 800; color: ${isRed ? '#dc2626' : '#d97706'}; text-transform: uppercase;">
+                ● ${isRed ? 'CRITICAL RED ZONE' : 'HIGH RISK BUFFER'}
+              </span>
+              <span style="font-size: 9px; font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 1px 4px; border-radius: 4px;">
+                #${zone.geohash}
+              </span>
+            </div>
+            <h4 style="margin: 2px 0 3px 0; font-size: 13px; font-weight: 800; color: #0f172a;">${zone.name}</h4>
+            <div style="font-size: 10px; color: #475569; margin-bottom: 6px;">Threat: <strong>${zone.hazard}</strong></div>
+            ${!standalone ? `
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px; border-radius: 6px; font-size: 10px; margin-bottom: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+              <div><span style="color: #64748b; font-size: 9px;">Threat Score:</span><br/><strong style="color: ${isRed ? '#dc2626' : '#d97706'}; font-size: 12px;">${zone.riskScore}/100</strong></div>
+              <div><span style="color: #64748b; font-size: 9px;">At-Risk Population:</span><br/><strong style="color: #0f172a; font-size: 12px;">${zone.populationRisk?.toLocaleString() || 0}</strong></div>
+            </div>
+            ` : ''}
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 5px 6px; border-radius: 5px; font-size: 10px; color: #065f46;">
+              <strong>Target Safe Hub:</strong> ${zone.safeSite?.name || 'Scanning...'}<br/>
+              <span style="font-size: 9px; color: #047857;">Capacity: ${zone.safeSite?.capacity || '...'} | ETA: ${zone.evacEta || 'Calculating...'}</span>
+            </div>
           </div>
-          <h4 style="margin: 2px 0 3px 0; font-size: 13px; font-weight: 800; color: #0f172a;">${zone.name}</h4>
-          <div style="font-size: 10px; color: #475569; margin-bottom: 6px;">Threat: <strong>${zone.hazard}</strong></div>
-          ${!standalone ? `
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px; border-radius: 6px; font-size: 10px; margin-bottom: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-            <div><span style="color: #64748b; font-size: 9px;">Threat Score:</span><br/><strong style="color: ${isRed ? '#dc2626' : '#d97706'}; font-size: 12px;">${zone.riskScore}/100</strong></div>
-            <div><span style="color: #64748b; font-size: 9px;">At-Risk Population:</span><br/><strong style="color: #0f172a; font-size: 12px;">${zone.populationRisk?.toLocaleString() || 0}</strong></div>
-          </div>
-          ` : ''}
-          <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 5px 6px; border-radius: 5px; font-size: 10px; color: #065f46;">
-            <strong>Target Safe Hub:</strong> ${zone.safeSite?.name || 'Scanning...'}<br/>
-            <span style="font-size: 9px; color: #047857;">Capacity: ${zone.safeSite?.capacity || '...'} | ETA: ${zone.evacEta || 'Calculating...'}</span>
-          </div>
-        </div>
-      `;
+        `;
 
-      marker.bindPopup(popupContent, {
-        offset: [0, -10],
-        closeButton: true,
-        autoPan: true,
-        autoPanPadding: [40, 50],
-      });
+        marker.bindPopup(popupContent, {
+          offset: [0, -10],
+          closeButton: true,
+          autoPan: true,
+          autoPanPadding: [40, 50],
+        });
 
-      marker.on('click', () => {
-        handleFlyTo(zone);
-      });
+        marker.on('click', () => {
+          handleFlyTo(zone);
+        });
 
-      group.addLayer(marker);
+        group.addLayer(marker);
+      }
 
 
       if (showSafeSites && zone.safeSite) {
@@ -485,6 +487,9 @@ export default function RealGoogleMap({
 
   const handleResetView = () => {
     setSelectedZone(null);
+    setShowRedZones(true);
+    setShowSafeSites(true);
+    setShowRoutes(true);
     if (mapInstanceRef.current) {
       mapInstanceRef.current.flyTo([20.5937, 78.9629], 5, {
         duration: 1.2
@@ -494,7 +499,10 @@ export default function RealGoogleMap({
 
 
   const handleDetectLocation = async () => {
-    setShowRoutes(false); // When user clicks My GPS, immediately hide route paths
+    // When user clicks My GPS, hide path, safe zones and other markers
+    setShowRoutes(false);
+    setShowSafeSites(false);
+    setShowRedZones(false);
     setIsLocating(true);
     setLocationError(null);
 
@@ -576,7 +584,9 @@ export default function RealGoogleMap({
 
     setUserLocation(locData);
     setSelectedZone(null);
-    setShowRoutes(false); // When user clicks My GPS, hide route paths
+    setShowRoutes(false);
+    setShowSafeSites(false);
+    setShowRedZones(false);
     if (onLocationDetect) onLocationDetect(locData);
     setIsLocating(false);
 
