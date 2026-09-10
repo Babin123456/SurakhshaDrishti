@@ -66,7 +66,8 @@ export default function RealGoogleMap({
   userLocationOverride = null,
   topBarAccessory = null,
   selectedZoneId = null,
-  activeHazardType = null
+  activeHazardType = null,
+  forceRoutesTrigger = 0
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -98,6 +99,9 @@ export default function RealGoogleMap({
       );
       if (match) {
         setSelectedZone(match);
+        // Ensure routes and safe sites become visible when a zone or hub is selected
+        setShowRoutes(true);
+        setShowSafeSites(true);
         if (mapInstanceRef.current) {
           mapInstanceRef.current.invalidateSize();
           if (match.wayroute && match.wayroute.length > 0) {
@@ -133,6 +137,35 @@ export default function RealGoogleMap({
       mapInstanceRef.current.flyTo([selectedZone.lat, selectedZone.lng], 14, { animate: true, duration: 1.2 });
     }
   }, [focusTrigger, selectedZone]);
+
+  // When Relief Hub is clicked or selected by user, explicitly ensure paths and safe sites are shown
+  useEffect(() => {
+    if (forceRoutesTrigger > 0) {
+      setShowRoutes(true);
+      setShowSafeSites(true);
+      if (zones.length > 0) {
+        const targetZone = zones[0];
+        setSelectedZone(targetZone);
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+          if (targetZone.wayroute && targetZone.wayroute.length > 0) {
+            const bounds = L.latLngBounds(targetZone.wayroute);
+            if (targetZone.safeSite) {
+              bounds.extend([targetZone.safeSite.lat, targetZone.safeSite.lng]);
+            }
+            bounds.extend([targetZone.lat, targetZone.lng]);
+            mapInstanceRef.current.fitBounds(bounds, {
+              paddingTopLeft: [40, 40],
+              paddingBottomRight: [40, 40],
+              maxZoom: 14,
+              animate: true,
+              duration: 1.2
+            });
+          }
+        }
+      }
+    }
+  }, [forceRoutesTrigger, zones]);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
