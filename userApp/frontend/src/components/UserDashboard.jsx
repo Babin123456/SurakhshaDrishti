@@ -12,7 +12,8 @@ import {
   Route, 
   AlertTriangle, 
   Sparkles,
-  ChevronDown
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import RealGoogleMap from './RealGoogleMap';
 import AlertNotification from './AlertNotification';
@@ -33,6 +34,7 @@ export default function UserDashboard({ onLogout, session }) {
   const [isEmergency, setIsEmergency] = useState(false);
   const [zones, setZones] = useState([]);
   const [currentRoute, setCurrentRoute] = useState(window.location.pathname + window.location.hash);
+  const [isHudCollapsed, setIsHudCollapsed] = useState(false);
 
   // Extract user's GPS from the session that was passed from login
   const userLat = session?.location?.lat;
@@ -214,12 +216,12 @@ export default function UserDashboard({ onLogout, session }) {
   }, [selectedSafehouse, sortedSafehouses, userLat, userLng]);
 
   const zonesWithSafehouse = React.useMemo(() => {
-    if (!zones || zones.length === 0) return [];
     const safehouse = sortedSafehouses.find(sh => sh.shelter_id === selectedSafehouse) || sortedSafehouses[0];
-    if (!safehouse) return zones;
-
-    return zones.map(z => {
-      return {
+    
+    // If user is inside an emergency zone, augment those zones
+    if (zones && zones.length > 0) {
+      if (!safehouse) return zones;
+      return zones.map(z => ({
         ...z,
         safeSite: { 
           name: safehouse.name, 
@@ -230,76 +232,149 @@ export default function UserDashboard({ onLogout, session }) {
         wayroute: routeCoordinates,
         corridorName: safehouse.evacuation_corridor || 'Designated Evacuation Corridor',
         evacEta: safehouse.distance ? `${Math.ceil(safehouse.distance * 15)} mins` : 'Immediate'
-      };
-    });
-  }, [zones, sortedSafehouses, selectedSafehouse, userLat, userLng]);
+      }));
+    }
+
+    // When standby/all-clear: generate a safe relocation zone with route from user's current GPS to the chosen safehouse
+    if (safehouse && userLat && userLng) {
+      return [{
+        id: 'STANDBY-SAFEHOUSE-CORRIDOR',
+        name: 'Designated Safe Hub Sector',
+        shortName: safehouse.name,
+        lat: parseFloat(safehouse.lat),
+        lng: parseFloat(safehouse.lng),
+        radiusMeters: 500,
+        type: 'safe',
+        riskScore: 0,
+        hazard: 'Safe Zone Active',
+        populationRisk: 0,
+        safeSite: {
+          name: safehouse.name,
+          capacity: safehouse.capacity_total,
+          lat: parseFloat(safehouse.lat),
+          lng: parseFloat(safehouse.lng)
+        },
+        wayroute: routeCoordinates,
+        corridorName: safehouse.evacuation_corridor || 'Primary Evacuation Route',
+        evacEta: safehouse.distance ? `${Math.ceil(safehouse.distance * 15)} mins` : 'Immediate'
+      }];
+    }
+
+    return [];
+  }, [zones, sortedSafehouses, selectedSafehouse, userLat, userLng, routeCoordinates]);
 
   return (
     <div className="w-screen h-screen relative overflow-hidden bg-[#FDFBF7] font-sans select-none">
-      {/* Civilian Status HUD Floating Card */}
-      <div className="absolute top-4 left-4 z-[9999] bg-white/95 backdrop-blur-md p-4 rounded-3xl shadow-[0_15px_35px_rgba(44,42,41,0.08)] border border-[#E8E1D5] max-w-xs sm:max-w-sm flex flex-col gap-2.5 transition-all duration-300">
+      {/* Civilian Status HUD Floating Card (Collapsible & Non-blocking) */}
+      <div className={`absolute top-14 left-4 z-[1000] bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_15px_35px_rgba(44,42,41,0.12)] border border-[#E8E1D5] transition-all duration-300 ${
+        isHudCollapsed ? 'p-2 max-w-fit' : 'p-3.5 max-w-xs sm:max-w-sm w-full'
+      }`}>
         
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-4 h-4 text-[#8B7355]" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-[#1A1A1A] font-bold text-xs tracking-tight truncate">
-                Citizen Radar Console
-              </h2>
-              <p className="text-[10px] text-[#7A726A] truncate">
-                {session?.phone || session?.email || 'Live Connected'}
-              </p>
-            </div>
-          </div>
+        {isHudCollapsed ? (
+          /* Collapsed Pill View */
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsHudCollapsed(false)}
+              className="flex items-center gap-2 text-left cursor-pointer hover:opacity-80 transition-opacity"
+              title="Expand Citizen Radar Console"
+            >
+              <div className="w-7 h-7 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-center shrink-0">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#8B7355]" />
+              </div>
+              <div className="flex items-center gap-1.5 pr-1">
+                <span className={`w-2 h-2 rounded-full ${isEmergency ? 'bg-[#B85C38] animate-ping' : 'bg-[#2D7A4F]'}`} />
+                <span className="text-[11px] font-bold text-[#1A1A1A] tracking-tight">
+                  {isEmergency ? 'Hazard Active' : 'Standby'}
+                </span>
+              </div>
+            </button>
 
-          <button 
-            type="button"
-            onClick={onLogout}
-            className="px-2.5 py-1 rounded-lg bg-[#F6F4F0] hover:bg-[#2C2A29] text-[#5C544D] hover:text-white border border-[#E8E1D5] text-[11px] font-semibold transition-colors flex items-center gap-1 cursor-pointer shrink-0"
-            title="Sign out from session"
-          >
-            <LogOut className="w-3 h-3" />
-            <span>Logout</span>
-          </button>
-        </div>
-        
-        {/* Detected Location Badge */}
-        {userLat && userLng && (
-          <div className="bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl p-2.5 text-xs text-[#2C2A29] font-mono flex items-center gap-2">
-            <MapPin className="w-3.5 h-3.5 text-[#8B7355] shrink-0" />
-            <span className="truncate text-[11px]">
-              {session?.location?.address || `${userLat.toFixed(4)}°N, ${userLng.toFixed(4)}°E`}
-            </span>
+            <button
+              type="button"
+              onClick={() => setIsHudCollapsed(false)}
+              className="p-1 rounded-lg hover:bg-[#F6F4F0] text-[#7A726A] hover:text-[#1A1A1A] transition-colors cursor-pointer"
+              title="Expand Details"
+            >
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : (
+          /* Expanded Full Console View */
+          <div className="flex flex-col gap-2.5">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-7 h-7 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-4 h-4 text-[#8B7355]" />
+                </div>
+                <div className="min-w-0">
+                  <h2 className="text-[#1A1A1A] font-bold text-xs tracking-tight truncate">
+                    Citizen Radar Console
+                  </h2>
+                  <p className="text-[10px] text-[#7A726A] truncate">
+                    {session?.phone || session?.email || 'Live Connected'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button 
+                  type="button"
+                  onClick={() => setIsHudCollapsed(true)}
+                  className="p-1 rounded-lg bg-[#F6F4F0] hover:bg-[#E8E1D5] text-[#5C544D] hover:text-[#1A1A1A] border border-[#E8E1D5] text-[10px] transition-colors cursor-pointer"
+                  title="Minimize to pill"
+                >
+                  <ChevronUp className="w-3 h-3" />
+                </button>
+                <button 
+                  type="button"
+                  onClick={onLogout}
+                  className="px-2 py-1 rounded-lg bg-[#F6F4F0] hover:bg-[#2C2A29] text-[#5C544D] hover:text-white border border-[#E8E1D5] text-[11px] font-semibold transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+                  title="Sign out from session"
+                >
+                  <LogOut className="w-3 h-3" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            </div>
+            
+            {/* Detected Location Badge */}
+            {userLat && userLng && (
+              <div className="bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl p-2 text-xs text-[#2C2A29] font-mono flex items-center gap-2">
+                <MapPin className="w-3.5 h-3.5 text-[#8B7355] shrink-0" />
+                <span className="truncate text-[11px]">
+                  {session?.location?.address || `${userLat.toFixed(4)}°N, ${userLng.toFixed(4)}°E`}
+                </span>
+              </div>
+            )}
+
+            {/* Operational Status Pill */}
+            <div className={`px-2.5 py-1.5 rounded-xl border flex items-center justify-between text-xs font-semibold ${
+              isEmergency 
+                ? 'bg-[#FFF5F2] border-[#FADED4] text-[#B85C38]' 
+                : 'bg-[#EBF7EE] border-[#D4EDDA] text-[#2D7A4F]'
+            }`}>
+              <div className="flex items-center gap-1.5">
+                <span className={`w-2 h-2 rounded-full ${isEmergency ? 'bg-[#B85C38] animate-ping' : 'bg-[#2D7A4F]'}`} />
+                <span className="text-[11px] tracking-wide uppercase">
+                  {isEmergency ? 'Active Hazard Perimeter' : 'All Clear / Standby'}
+                </span>
+              </div>
+              {isEmergency && (
+                <span className="text-[10px] font-mono bg-[#B85C38] text-white px-1.5 py-0.5 rounded">
+                  EVACUATE
+                </span>
+              )}
+            </div>
           </div>
         )}
-
-        {/* Operational Status Pill */}
-        <div className={`px-3 py-1.5 rounded-xl border flex items-center justify-between text-xs font-semibold ${
-          isEmergency 
-            ? 'bg-[#FFF5F2] border-[#FADED4] text-[#B85C38]' 
-            : 'bg-[#EBF7EE] border-[#D4EDDA] text-[#2D7A4F]'
-        }`}>
-          <div className="flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${isEmergency ? 'bg-[#B85C38] animate-ping' : 'bg-[#2D7A4F]'}`} />
-            <span className="text-[11px] tracking-wide uppercase">
-              {isEmergency ? 'Active Hazard Perimeter' : 'All Clear / Standby'}
-            </span>
-          </div>
-          {isEmergency && (
-            <span className="text-[10px] font-mono bg-[#B85C38] text-white px-1.5 py-0.5 rounded">
-              EVACUATE
-            </span>
-          )}
-        </div>
       </div>
 
       {/* The GIS Map Viewport */}
       <RealGoogleMap
         standalone={true}
-        zones={isEmergency ? zonesWithSafehouse : []}
-        zoom={isEmergency ? 11 : 14}
+        zones={zonesWithSafehouse}
+        zoom={isEmergency ? 11 : 13}
         center={userLat && userLng ? [userLat, userLng] : undefined}
         userLocationOverride={userLat && userLng ? { lat: userLat, lng: userLng, address: session?.location?.address } : null}
         topBarAccessory={
