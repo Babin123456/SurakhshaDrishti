@@ -337,20 +337,20 @@ export default function UserDashboard({ onLogout, session }) {
                 </button>
                 <button 
                   type="button"
-                  onClick={() => setIsHudCollapsed(true)}
-                  className="p-1 rounded-lg bg-[#F6F4F0] hover:bg-[#E8E1D5] text-[#5C544D] hover:text-[#1A1A1A] border border-[#E8E1D5] text-[10px] transition-colors cursor-pointer"
-                  title="Minimize to pill"
-                >
-                  <ChevronUp className="w-3 h-3" />
-                </button>
-                <button 
-                  type="button"
                   onClick={onLogout}
                   className="px-2 py-1 rounded-lg bg-[#F6F4F0] hover:bg-[#2C2A29] text-[#5C544D] hover:text-white border border-[#E8E1D5] text-[11px] font-semibold transition-colors flex items-center gap-1 cursor-pointer shrink-0"
                   title="Sign out from session"
                 >
                   <LogOut className="w-3 h-3" />
                   <span>Logout</span>
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setIsHudCollapsed(true)}
+                  className="p-1 rounded-lg bg-[#F6F4F0] hover:bg-[#E8E1D5] text-[#5C544D] hover:text-[#1A1A1A] border border-[#E8E1D5] text-[10px] transition-colors cursor-pointer shrink-0"
+                  title="Minimize Citizen Radar Console"
+                >
+                  <ChevronUp className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
