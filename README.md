@@ -5,13 +5,13 @@
 <!-- Animated Dynamic Typing Banner -->
 <img src="https://readme-typing-svg.demolab.com?font=Outfit&weight=800&size=20&duration=3000&pause=1000&color=D4AF37&center=true&vCenter=true&width=700&lines=SIH+2026+Problem+Statement+26191;ADAMAS+University+SurakshaDrishti+Team;AI-Powered+Hazard-Based+Red+Zone+Detection;Proactive+Relocation+%26+Dynamic+Shelter+Balancing" alt="Typing Subtitle" />
 
-```text
+<pre align="center">
   ___ _   _ ____     _    _  ______  _   _    _    ____  ____  ___ ____  _   _ _____ ___ 
  / ___| | | |  _ \   / \  | |/ / ___|| | | |  / \  |  _ \|  _ \|_ _/ ___|| | | |_   _|_ _|
  \___ \ | | | |_) | / _ \ | ' /\___ \| |_| | / _ \ | | | | |_) || |\___ \| |_| | | |  | | 
   ___) | |_| |  _ < / ___ \| . \ ___) |  _  |/ ___ \| |_| |  _ < | | ___) |  _  | | |  | | 
- |____/ \___/|_| \_/_/   \_\_|\_\____/|_| |_/_/   \_\____/|_| \_\___|____/|_| |_| |_| |___|
-```
+ |____/ \___/|_| \_/_/   \_\_|\_\____/|_| |_/_/   \_\____/|_| \_\___|____/|_| |_| |_| |___| 
+</pre>
 
 <br/>
 
