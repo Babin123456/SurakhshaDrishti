@@ -36,9 +36,9 @@ export default function UserDashboard({ onLogout, session }) {
   const [currentRoute, setCurrentRoute] = useState(window.location.pathname + window.location.hash);
   const [isHudCollapsed, setIsHudCollapsed] = useState(false);
 
-  // Extract user's GPS from the session that was passed from login
-  const userLat = session?.location?.lat;
-  const userLng = session?.location?.lng;
+  // Extract user's GPS from the session that was passed from login, allow updates from live GPS
+  const [userLat, setUserLat] = useState(session?.location?.lat);
+  const [userLng, setUserLng] = useState(session?.location?.lng);
 
   useEffect(() => {
     const handlePopState = () => setCurrentRoute(window.location.pathname + window.location.hash);
@@ -108,6 +108,7 @@ export default function UserDashboard({ onLogout, session }) {
 
   const [sortedSafehouses, setSortedSafehouses] = useState([]);
   const [selectedSafehouse, setSelectedSafehouse] = useState('');
+  const [routeTrigger, setRouteTrigger] = useState(0);
 
   const [currentRadius, setCurrentRadius] = useState(7000);
   const [hasAlerted, setHasAlerted] = useState(false);
@@ -266,7 +267,7 @@ export default function UserDashboard({ onLogout, session }) {
   return (
     <div className="w-screen h-screen relative overflow-hidden bg-[#FDFBF7] font-sans select-none">
       {/* Civilian Status HUD Floating Card (Collapsible & Non-blocking) */}
-      <div className={`absolute top-14 left-4 z-[1000] bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_15px_35px_rgba(44,42,41,0.12)] border border-[#E8E1D5] transition-all duration-300 ${
+      <div className={`absolute top-14 left-10 sm:left-12 z-[1000] bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_15px_35px_rgba(44,42,41,0.12)] border border-[#E8E1D5] transition-all duration-300 ${
         isHudCollapsed ? 'p-2 max-w-fit' : 'p-3.5 max-w-xs sm:max-w-sm w-full'
       }`}>
         
@@ -311,8 +312,8 @@ export default function UserDashboard({ onLogout, session }) {
                   <h2 className="text-[#1A1A1A] font-bold text-xs tracking-tight truncate">
                     Citizen Radar Console
                   </h2>
-                  <p className="text-[10px] text-[#7A726A] truncate">
-                    {session?.phone || session?.email || 'Live Connected'}
+                  <p className="text-[10px] text-[#7A726A] font-mono truncate">
+                    {session?.phone ? `+91 ${session.phone}` : (session?.email || 'Live Connected')}
                   </p>
                 </div>
               </div>
@@ -377,6 +378,13 @@ export default function UserDashboard({ onLogout, session }) {
         zoom={isEmergency ? 11 : 13}
         center={userLat && userLng ? [userLat, userLng] : undefined}
         userLocationOverride={userLat && userLng ? { lat: userLat, lng: userLng, address: session?.location?.address } : null}
+        forceRoutesTrigger={routeTrigger}
+        onLocationDetect={(loc) => {
+          if (loc?.lat && loc?.lng) {
+            setUserLat(loc.lat);
+            setUserLng(loc.lng);
+          }
+        }}
         topBarAccessory={
           <div className="flex items-center gap-1.5">
             <Building2 className="w-3.5 h-3.5 text-[#8B7355] shrink-0 hidden sm:inline" />
@@ -384,7 +392,11 @@ export default function UserDashboard({ onLogout, session }) {
             <div className="relative flex items-center">
               <select 
                 value={selectedSafehouse} 
-                onChange={e => setSelectedSafehouse(e.target.value)}
+                onClick={() => setRouteTrigger(prev => prev + 1)}
+                onChange={e => {
+                  setSelectedSafehouse(e.target.value);
+                  setRouteTrigger(prev => prev + 1);
+                }}
                 className="bg-white border border-[#E8E1D5] text-[#1A1A1A] text-xs font-semibold rounded-xl pl-2.5 pr-6 py-1 focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs max-w-[140px] sm:max-w-[220px] appearance-none truncate cursor-pointer"
               >
                 {sortedSafehouses.length === 0 && <option>Locating Hubs...</option>}

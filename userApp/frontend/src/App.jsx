@@ -5,7 +5,14 @@ import AgentDashboard from './components/AgentDashboard';
 import AlertNotification from './components/AlertNotification';
 
 export default function App() {
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState(() => {
+    try {
+      const saved = localStorage.getItem('suraksha_app_session');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
 
   // If the Electron alert window loads this app at /alert, show the alert immediately
   // regardless of session state. This is critical — the alert window is a SEPARATE 
@@ -17,10 +24,20 @@ export default function App() {
 
   const handleLogin = (userData) => {
     setSession(userData);
+    try {
+      localStorage.setItem('suraksha_app_session', JSON.stringify(userData));
+    } catch (e) {
+      console.error('Failed to persist session', e);
+    }
   };
 
   const handleLogout = () => {
     setSession(null);
+    try {
+      localStorage.removeItem('suraksha_app_session');
+    } catch (e) {
+      console.error('Failed to clear session', e);
+    }
   };
 
   if (!session) {

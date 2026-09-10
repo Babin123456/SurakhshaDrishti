@@ -127,21 +127,30 @@ export default function AppLogin({ onLogin }) {
     }
   };
 
-  // --- USER LOGIN FLOW ---
+  // --- USER LOGIN FLOW (MOBILE NUMBER ONLY) ---
   const handleUserLogin = async (e) => {
     e.preventDefault();
     setError('');
-    if (!phone) return setError('Phone or Email is required for Citizen Access.');
+    
+    // Clean numeric digits only
+    const digitsOnly = phone.replace(/\D/g, '');
+    if (!digitsOnly) {
+      return setError('Please enter your mobile number.');
+    }
+    if (digitsOnly.length < 10) {
+      return setError('Please enter a valid 10-digit mobile number.');
+    }
+
+    const formattedMobile = digitsOnly.slice(-10); // get last 10 digits
 
     setLoading(true);
 
-    const isEmail = phone.includes('@');
     const tempPassword = 'RES-' + Math.random().toString(36).substring(2, 8).toUpperCase();
     
     await apiService.register({
-      fullName: 'Resident User',
-      email: isEmail ? phone : `${phone.replace(/\s+/g, '')}@suraksha.local`,
-      phone: isEmail ? '' : phone,
+      fullName: `Citizen (${formattedMobile})`,
+      email: `${formattedMobile}@suraksha.local`,
+      phone: formattedMobile,
       password: tempPassword,
       role: 'RESIDENT',
       district: geoLoc.address || 'Unknown District',
@@ -150,7 +159,7 @@ export default function AppLogin({ onLogin }) {
     });
 
     const res = await apiService.quickSign({ 
-      phone, 
+      phone: formattedMobile, 
       role: 'resident', 
       lat: geoLoc.lat, 
       lng: geoLoc.lng, 
@@ -159,7 +168,7 @@ export default function AppLogin({ onLogin }) {
     setLoading(false);
 
     if (res.success) {
-      onLogin({ role: 'user', phone: phone, emergencyId: res.emergencyId, location: geoLoc });
+      onLogin({ role: 'user', phone: formattedMobile, emergencyId: res.emergencyId, location: geoLoc });
     } else {
       setError(res.message || 'Failed to initialize session.');
     }
@@ -382,16 +391,30 @@ export default function AppLogin({ onLogin }) {
             )}
 
             <div>
-              <label className="block text-[11px] font-bold text-[#5C544D] mb-1 uppercase tracking-wider">Mobile Number or Email</label>
-              <div className="relative">
+              <div className="flex items-center justify-between mb-1">
+                <label className="block text-[11px] font-bold text-[#5C544D] uppercase tracking-wider">Mobile Number</label>
+                <span className="text-[10px] text-[#7A726A] font-mono font-medium">10 Digits (Numeric Only)</span>
+              </div>
+              <div className="relative flex items-center">
+                <div className="absolute left-3.5 flex items-center gap-1.5 text-xs font-bold text-[#5C544D] pointer-events-none border-r border-[#E8E1D5] pr-2.5 z-10 select-none">
+                  <Phone className="w-3.5 h-3.5 text-[#8B7355] shrink-0" />
+                  <span className="font-mono tracking-tight">+91</span>
+                </div>
                 <input 
-                  type="text" 
+                  type="tel" 
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={10}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pl-9 pr-3 py-2.5 text-xs focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs font-medium placeholder:text-[#A89F91]"
-                  placeholder="+91 98765 43210 or user@domain.com"
+                  onChange={(e) => {
+                    const onlyInts = e.target.value.replace(/\D/g, '');
+                    setPhone(onlyInts);
+                  }}
+                  style={{ paddingLeft: '4.75rem' }}
+                  className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pr-3.5 py-2.5 text-sm tracking-wider font-mono focus:outline-none focus:border-[#8B7355] focus:ring-2 focus:ring-[#8B7355]/10 transition-all shadow-2xs font-semibold placeholder:text-[#A89F91]"
+                  placeholder="9876543210"
+                  autoFocus
                 />
-                <Phone className="w-4 h-4 text-[#8B7355] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
             

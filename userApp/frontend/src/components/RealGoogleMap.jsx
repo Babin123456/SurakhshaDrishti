@@ -66,7 +66,8 @@ export default function RealGoogleMap({
   userLocationOverride = null,
   topBarAccessory = null,
   selectedZoneId = null,
-  activeHazardType = null
+  activeHazardType = null,
+  forceRoutesTrigger = 0
 }) {
   const mapContainerRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -98,6 +99,9 @@ export default function RealGoogleMap({
       );
       if (match) {
         setSelectedZone(match);
+        // Ensure routes and safe sites become visible when a zone or hub is selected
+        setShowRoutes(true);
+        setShowSafeSites(true);
         if (mapInstanceRef.current) {
           mapInstanceRef.current.invalidateSize();
           if (match.wayroute && match.wayroute.length > 0) {
@@ -133,6 +137,35 @@ export default function RealGoogleMap({
       mapInstanceRef.current.flyTo([selectedZone.lat, selectedZone.lng], 14, { animate: true, duration: 1.2 });
     }
   }, [focusTrigger, selectedZone]);
+
+  // When Relief Hub is clicked or selected by user, explicitly ensure paths and safe sites are shown
+  useEffect(() => {
+    if (forceRoutesTrigger > 0) {
+      setShowRoutes(true);
+      setShowSafeSites(true);
+      if (zones.length > 0) {
+        const targetZone = zones[0];
+        setSelectedZone(targetZone);
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+          if (targetZone.wayroute && targetZone.wayroute.length > 0) {
+            const bounds = L.latLngBounds(targetZone.wayroute);
+            if (targetZone.safeSite) {
+              bounds.extend([targetZone.safeSite.lat, targetZone.safeSite.lng]);
+            }
+            bounds.extend([targetZone.lat, targetZone.lng]);
+            mapInstanceRef.current.fitBounds(bounds, {
+              paddingTopLeft: [40, 40],
+              paddingBottomRight: [40, 40],
+              maxZoom: 14,
+              animate: true,
+              duration: 1.2
+            });
+          }
+        }
+      }
+    }
+  }, [forceRoutesTrigger, zones]);
 
   useEffect(() => {
     if (!mapContainerRef.current) return;
@@ -315,46 +348,48 @@ export default function RealGoogleMap({
         iconAnchor: [18, 18],
       });
 
-      const marker = L.marker([zone.lat, zone.lng], { icon: hazardIcon });
-      markersMapRef.current[zone.id] = marker;
+      if (showRedZones) {
+        const marker = L.marker([zone.lat, zone.lng], { icon: hazardIcon });
+        markersMapRef.current[zone.id] = marker;
 
-      const popupContent = `
-        <div style="font-family: Inter, system-ui, sans-serif; min-width: 220px; color: #0f172a; padding: 2px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
-            <span style="font-size: 9px; font-weight: 800; color: ${isRed ? '#dc2626' : '#d97706'}; text-transform: uppercase;">
-              ● ${isRed ? 'CRITICAL RED ZONE' : 'HIGH RISK BUFFER'}
-            </span>
-            <span style="font-size: 9px; font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 1px 4px; border-radius: 4px;">
-              #${zone.geohash}
-            </span>
+        const popupContent = `
+          <div style="font-family: Inter, system-ui, sans-serif; min-width: 220px; color: #0f172a; padding: 2px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 3px;">
+              <span style="font-size: 9px; font-weight: 800; color: ${isRed ? '#dc2626' : '#d97706'}; text-transform: uppercase;">
+                ● ${isRed ? 'CRITICAL RED ZONE' : 'HIGH RISK BUFFER'}
+              </span>
+              <span style="font-size: 9px; font-family: monospace; font-weight: bold; background: #e2e8f0; padding: 1px 4px; border-radius: 4px;">
+                #${zone.geohash}
+              </span>
+            </div>
+            <h4 style="margin: 2px 0 3px 0; font-size: 13px; font-weight: 800; color: #0f172a;">${zone.name}</h4>
+            <div style="font-size: 10px; color: #475569; margin-bottom: 6px;">Threat: <strong>${zone.hazard}</strong></div>
+            ${!standalone ? `
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px; border-radius: 6px; font-size: 10px; margin-bottom: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+              <div><span style="color: #64748b; font-size: 9px;">Threat Score:</span><br/><strong style="color: ${isRed ? '#dc2626' : '#d97706'}; font-size: 12px;">${zone.riskScore}/100</strong></div>
+              <div><span style="color: #64748b; font-size: 9px;">At-Risk Population:</span><br/><strong style="color: #0f172a; font-size: 12px;">${zone.populationRisk?.toLocaleString() || 0}</strong></div>
+            </div>
+            ` : ''}
+            <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 5px 6px; border-radius: 5px; font-size: 10px; color: #065f46;">
+              <strong>Target Safe Hub:</strong> ${zone.safeSite?.name || 'Scanning...'}<br/>
+              <span style="font-size: 9px; color: #047857;">Capacity: ${zone.safeSite?.capacity || '...'} | ETA: ${zone.evacEta || 'Calculating...'}</span>
+            </div>
           </div>
-          <h4 style="margin: 2px 0 3px 0; font-size: 13px; font-weight: 800; color: #0f172a;">${zone.name}</h4>
-          <div style="font-size: 10px; color: #475569; margin-bottom: 6px;">Threat: <strong>${zone.hazard}</strong></div>
-          ${!standalone ? `
-          <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px; border-radius: 6px; font-size: 10px; margin-bottom: 6px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
-            <div><span style="color: #64748b; font-size: 9px;">Threat Score:</span><br/><strong style="color: ${isRed ? '#dc2626' : '#d97706'}; font-size: 12px;">${zone.riskScore}/100</strong></div>
-            <div><span style="color: #64748b; font-size: 9px;">At-Risk Population:</span><br/><strong style="color: #0f172a; font-size: 12px;">${zone.populationRisk?.toLocaleString() || 0}</strong></div>
-          </div>
-          ` : ''}
-          <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 5px 6px; border-radius: 5px; font-size: 10px; color: #065f46;">
-            <strong>Target Safe Hub:</strong> ${zone.safeSite?.name || 'Scanning...'}<br/>
-            <span style="font-size: 9px; color: #047857;">Capacity: ${zone.safeSite?.capacity || '...'} | ETA: ${zone.evacEta || 'Calculating...'}</span>
-          </div>
-        </div>
-      `;
+        `;
 
-      marker.bindPopup(popupContent, {
-        offset: [0, -10],
-        closeButton: true,
-        autoPan: true,
-        autoPanPadding: [40, 50],
-      });
+        marker.bindPopup(popupContent, {
+          offset: [0, -10],
+          closeButton: true,
+          autoPan: true,
+          autoPanPadding: [40, 50],
+        });
 
-      marker.on('click', () => {
-        handleFlyTo(zone);
-      });
+        marker.on('click', () => {
+          handleFlyTo(zone);
+        });
 
-      group.addLayer(marker);
+        group.addLayer(marker);
+      }
 
 
       if (showSafeSites && zone.safeSite) {
@@ -373,6 +408,11 @@ export default function RealGoogleMap({
         const safeMarker = L.marker([zone.safeSite.lat, zone.safeSite.lng], { icon: safeIcon });
         safeMarker.bindTooltip(`<b>SAFE RELOCATION HUB:</b><br/>${zone.safeSite.name}<br/><strong>${zone.safeSite.capacity}</strong>`, {
           direction: 'top',
+        });
+        safeMarker.on('click', () => {
+          setShowRoutes(true);
+          setShowSafeSites(true);
+          handleFlyTo(zone);
         });
         group.addLayer(safeMarker);
       }
@@ -485,6 +525,9 @@ export default function RealGoogleMap({
 
   const handleResetView = () => {
     setSelectedZone(null);
+    setShowRedZones(true);
+    setShowSafeSites(true);
+    setShowRoutes(true);
     if (mapInstanceRef.current) {
       mapInstanceRef.current.flyTo([20.5937, 78.9629], 5, {
         duration: 1.2
@@ -494,6 +537,10 @@ export default function RealGoogleMap({
 
 
   const handleDetectLocation = async () => {
+    // When user clicks My GPS, hide path, safe zones and other markers
+    setShowRoutes(false);
+    setShowSafeSites(false);
+    setShowRedZones(false);
     setIsLocating(true);
     setLocationError(null);
 
@@ -575,6 +622,9 @@ export default function RealGoogleMap({
 
     setUserLocation(locData);
     setSelectedZone(null);
+    setShowRoutes(false);
+    setShowSafeSites(false);
+    setShowRedZones(false);
     if (onLocationDetect) onLocationDetect(locData);
     setIsLocating(false);
 
@@ -692,7 +742,11 @@ export default function RealGoogleMap({
 
               <button
                 type="button"
-                onClick={() => setShowSafeSites(!showSafeSites)}
+                onClick={() => {
+                  const nextState = !showSafeSites;
+                  setShowSafeSites(nextState);
+                  if (nextState) setShowRoutes(true); // Automatically show paths when Safe Hubs is enabled
+                }}
                 className={`px-2 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${showSafeSites
                     ? 'bg-[#EBF7EE] border-[#D4EDDA] text-[#2D7A4F]'
                     : 'bg-white border-[#E8E1D5] text-[#7A726A] opacity-60'
@@ -1033,7 +1087,11 @@ export default function RealGoogleMap({
 
               <button
                 type="button"
-                onClick={() => setShowSafeSites(!showSafeSites)}
+                onClick={() => {
+                  const nextState = !showSafeSites;
+                  setShowSafeSites(nextState);
+                  if (nextState) setShowRoutes(true);
+                }}
                 className={`px-2 py-1 rounded-lg transition-colors flex items-center gap-1 ${showSafeSites ? 'bg-emerald-950/80 border border-emerald-800 text-emerald-300 font-bold' : 'text-slate-400'
                   }`}
               >
