@@ -78,19 +78,23 @@ flowchart TD
 ## 2. Core Working Principles
 
 ### 2.1 Multi-Agency Consensus Voting Matrix
+
 - **Cryptographic Access Keys:** Every triggered hazard zone generates a unique 16-character passkey required for authorized battalion officers to join an incident dispatch channel.
 - **Democratic Incident De-escalation:** Red zones cannot be arbitrarily cleared by a single entity. They transition from `ACTIVE_RED_ZONE` to `SITUATION_CONTROLLED` only when designated multi-agency commanders (NDRF, SDMA, Fire, Police) cast authenticated consensus resolution votes.
 - **Audit Logging:** Every consensus vote and state transition is immutably timestamped and recorded in PostgreSQL for post-crisis audits.
 
 ### 2.2 Dual-Layer Database Architecture
+
 - **Primary Rail (Supabase PostgreSQL 17.6):** Fully relational schema with 11 synchronized tables managing zone geometries, spatial coordinates, user permissions, shelters, and emergency passes.
 - **Fail-Safe Offline Local Rail (`dbHandler.js`):** If upstream cloud database connections encounter latency, SSL timeouts, or network loss during natural disasters, the system automatically degrades gracefully to atomic, lock-protected local JSON database files (`suraksha_local_db.json`), ensuring uninterrupted command operations.
 
 ### 2.3 Real-Time Bi-Directional Telemetry Mesh
+
 - **WebSocket Broadcasts:** When an AI alert or official red zone perimeter triggers, the backend emits high-priority socket events (`zone_created`, `emergency_alert`, `consensus_update`) simultaneously to the command web dashboard and connected `userApp` field devices.
 - **Zone Geometry Propagation:** Full polygon bounds, hazard radii, and severity indices are streamed to the GIS map with sub-meter spatial precision.
 
 ### 2.4 Shelter Carrying Capacity Optimization
+
 - Evaluates real-time occupancy vs. theoretical maximum safe site capacity.
 - Balances resident inflows dynamically across surrounding relief camps to prevent local infrastructure bottlenecks.
 
@@ -98,7 +102,7 @@ flowchart TD
 
 ## 3. Directory Layout
 
-```
+```text
 adminDash/
 ├── backend/                                # Central Server & API Gateway
 │   ├── database/
@@ -113,69 +117,78 @@ adminDash/
 │   ├── src/
 │   │   └── main.js                         # Server entry point, middleware, Socket.io setup
 │   ├── uploads/                            # Stored telemetry & incident files
-│   ├── .env.example                        # Template for environment configuration
-│   └── package.json                        # Backend scripts & dependency specifications
-├── frontend/                               # Tactical Web Command Console
-│   ├── public/                             # Static visual assets & badges
-│   ├── src/
-│   │   ├── components/                     # Dashboard HUD, GIS maps, consensus modals
-│   │   ├── utils/                          # API connectors & spatial calculation utilities
-│   │   ├── App.jsx                         # Main application routing & session manager
-│   │   ├── index.css                       # TailwindCSS styles & theme tokens
-│   │   └── main.jsx                        # React root entry point
-│   ├── index.html                          # HTML shell with custom fonts
-│   ├── package.json                        # Frontend dependencies & build commands
-│   ├── postcss.config.cjs                  # PostCSS configuration
-│   ├── tailwind.config.js                  # Color palette & custom typography rules
-│   └── vite.config.js                      # Vite bundler configuration
-└── README.md                               # Project documentation
+│   ├── .env.example                        # Backend environment configuration template
+│   └── package.json
+└── frontend/                               # Tactical Web Command Portal
+    ├── src/
+    │   ├── components/
+    │   │   ├── CommandConsole.jsx          # Live incident & hazard dispatch desk
+    │   │   ├── DisasterMap.jsx             # Leaflet GIS vector renderer (No API keys)
+    │   │   ├── ConsensusVotingModal.jsx    # Inter-agency resolution vote console
+    │   │   ├── AuthSection.jsx             # Pre-provisioned official sign-in
+    │   │   ├── DemoOfficerModal.jsx        # 1-click evaluation access for NDRF/SDMA
+    │   │   ├── Footer.jsx                  # Standard WGS84 GPS status badge
+    │   │   └── pages/
+    │   │       ├── UserProfile.jsx         # Officer profile, 2FA contact edits & passcodes
+    │   │       ├── Faqs.jsx                # 20 simple, comprehensive disaster management Q&As
+    │   │       ├── TermsOfService.jsx      # Operational mandates & civil protection terms
+    │   │       ├── PrivacyPolicy.jsx       # E2EE security & spatial data governance
+    │   │       └── Documentation.jsx       # Complete technical & architectural manual
+    │   ├── utils/
+    │   │   ├── api.js                      # REST client and offline state manager
+    │   │   └── socket.js                   # Real-time WebSocket connection hub
+    │   ├── App.jsx                         # Main dashboard view controller & router
+    │   └── main.jsx
+    ├── index.html
+    └── package.json
 ```
 
 ---
 
-## 4. Sequence Workflow
+## 4. API Endpoints Reference
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant A as NDRF / SDMA Officer
-    participant F as Command Dashboard (Frontend)
-    participant B as Express API Backend
-    participant DB as Supabase PostgreSQL / Local DB
-    participant S as Socket.io Alert Hub
-    participant U as userApp (Field Units)
+### 4.1 Authentication & Emergency SOS (`/auth`)
 
-    A->>F: Log in with Authority Credentials + 2FA
-    F->>B: POST /api/auth/login
-    B->>DB: Validate Officer Credentials & Role
-    DB-->>B: Authenticated Token & Role Data
-    B-->>F: Return JWT Session
-    F->>B: GET /api/zones (Fetch Active Incidents)
-    B->>DB: Query Active Red Zones
-    DB-->>B: Zone Coordinates & Threat Levels
-    B-->>F: Render Tactical GIS Map & Threat Perimeters
-    opt Consensus Voting Procedure
-        A->>F: Cast Resolution Vote for Sector
-        F->>B: POST /api/zones/:id/vote-resolve
-        B->>DB: Record Vote & Evaluate Threshold
-        alt Consensus Reached (All Agencies Voted)
-            B->>DB: Update Status to SITUATION_CONTROLLED
-            B->>S: Emit "zone_resolved" Event
-            S-->>F: Update Command HUD Instantly
-            S-->>U: Clear Emergency Standby for Sector
-        else Consensus Pending
-            B-->>F: Update Vote Counter (e.g., 2/3 Agencies)
-        end
-    end
-```
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `POST` | `/auth/login` | Official authority sign-in with 2FA enforcement |
+| `POST` | `/auth/verify-otp` | Validates 6-digit email/SMS emergency access code |
+| `POST` | `/auth/quicksign` | 30-second resident emergency evacuation pass generator |
+| `POST` | `/auth/signup` | Civilian and volunteer registration endpoint |
+
+### 4.2 Hazard Zones & Consensus (`/api/zones`)
+
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/zones` | Fetches all active hazard perimeters and assigned officers |
+| `POST` | `/api/zones` | Manually delineates a new official Red Zone perimeter |
+| `POST` | `/api/zones/ai-satellite-detect` | Ingests ConvLSTM satellite prediction triggers |
+| `POST` | `/api/zones/assign-officer` | Authorizes an officer to join a zone incident room |
+| `POST` | `/api/zones/vote-resolve` | Casts authenticated inter-agency resolution vote |
+
+### 4.3 Relief Shelters (`/api/shelters`)
+
+| Method | Route | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/shelters` | Retrieves registered relief camps with live occupancy data |
+| `POST` | `/api/shelters/occupancy` | Updates real-time shelter bed counts and provisions |
 
 ---
 
-## 5. Prerequisites
+## 5. Security & Authentication Architecture
 
-- **Node.js:** v18.x or v20.x LTS
-- **npm:** v9.x or higher
-- **PostgreSQL Database:** Supabase PostgreSQL instance (or local JSON fallback mode)
+1. **Role-Based Access Control (RBAC):**
+   - Central Web Dashboard access is restricted to pre-provisioned official identities (`NDRF`, `SDMA`, `POLICE`, `FIRE_RESCUE`).
+   - Ordinary civilian registration is isolated to the mobile/desktop `userApp`.
+
+2. **End-to-End Encrypted Passkeys:**
+   - Red Zone channels require an authentic 16-digit zone access key. Unauthorized attempts are rejected at the Socket.io handshake level.
+
+3. **Two-Factor Authentication (2FA):**
+   - High-privilege administrative logins enforce mandatory OTP confirmation through NodeMailer SMTP relays with graceful offline token fallback.
+
+4. **Officer Credential & Profile 2FA:**
+   - Updating official communication channels (email or phone) requires two-factor authorization codes dispatched to previous verified contacts before applying changes.
 
 ---
 
@@ -183,57 +196,68 @@ sequenceDiagram
 
 ### 6.1 Backend Configuration
 
-1. Navigate to the backend directory:
-   ```bash
-   cd adminDash/backend
-   ```
+- **Step 1: Navigate to the backend directory:**
 
-2. Install backend dependencies:
-   ```bash
-   npm install
-   ```
+  ```bash
+  cd adminDash/backend
+  ```
 
-3. Configure environment variables:
-   Copy `.env.example` to `.env` and configure credentials:
-   ```bash
-   cp .env.example .env
-   ```
-   Required keys:
-   - `PORT=5000`
-   - `SUPABASE_URL=https://your-supabase-project-id.supabase.co`
-   - `DATABASE_URL=postgres://postgres:your-db-password@db.your-supabase-project-id.supabase.co:5432/postgres`
-   - `JWT_SECRET=your_super_secret_jwt_key`
+- **Step 2: Install backend dependencies:**
 
-4. Launch the backend server:
-   ```bash
-   npm start
-   ```
-   > The server starts on `http://localhost:5000` with active WebSocket listener.
+  ```bash
+  npm install
+  ```
+
+- **Step 3: Configure environment variables:**
+  Copy `.env.example` to `.env` and configure credentials:
+
+  ```bash
+  cp .env.example .env
+  ```
+
+  Required keys:
+  - `PORT=5000`
+  - `SUPABASE_URL=https://your-supabase-project-id.supabase.co`
+  - `DATABASE_URL=postgres://postgres:your-db-password@db.your-supabase-project-id.supabase.co:5432/postgres`
+  - `JWT_SECRET=your_super_secret_jwt_key`
+
+- **Step 4: Launch the backend server:**
+
+  ```bash
+  npm start
+  ```
+
+  > The server starts on `http://localhost:5000` with active WebSocket listener.
 
 ---
 
 ### 6.2 Frontend Configuration
 
-1. Open a new terminal and navigate to the frontend directory:
-   ```bash
-   cd adminDash/frontend
-   ```
+- **Step 1: Open a new terminal and navigate to the frontend directory:**
 
-2. Install frontend dependencies:
-   ```bash
-   npm install
-   ```
+  ```bash
+  cd adminDash/frontend
+  ```
 
-3. Start the development server:
-   ```bash
-   npm run dev
-   ```
-   > The web interface will be accessible at `http://localhost:5173`.
+- **Step 2: Install frontend dependencies:**
 
-4. Build for production:
-   ```bash
-   npm run build
-   ```
+  ```bash
+  npm install
+  ```
+
+- **Step 3: Start the development server:**
+
+  ```bash
+  npm run dev
+  ```
+
+  > The web interface will be accessible at `http://localhost:5173`.
+
+- **Step 4: Build for production:**
+
+  ```bash
+  npm run build
+  ```
 
 ---
 

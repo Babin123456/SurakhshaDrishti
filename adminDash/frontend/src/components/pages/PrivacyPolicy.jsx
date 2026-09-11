@@ -47,7 +47,7 @@ export default function PrivacyPolicy() {
           <div>
             <h1 className="text-2xl sm:text-4xl font-bold text-[#1A1A1A] tracking-tight">Privacy Policy</h1>
             <p className="text-xs sm:text-sm text-[#5C544D] mt-1">
-              SurakshaDrishti — AI Multi-Hazard Decision Support & Citizen Data Governance
+              How SurakshaDrishti Protects Citizen and Officer Data During Emergency Operations
             </p>
           </div>
         </div>

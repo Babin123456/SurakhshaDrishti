@@ -47,7 +47,7 @@ export default function TermsOfService() {
           <div>
             <h1 className="text-2xl sm:text-4xl font-bold text-[#1A1A1A] tracking-tight">Terms of Service</h1>
             <p className="text-xs sm:text-sm text-[#5C544D] mt-1">
-              Operational Mandates, Legal Protocols & Civil Protection Governance
+              Guidelines, Public Safety Rules & Platform Terms for Citizens and Disaster Response Officers
             </p>
           </div>
         </div>

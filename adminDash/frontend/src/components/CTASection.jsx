@@ -1,9 +1,9 @@
 import React from 'react';
-import { ArrowRight, Zap, Shield, UserPlus, Map } from 'lucide-react';
+import { ArrowRight, Zap, Shield, UserPlus, Map, Sparkles } from 'lucide-react';
 import { useScrollReveal } from '../utils/useScrollReveal';
 import Interactive3DCard from './Interactive3DCard';
 
-export default function CTASection({ userSession, onExplore, onEmergencyAccess, onSignUp, onQuickSign, onNavigateDashboard }) {
+export default function CTASection({ userSession, onExplore, onEmergencyAccess, onSignUp, onOpenDemo, onQuickSign, onNavigateDashboard }) {
   const [ref, revealed] = useScrollReveal();
   const currentUser = userSession?.user || userSession;
 
@@ -65,14 +65,25 @@ export default function CTASection({ userSession, onExplore, onEmergencyAccess, 
                   <ArrowRight className="w-4 h-4 text-[#8B7355] group-hover:translate-x-0.5 transition-transform" />
                 </button>
               ) : (
-                <button
-                  type="button"
-                  onClick={onSignUp}
-                  className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all hover:-translate-y-0.5 active:scale-[0.99]"
-                >
-                  <UserPlus className="w-4 h-4 opacity-80" />
-                  <span>Create Official / Resident Account</span>
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={onSignUp}
+                    className="w-full sm:w-auto px-7 py-3.5 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-sm shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all hover:-translate-y-0.5 active:scale-[0.99]"
+                  >
+                    <Shield className="w-4 h-4 text-[#8B7355]" />
+                    <span>Officer Command Sign In</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={onOpenDemo}
+                    className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-[#FAF8F5] hover:bg-[#F2ECE2] border border-[#E2DAD0] hover:border-[#8B7355] text-[#1A1A1A] font-semibold text-sm shadow-2xs flex items-center justify-center gap-2 cursor-pointer transition-all hover:-translate-y-0.5 active:scale-[0.99]"
+                  >
+                    <Sparkles className="w-4 h-4 text-[#8B7355]" />
+                    <span>Demo Officer (1-Click)</span>
+                  </button>
+                </>
               )}
 
               <button

@@ -14,7 +14,10 @@ import {
   Compass, 
   Sparkles,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  User,
+  UserPlus,
+  CheckCircle2
 } from 'lucide-react';
 import { apiService } from '../utils/api';
 
@@ -26,6 +29,12 @@ export default function AppLogin({ onLogin }) {
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [phone, setPhone] = useState('');
+  
+  const [agentAuthMode, setAgentAuthMode] = useState('signin'); // 'signin' | 'signup'
+  const [agentName, setAgentName] = useState('');
+  const [agentRole, setAgentRole] = useState('NDRF');
+  const [agentDistrict, setAgentDistrict] = useState('Wayanad Sector 4');
+  const [successMsg, setSuccessMsg] = useState('');
   
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -124,6 +133,56 @@ export default function AppLogin({ onLogin }) {
       onLogin({ role: 'agent', email: email, token: res.token });
     } else {
       setError(res.error || res.message || 'Invalid 2FA Code.');
+    }
+  };
+
+  // --- AGENT SIGNUP FLOW ---
+  const handleAgentRegister = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccessMsg('');
+
+    if (!email || !password) {
+      return setError('Email and Password are required.');
+    }
+    if (!agentName.trim()) {
+      return setError('Please enter Officer Full Name & Rank.');
+    }
+
+    setLoading(true);
+    const regRes = await apiService.register({
+      userId: email.trim(),
+      fullName: agentName.trim(),
+      email: email.trim(),
+      phone: phone.trim() || undefined,
+      password: password,
+      role: agentRole,
+      district: agentDistrict || geoLoc.address || 'Wayanad Sector 4',
+      familyMembers: 1,
+      hasVulnerable: false
+    });
+    setLoading(false);
+
+    if (regRes.success) {
+      // Auto login or prompt with success
+      setSuccessMsg('Account registered successfully! Logging into tactical console...');
+      setLoading(true);
+      const loginRes = await apiService.login({ username: email.trim(), password, loginType: 'authority' });
+      setLoading(false);
+
+      if (loginRes.success) {
+        if (loginRes.requires2FA) {
+          setAgentAuthMode('signin');
+          setStep(2);
+        } else {
+          onLogin({ role: 'agent', email: email.trim(), user: loginRes.user || regRes.user, token: loginRes.token || regRes.token });
+        }
+      } else {
+        setAgentAuthMode('signin');
+        setSuccessMsg('Account registered in database! Please sign in with your credentials.');
+      }
+    } else {
+      setError(regRes.error || regRes.message || 'Registration failed. Check details and try again.');
     }
   };
 
@@ -271,36 +330,231 @@ export default function AppLogin({ onLogin }) {
             </div>
           </div>
         ) : role === 'agent' ? (
-          <form onSubmit={step === 1 ? handleAgentLoginStep1 : handleAgentLoginStep2} className="flex flex-col gap-3.5">
-            <button 
-              type="button"
-              onClick={() => { setRole(null); setStep(1); }}
-              className="text-xs text-[#5C544D] hover:text-[#1A1A1A] text-left mb-1 flex items-center gap-1.5 font-semibold cursor-pointer transition-colors"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 text-[#8B7355]" />
-              <span>Back to Role Selection</span>
-            </button>
+          <div>
+            {/* Top Navigation & Mode Switch */}
+            <div className="flex items-center justify-between mb-3">
+              <button 
+                type="button"
+                onClick={() => { setRole(null); setStep(1); setError(''); setSuccessMsg(''); }}
+                className="text-xs text-[#5C544D] hover:text-[#1A1A1A] flex items-center gap-1.5 font-semibold cursor-pointer transition-colors"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 text-[#8B7355]" />
+                <span>Role Selection</span>
+              </button>
 
+              <div className="inline-flex p-0.5 rounded-lg bg-[#F6F4F0] border border-[#E8E1D5]">
+                <button
+                  type="button"
+                  onClick={() => { setAgentAuthMode('signin'); setStep(1); setError(''); setSuccessMsg(''); }}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                    agentAuthMode === 'signin' 
+                      ? 'bg-[#2C2A29] text-white shadow-xs' 
+                      : 'text-[#5C544D] hover:text-[#1A1A1A]'
+                  }`}
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setAgentAuthMode('signup'); setError(''); setSuccessMsg(''); }}
+                  className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                    agentAuthMode === 'signup' 
+                      ? 'bg-[#2C2A29] text-white shadow-xs' 
+                      : 'text-[#5C544D] hover:text-[#1A1A1A]'
+                  }`}
+                >
+                  Sign Up
+                </button>
+              </div>
+            </div>
+
+            {/* Error Message */}
             {error && (
-              <div className="bg-[#FFF5F2] border border-[#FADED4] text-[#B85C38] text-xs font-medium p-3 rounded-xl flex items-center gap-2">
+              <div className="mb-3.5 bg-[#FFF5F2] border border-[#FADED4] text-[#B85C38] text-xs font-medium p-3 rounded-xl flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
             )}
 
-            {step === 1 ? (
-              <>
+            {/* Success Message */}
+            {successMsg && (
+              <div className="mb-3.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium p-3 rounded-xl flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span>{successMsg}</span>
+              </div>
+            )}
+
+            {agentAuthMode === 'signin' ? (
+              /* ================= OFFICER SIGN IN FORM ================= */
+              <form onSubmit={step === 1 ? handleAgentLoginStep1 : handleAgentLoginStep2} className="flex flex-col gap-3.5">
+                {step === 1 ? (
+                  <>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#5C544D] mb-1 uppercase tracking-wider">Officer Email / User ID</label>
+                      <div className="relative">
+                        <input 
+                          type="text" 
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pl-9 pr-3 py-2.5 text-xs focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs font-medium placeholder:text-[#A89F91]"
+                          placeholder="officer@ndrf.gov.in or ndrf_admin"
+                        />
+                        <Mail className="w-4 h-4 text-[#8B7355] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#5C544D] mb-1 uppercase tracking-wider">Passkey / Password</label>
+                      <div className="relative">
+                        <input 
+                          type="password" 
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pl-9 pr-3 py-2.5 text-xs focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs font-medium placeholder:text-[#A89F91]"
+                          placeholder="••••••••••••"
+                        />
+                        <Lock className="w-4 h-4 text-[#8B7355] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                      </div>
+                    </div>
+
+                    <button 
+                      type="submit" 
+                      disabled={loading}
+                      className="w-full mt-1 bg-[#2C2A29] hover:bg-[#1A1A1A] text-white font-bold py-3 rounded-xl transition-all uppercase text-xs tracking-wider disabled:opacity-50 shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Authenticating Officer...</span>
+                        </>
+                      ) : (
+                        <>
+                          <KeyRound className="w-4 h-4 text-[#8B7355]" />
+                          <span>Verify Credentials</span>
+                        </>
+                      )}
+                    </button>
+
+                    <div className="text-center pt-1">
+                      <button
+                        type="button"
+                        onClick={() => { setAgentAuthMode('signup'); setError(''); setSuccessMsg(''); }}
+                        className="text-xs text-[#8B7355] hover:text-[#1A1A1A] font-semibold transition-colors cursor-pointer"
+                      >
+                        New Officer? Create Officer Account
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="bg-amber-50 border border-amber-200 text-amber-800 font-medium text-xs p-3 rounded-xl flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
+                      <span>2FA verification required. An OTP has been sent to {email}.</span>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-[#5C544D] mb-1 uppercase tracking-wider">QuickSign 6-Digit Code</label>
+                      <input 
+                        type="text" 
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl p-3 text-sm focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs tracking-widest font-mono text-center font-bold"
+                        placeholder="000-000"
+                      />
+                    </div>
+                    <button 
+                      type="submit" 
+                      disabled={loading}
+                      className="w-full mt-1 bg-[#2C2A29] hover:bg-[#1A1A1A] text-white font-bold py-3 rounded-xl transition-all uppercase text-xs tracking-wider disabled:opacity-50 shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                    >
+                      {loading ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Verifying Token...</span>
+                        </>
+                      ) : (
+                        <>
+                          <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                          <span>Authenticate & Enter Hub</span>
+                        </>
+                      )}
+                    </button>
+                  </>
+                )}
+              </form>
+            ) : (
+              /* ================= OFFICER SIGN UP (CREATE ACCOUNT) FORM ================= */
+              <form onSubmit={handleAgentRegister} className="flex flex-col gap-3">
                 <div>
-                  <label className="block text-[11px] font-bold text-[#5C544D] mb-1 uppercase tracking-wider">Officer Email</label>
+                  <label className="block text-[11px] font-bold text-[#5C544D] mb-1 uppercase tracking-wider">Officer Full Name & Rank</label>
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      required
+                      value={agentName}
+                      onChange={(e) => setAgentName(e.target.value)}
+                      className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs font-medium placeholder:text-[#A89F91]"
+                      placeholder="e.g. Inspector Ramesh Kumar"
+                    />
+                    <User className="w-4 h-4 text-[#8B7355] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#5C544D] mb-1 uppercase tracking-wider">Official Email / Service ID</label>
                   <div className="relative">
                     <input 
                       type="email" 
+                      required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pl-9 pr-3 py-2.5 text-xs focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs font-medium placeholder:text-[#A89F91]"
-                      placeholder="officer@ndrf.gov.in"
+                      className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs font-medium placeholder:text-[#A89F91]"
+                      placeholder="officer.service@mha.gov.in"
                     />
                     <Mail className="w-4 h-4 text-[#8B7355] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#5C544D] mb-1 uppercase tracking-wider">Tactical Role</label>
+                    <select
+                      value={agentRole}
+                      onChange={(e) => setAgentRole(e.target.value)}
+                      className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl px-2.5 py-2 text-xs font-semibold focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs"
+                    >
+                      <option value="NDRF">NDRF Command</option>
+                      <option value="SDMA">SDMA Authority</option>
+                      <option value="POLICE">State Police</option>
+                      <option value="FIRE_RESCUE">Fire & Rescue</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-[#5C544D] mb-1 uppercase tracking-wider">Mobile Number</label>
+                    <div className="relative">
+                      <input 
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                        className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pl-8 pr-2 py-2 text-xs font-mono focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs placeholder:text-[#A89F91]"
+                        placeholder="9876543210"
+                      />
+                      <Phone className="w-3.5 h-3.5 text-[#8B7355] absolute left-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-[#5C544D] mb-1 uppercase tracking-wider">Assigned Sector / District</label>
+                  <div className="relative">
+                    <input 
+                      type="text" 
+                      value={agentDistrict}
+                      onChange={(e) => setAgentDistrict(e.target.value)}
+                      className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs font-medium placeholder:text-[#A89F91]"
+                      placeholder="Wayanad Sector 4"
+                    />
+                    <MapPin className="w-4 h-4 text-[#8B7355] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
                 </div>
 
@@ -309,10 +563,11 @@ export default function AppLogin({ onLogin }) {
                   <div className="relative">
                     <input 
                       type="password" 
+                      required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pl-9 pr-3 py-2.5 text-xs focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs font-medium placeholder:text-[#A89F91]"
-                      placeholder="••••••••••••"
+                      className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs font-medium placeholder:text-[#A89F91]"
+                      placeholder="Create secure passkey"
                     />
                     <Lock className="w-4 h-4 text-[#8B7355] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
                   </div>
@@ -321,57 +576,33 @@ export default function AppLogin({ onLogin }) {
                 <button 
                   type="submit" 
                   disabled={loading}
-                  className="w-full mt-2 bg-[#2C2A29] hover:bg-[#1A1A1A] text-white font-bold py-3 rounded-xl transition-all uppercase text-xs tracking-wider disabled:opacity-50 shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-95"
+                  className="w-full mt-1 bg-[#2C2A29] hover:bg-[#1A1A1A] text-white font-bold py-2.5 rounded-xl transition-all uppercase text-xs tracking-wider disabled:opacity-50 shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-95"
                 >
                   {loading ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Authenticating Officer...</span>
+                      <span>Registering Officer in Database...</span>
                     </>
                   ) : (
                     <>
-                      <KeyRound className="w-4 h-4 text-[#8B7355]" />
-                      <span>Verify Credentials</span>
+                      <UserPlus className="w-4 h-4 text-[#8B7355]" />
+                      <span>Create Account & Save To Database</span>
                     </>
                   )}
                 </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-amber-50 border border-amber-200 text-amber-800 font-medium text-xs p-3 rounded-xl flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>2FA verification required. An OTP has been sent to {email}.</span>
+
+                <div className="text-center pt-0.5">
+                  <button
+                    type="button"
+                    onClick={() => { setAgentAuthMode('signin'); setError(''); setSuccessMsg(''); }}
+                    className="text-xs text-[#8B7355] hover:text-[#1A1A1A] font-semibold transition-colors cursor-pointer"
+                  >
+                    Already registered? Sign In
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-[11px] font-bold text-[#5C544D] mb-1 uppercase tracking-wider">QuickSign 6-Digit Code</label>
-                  <input 
-                    type="text" 
-                    value={otp}
-                    onChange={(e) => setOtp(e.target.value)}
-                    className="w-full bg-white border border-[#E8E1D5] text-[#1A1A1A] rounded-xl p-3 text-sm focus:outline-none focus:border-[#8B7355] transition-all shadow-2xs tracking-widest font-mono text-center font-bold"
-                    placeholder="000-000"
-                  />
-                </div>
-                <button 
-                  type="submit" 
-                  disabled={loading}
-                  className="w-full mt-2 bg-[#2C2A29] hover:bg-[#1A1A1A] text-white font-bold py-3 rounded-xl transition-all uppercase text-xs tracking-wider disabled:opacity-50 shadow-xs hover:shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-95"
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Verifying Token...</span>
-                    </>
-                  ) : (
-                    <>
-                      <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                      <span>Authenticate & Enter Hub</span>
-                    </>
-                  )}
-                </button>
-              </>
+              </form>
             )}
-          </form>
+          </div>
         ) : (
           <form onSubmit={handleUserLogin} className="flex flex-col gap-3.5">
             <button 

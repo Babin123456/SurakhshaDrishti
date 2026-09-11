@@ -72,7 +72,7 @@ export default function HeroSection({ onExplore, onEmergencyAccess, onSelectZone
                 className="flex-1 px-6 py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-xs sm:text-sm tracking-wide shadow-lg shadow-red-950/70 transition-all flex items-center justify-center gap-2.5 cursor-pointer btn-bottom-glow-red hover:-translate-y-0.5"
               >
                 <Zap className="w-4 h-4 text-amber-300 animate-pulse" />
-                <span>Emergency Resident SOS</span>
+                <span>Emergency Tactical SOS</span>
               </button>
             </div>
 

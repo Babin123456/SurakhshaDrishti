@@ -198,5 +198,34 @@ export const apiService = {
       console.error("Failed to fetch zones:", e);
       return { success: false, zones: [] };
     }
+  },
+
+  updateCredentials: async ({ userId, currentPassword, newPassword, fullName, email, phone, role }) => {
+    try {
+      const token = localStorage.getItem('suraksha_user_session')
+        ? JSON.parse(localStorage.getItem('suraksha_user_session')).token
+        : null;
+
+      const response = await fetch(`${API_BASE_URL}/profile/credentials`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({
+          userId,
+          currentPassword,
+          newPassword,
+          fullName,
+          email,
+          phone,
+          role
+        }),
+      });
+      return await response.json();
+    } catch (e) {
+      console.warn("Profile update fetch error, falling back locally:", e);
+      return { success: false, error: "Network error connecting to authentication server." };
+    }
   }
 };
