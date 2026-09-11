@@ -19,6 +19,18 @@
       "district": "Wayanad, Kerala"
     },
     {
+      "user_id": "officer_vikram_singh",
+      "email": "vikram.singh@ndrf.gov.in",
+      "password": "$2b$10$1UCgX1Azd1f03BhesExeLed7LCNxU145/px7d0DM4.UbzNokgZFHC",
+      "full_name": "Commander Vikram Singh",
+      "phone": "9876501234",
+      "user_role": "NDRF",
+      "district": "Wayanad Sector 4",
+      "family_members": 1,
+      "has_vulnerable": false,
+      "created_at": "2026-09-11T16:47:18.993Z"
+    },
+    {
       "user_id": "9433087827@suraksha.local",
       "email": "9433087827@suraksha.local",
       "password": "$2b$10$XFwNfOLZ945/jd.rHDmf1.7ZB1pIxWcCP.Avo6SfhcpkKHZDL4QMy",

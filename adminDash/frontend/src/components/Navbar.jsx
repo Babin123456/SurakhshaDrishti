@@ -22,6 +22,7 @@ export default function Navbar({
   onSignIn, 
   onSignUp, 
   onEmergencyAccess,
+  onOpenDemo,
   userSession,
   onNavigateDashboard,
   onNavigateProfile,
@@ -153,6 +154,18 @@ export default function Navbar({
               <AlertTriangle className="w-3.5 h-3.5" />
               <span>SOS</span>
             </button>
+
+            {!userSession && (
+              <button
+                type="button"
+                onClick={onOpenDemo}
+                className="px-3 py-1.5 rounded-full bg-[#FAF8F5] hover:bg-[#F0EBE3] border border-[#E2DAD0] hover:border-[#8B7355] text-[#1A1A1A] font-semibold text-xs transition-all flex items-center gap-1.5 cursor-pointer shadow-2xs hover:-translate-y-0.5"
+                title="1-Click Demo Officer Access"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#8B7355]" />
+                <span>Demo Access</span>
+              </button>
+            )}
 
             {userSession ? (
               <div className="flex items-center gap-1.5">
@@ -311,7 +324,7 @@ export default function Navbar({
                     ) : (
                       <User className="w-3.5 h-3.5 text-[#8B7355]" />
                     )}
-                    <span>User Profile</span>
+                    <span>Officer Profile</span>
                   </button>
 
                   <button
@@ -323,13 +336,23 @@ export default function Navbar({
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={() => { setIsMobileOpen(false); onSignIn(); }}
-                  className="w-full py-3 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm"
-                >
-                  <Users className="w-3.5 h-3.5 opacity-80" />
-                  <span>Authorized Sign In</span>
-                </button>
+                <>
+                  <button
+                    onClick={() => { setIsMobileOpen(false); onOpenDemo(); }}
+                    className="w-full py-2.5 rounded-2xl bg-[#FAF8F5] hover:bg-[#F0EBE3] border border-[#E2DAD0] text-[#1A1A1A] font-semibold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-2xs"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-[#8B7355]" />
+                    <span>Demo Officer Access (1-Click)</span>
+                  </button>
+
+                  <button
+                    onClick={() => { setIsMobileOpen(false); onSignIn(); }}
+                    className="w-full py-3 rounded-2xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-semibold text-xs flex items-center justify-center gap-2 active:scale-[0.98] transition-all shadow-sm"
+                  >
+                    <Users className="w-3.5 h-3.5 opacity-80" />
+                    <span>Official Officer Sign In</span>
+                  </button>
+                </>
               )}
             </div>
           </div>

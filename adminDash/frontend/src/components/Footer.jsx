@@ -110,7 +110,10 @@ export default function Footer({ onReplayIntro }) {
 
           {/* Right Column: Live System Status & Interactive Back-To-Top Radar Beacon */}
           <div className="flex items-center justify-center md:justify-end gap-3 text-xs text-[#5C544D]">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 border border-[#E8E1D5] shadow-2xs">
+            <div 
+              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/60 border border-[#E8E1D5] shadow-2xs cursor-help"
+              title="Global standard coordinates (WGS84 GPS) are active and tracking"
+            >
               <span className="w-2 h-2 rounded-full bg-[#2D7A4F] animate-pulse"></span>
               <span className="text-[#4A4238] font-bold font-mono text-[10px] sm:text-[11px] tracking-wider">
                 SYSTEM ACTIVE • WGS84
@@ -122,7 +125,7 @@ export default function Footer({ onReplayIntro }) {
               type="button"
               onClick={handleScrollToTop}
               className="group relative p-2 rounded-full bg-white hover:bg-[#2C2A29] border border-[#E8E1D5] hover:border-[#2C2A29] text-[#5C544D] hover:text-[#FDFBF7] transition-all duration-300 shadow-xs hover:shadow-md hover:-translate-y-0.5 active:scale-95 cursor-pointer flex items-center justify-center"
-              title="Return to Peak Position"
+              title="Return to Top"
               aria-label="Back to top"
             >
               {/* Subtle radar sweep ring on hover */}
@@ -147,7 +150,7 @@ export default function Footer({ onReplayIntro }) {
         {/* Row 2: Monumental Typography "SURAKSHADRISHTI" - Stable Letters with Smooth Theme Color Reveal on Hover */}
         <div className="pt-2 pb-4 text-center select-none overflow-hidden">
           <p className="text-[10px] font-mono tracking-[0.35em] text-[#8C847A] uppercase mb-5 opacity-75">
-            National Red Zone Defense Matrix
+            Multi-Hazard Disaster Warning & Safe Relocation System
           </p>
 
           <div className="flex flex-nowrap justify-between items-center w-full max-w-6xl mx-auto px-2 font-serif">

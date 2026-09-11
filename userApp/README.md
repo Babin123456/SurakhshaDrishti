@@ -56,16 +56,19 @@ flowchart TD
 ## 2. Core Working Principles
 
 ### 2.1 Civilian Proximity & Blast Radius Monitoring
+
 - **Automated Geofencing:** Computes the Haversine distance between the user's detected coordinates and all active disaster perimeters (`ACTIVE_RED_ZONE` / `ACTIVE_WARNING_ZONE`).
 - **Targeted Perimeter Filter:** Only renders active red zone danger buffers if the citizen is physically within the hazard radius, preventing panic in unaffected sectors.
 - **Relief Hub Resolution:** Queries the backend dynamic shelter service (`/api/zones/shelters/dynamic`) to retrieve verified camps and high-capacity fallback centers (schools, hospitals) within reach.
 
 ### 2.2 Dynamic Evacuation Corridors (OSRM Engine)
+
 - **Street-Level Polyline Generation:** Uses the Open Source Routing Machine (OSRM) driving API to plot actionable road routes from the user's location to the designated Relief Hub.
 - **Failover Vector Fallback:** If external network routing is constrained or offline, gracefully draws a high-visibility direct evacuation corridor vector.
 - **Camera Interpolation:** Smooth `flyToBounds` easing (1.8s, `easeLinearity: 0.25`) automatically aligns the viewport along the full path when switching hubs.
 
 ### 2.3 Standalone Emergency Warning Window & Siren
+
 - **Dedicated Electron BrowserWindow:** Employs an independent, frameless, always-on-top window spawned via IPC (`trigger-alert`).
 - **Web Audio API Siren:** Synthesizes an emergency civil defense siren tone (`800Hz <-> 600Hz` square-wave oscillation) directly through hardware speakers without relying on external audio assets.
 - **Safe Teardown:** Closes cleanly upon citizen acknowledgment via `acknowledge-alert` IPC.
@@ -74,7 +77,7 @@ flowchart TD
 
 ## 3. Directory Structure
 
-```
+```text
 userApp/
 ├── backend/
 │   ├── main.cjs            # Electron main process (window management, IPC handlers)

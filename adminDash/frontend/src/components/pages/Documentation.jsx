@@ -20,42 +20,42 @@ const DOCS_SECTIONS = [
     title: '1. Platform Overview',
     icon: Terminal,
     tag: 'SIH 26191',
-    description: 'Executive summary, problem statement context (SIH 26191), and key objectives for NDRF and State Disaster Management Authorities.'
+    description: 'System goals, problem statement overview (SIH 26191), and core capabilities for NDRF and State Disaster Management Authorities.'
   },
   {
     id: 'gis-engine',
-    title: '2. Open GIS Spatial Engine',
+    title: '2. Open GIS Map Engine',
     icon: Layers,
     tag: 'ZERO KEYS',
-    description: 'Leaflet.js mapping pipeline, zero Google API key architecture, OSM/CARTO/Esri tile services, and vector GeoJSON processing.'
+    description: 'Interactive Leaflet map setup, zero Google Maps API billing, open map layers (OSM, CARTO, Esri), and hazard boundaries.'
   },
   {
     id: 'ai-models',
-    title: '3. Multi-Hazard AI Pipeline',
+    title: '3. Hazard Detection AI',
     icon: Cpu,
-    tag: 'ML ENSEMBLE',
-    description: '4-stage machine learning architecture, slope instability, DEM digital elevation extraction, and carrying-capacity modeling.'
+    tag: 'PREDICTIVE AI',
+    description: 'Multi-factor hazard prediction using slope steepness, rainfall forecasts, soil moisture, and safe relocation shelter capacity.'
   },
   {
     id: 'mesh-protocol',
-    title: '4. GSM 3.4 Resilient Relay',
+    title: '4. Offline Fallback & Alerts',
     icon: Network,
-    tag: 'HARDWARE MESH',
-    description: 'Low-bandwidth cellular broadcast protocols, 160-character binary SMS frames, and LoRaWAN physical SOS node bridging.'
+    tag: 'EMERGENCY RELAY',
+    description: 'Low-bandwidth cellular alert relays, compact SMS coordinate broadcasts, and backup communication during network outages.'
   },
   {
     id: 'quicksign',
-    title: '5. QuickSign Pass & Security',
+    title: '5. QuickPass & Account Security',
     icon: ShieldCheck,
-    tag: 'E2EE AES-256',
-    description: '30-second citizen emergency pass generation, AES-256-GCM encryption, Ed25519 signatures, and RBAC official clearance levels.'
+    tag: 'DATA SECURITY',
+    description: '30-second resident evacuation pass generation, encrypted credentials, two-factor verification, and role-based officer access.'
   },
   {
     id: 'api-reference',
-    title: '6. REST API & Webhooks',
+    title: '6. Reports & Data Export',
     icon: Database,
-    tag: 'REST / OAS 3',
-    description: 'Express.js backend endpoints, NDMA portal webhook integration, GeoJSON shapefile export schemas, and incident logs.'
+    tag: 'EXPORT & API',
+    description: 'Backend services, hazard zone shapefile exports, CSV habitant rosters, PDF summaries, and disaster authority data exchange.'
   }
 ];
 

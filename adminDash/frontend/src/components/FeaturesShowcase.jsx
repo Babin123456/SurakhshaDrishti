@@ -59,13 +59,13 @@ const FEATURES = [
     num: '04',
     icon: Users,
     image: '/feature_dual_roles.webp',
-    title: 'Dual-Role Console',
-    tagline: 'Citizen SOS & Commander HUD',
-    description: 'Instant resident evacuation passes paired with incident commander GIS layer manipulation and consensus resolution.',
+    title: 'Command Console',
+    tagline: 'Multi-Agency Authority HUD',
+    description: 'Unified incident commander GIS layer manipulation, consensus resolution voting, and real-time field battalion coordination.',
     color: 'text-[#2D7A4F]',
     glowColor: 'rgba(45, 122, 79, 0.12)',
     badge: 'RBAC Security',
-    spec: 'Dynamic 30-Sec Emergency Pass'
+    spec: 'NDRF & SDMA Multi-Agency RBAC'
   },
   {
     id: 'carrying-capacity',

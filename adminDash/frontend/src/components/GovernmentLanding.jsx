@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import Interactive3DCard from './Interactive3DCard';
 
-export default function GovernmentLanding({ onSignIn, onEmergencyAccess, userSession }) {
+export default function GovernmentLanding({ onSignIn, onEmergencyAccess, onOpenDemo, userSession }) {
   const [mounted, setMounted] = useState(false);
   const currentUser = userSession?.user || userSession;
   const userPhoto = currentUser?.profile_picture || currentUser?.avatar || (typeof window !== 'undefined' ? localStorage.getItem('suraksha_user_pfp') : null);
@@ -85,21 +85,19 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess, userSes
               AI decision support engine fusing multi-satellite telemetry and geohash carrying capacity for disaster mitigation.
             </p>
 
-            {/* Dual Action Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+            {/* Dual Information Feature Cards (Hover Effect Only) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 select-none">
               
-              {/* Command Console */}
+              {/* Command Console Box */}
               <div 
-                onClick={onSignIn}
-                className="p-5 rounded-2xl bg-white/70 backdrop-blur-xl border border-[#E8E1D5] hover:border-[#8B7355] hover:bg-white transition-all duration-300 group/box cursor-pointer flex flex-col justify-between shadow-xs hover:-translate-y-1"
+                className="p-5 rounded-2xl bg-white/70 backdrop-blur-xl border border-[#E8E1D5] hover:border-[#8B7355] hover:bg-white transition-all duration-300 group/box flex flex-col justify-between shadow-xs hover:-translate-y-1"
               >
                 <div>
                   <div className="w-10 h-10 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-center text-[#4A4238] mb-3 group-hover/box:bg-[#2C2A29] group-hover/box:text-white transition-colors shadow-xs">
                     <Lock className="w-5 h-5" />
                   </div>
-                  <h3 className="text-sm font-bold text-[#1A1A1A] mb-1 flex items-center gap-1.5">
+                  <h3 className="text-sm font-bold text-[#1A1A1A] mb-1">
                     {currentUser ? (currentUser.fullName || currentUser.name || 'Command Console') : 'Command Console'}
-                    <ChevronRight className="w-3.5 h-3.5 text-[#8B7355] opacity-0 group-hover/box:opacity-100 group-hover/box:translate-x-1 transition-all" />
                   </h3>
                   <p className="text-[11px] text-[#5C544D] leading-relaxed">
                     {currentUser ? `Active Tactical Session • Department: ${currentUser.role || 'NDRF'}` : 'Tactical console for NDRF commanders and SDMA authorities.'}
@@ -111,26 +109,24 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess, userSes
                 </div>
               </div>
 
-              {/* Civilian Evacuation SOS */}
+              {/* Critical Incident Relay Box */}
               <div 
-                onClick={onEmergencyAccess}
-                className="p-5 rounded-2xl bg-[#FFF5F2]/80 backdrop-blur-xl border border-[#FADED4] hover:border-[#B85C38] hover:bg-white transition-all duration-300 group/box cursor-pointer flex flex-col justify-between shadow-xs hover:-translate-y-1"
+                className="p-5 rounded-2xl bg-[#FFF5F2]/80 backdrop-blur-xl border border-[#FADED4] hover:border-[#B85C38] hover:bg-white transition-all duration-300 group/box flex flex-col justify-between shadow-xs hover:-translate-y-1"
               >
                 <div>
                   <div className="w-10 h-10 rounded-xl bg-white border border-[#FADED4] flex items-center justify-center text-[#B85C38] mb-3 group-hover/box:bg-[#B85C38] group-hover/box:text-white transition-colors shadow-xs">
                     <AlertTriangle className="w-5 h-5" />
                   </div>
-                  <h3 className="text-sm font-bold text-[#1A1A1A] mb-1 flex items-center gap-1.5">
-                    Civilian Evacuation SOS
-                    <ChevronRight className="w-3.5 h-3.5 text-[#B85C38] opacity-0 group-hover/box:opacity-100 group-hover/box:translate-x-1 transition-all" />
+                  <h3 className="text-sm font-bold text-[#1A1A1A] mb-1">
+                    Critical Incident Relay
                   </h3>
                   <p className="text-[11px] text-[#5C544D] leading-relaxed">
-                    Instant 30-sec emergency pass with offline shelter routing.
+                    Broadcast multi-hazard perimeter red zones and coordinate field battalions.
                   </p>
                 </div>
                 <div className="mt-3 pt-2 border-t border-[#FADED4] flex items-center justify-between text-[10px] font-mono text-[#8C847A]">
-                  <span>RESIDENT EMERGENCY</span>
-                  <span className="font-bold text-[#B85C38]">ONE-TAP PASS</span>
+                  <span>TACTICAL ALERT</span>
+                  <span className="font-bold text-[#B85C38]">PRIORITY RELAY</span>
                 </div>
               </div>
             </div>
@@ -150,9 +146,20 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess, userSes
                 ) : (
                   <Users className="w-4 h-4 opacity-80 shrink-0" />
                 )}
-                <span>{currentUser ? 'Enter Command Console' : 'Authorized Sign In'}</span>
+                <span>{currentUser ? 'Enter Command Console' : 'Officer Sign In'}</span>
                 <ArrowRight className="w-4 h-4 text-[#8B7355] group-hover:translate-x-0.5 transition-transform shrink-0" />
               </button>
+
+              {!currentUser && (
+                <button
+                  onClick={onOpenDemo}
+                  className="w-full sm:w-auto px-6 py-3.5 bg-[#FAF8F5] hover:bg-[#F2ECE2] border border-[#E2DAD0] hover:border-[#8B7355] text-[#1A1A1A] rounded-2xl font-semibold text-sm transition-all duration-300 shadow-2xs flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:scale-[0.99] whitespace-nowrap"
+                  title="Test using predefined officer accounts"
+                >
+                  <Sparkles className="w-4 h-4 text-[#8B7355] shrink-0" />
+                  <span>Demo Officer (1-Click)</span>
+                </button>
+              )}
               
               <button 
                 onClick={onEmergencyAccess}

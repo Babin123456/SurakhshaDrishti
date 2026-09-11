@@ -19,54 +19,104 @@ import {
 
 const FAQS_DATA = [
   {
-    category: '1. General & Architecture',
-    q: 'What is SurakshaDrishti and what challenge does it solve for NDRF / SDMA?',
-    a: 'SurakshaDrishti is an AI-driven multi-hazard decision support platform built for Smart India Hackathon (SIH Problem 26191). It automates the detection of high-risk red zones (landslides, flash floods, subsidence), models the spatial carrying capacity of alternate relocation sites, and prioritizes habitations for rapid, structured evacuation.'
+    category: '1. What is SurakshaDrishti?',
+    q: 'What is SurakshaDrishti and what problem does it solve?',
+    a: 'SurakshaDrishti is an intelligent disaster management platform created for Smart India Hackathon (Problem Statement 26191). It predicts natural hazard red zones such as landslides and flash floods, finds safe relocation centers with enough capacity, and guides citizens to safety without confusion.'
   },
   {
-    category: '2. Open GIS Map Engine',
-    q: 'Why does the GIS interactive map not require any Google Maps API Key or billing account?',
-    a: 'The GIS engine is engineered natively on Leaflet.js with public, open tile layers (OpenStreetMap, CARTO Dark Matter, and Esri World Imagery). It requires ZERO proprietary API keys or paid billing accounts, ensuring 100% free, uninterrupted uptime for emergency response battalions in high-stress disaster situations.'
+    category: '2. Difference Between Citizen and Officer Apps',
+    q: 'What is the difference between the Admin Portal and the Citizen App?',
+    a: 'The Admin Portal (Command Console) is used exclusively by disaster response authorities like NDRF and SDMA to monitor active hazard zones, manage resources, and coordinate rescue teams. The Citizen App (userApp) is designed for residents to view hazard alerts, request emergency assistance, and follow safe evacuation routes.'
   },
   {
-    category: '3. Hazard Detection AI',
-    q: 'Which machine learning models are used to calculate the Hazard Threat Score (0–100)?',
-    a: 'We synthesize Digital Elevation Models (DEM slope steepness), real-time IMD precipitation radars, Soil Moisture Active Passive (SMAP) saturation metrics, and historical landslide catalogs via an ensemble Random Forest & XGBoost model to generate normalized hazard indices for each geographical cluster.'
+    category: '3. Map & Navigation Without Paid APIs',
+    q: 'Why does the map work without any Google Maps API keys or paid billing?',
+    a: 'The entire interactive map runs on Leaflet.js using high-quality open map layers (OpenStreetMap, CARTO, and Esri). It does not require any paid Google API key or credit card billing, guaranteeing 100% free and uninterrupted availability during public emergencies.'
   },
   {
-    category: '4. Cellular Mesh & Fallbacks',
-    q: 'How does the emergency alert system function when broadband internet and power grids collapse?',
-    a: 'We implement a low-bandwidth GSM 3.4 cellular broadcast and SMS relay protocol. If data networks go down, compressed 160-character binary SMS frames carrying vital geohash coordinates and evacuation routes are relayed across surviving base transceiver stations.'
+    category: '4. Red Zone Detection Logic',
+    q: 'How does the system detect and mark high-risk Red Zones?',
+    a: 'The platform analyzes slope steepness from Digital Elevation Models, real-time rainfall data, soil moisture levels, and past disaster records. When combined risk factors cross safe thresholds, the area is automatically highlighted on the map with a clear danger radius and evacuation recommendation.'
   },
   {
-    category: '5. QuickSign Emergency Pass',
-    q: 'What is QuickSign and how do residents generate an emergency evacuation pass in 30 seconds?',
-    a: 'QuickSign is a streamlined, one-tap resident safety pass for citizens inside hazard zones. By capturing GPS coordinates or geohashes without requiring lengthy registration forms, it instantly issues an encrypted digital badge displaying designated shelter names, offline corridor waypoints, and family head counts.'
+    category: '5. Working When Internet Fails',
+    q: 'How does the system help people if mobile internet and power lines go down?',
+    a: 'Once a user opens their route or downloads their pass, key map waypoints and shelter locations are stored directly on their device. In addition, the system supports emergency SMS alerts that carry short coordinate codes over standard cellular networks without requiring 4G/5G data.'
   },
   {
-    category: '6. Carrying Capacity Allocation',
-    q: 'How does the carrying-capacity algorithm prevent overcrowding and transit bottlenecks?',
-    a: 'The system computes dynamic carrying capacities by cross-referencing available shelter beds, medical provisions, potable water reserves, and road width constraints. Evacuees from high-risk habitations are automatically load-balanced across multiple safe hubs (e.g. Nilambur vs. Pipalkoti) to avoid single-point transit congestion.'
+    category: '6. QuickSign 30-Second Pass',
+    q: 'What is QuickSign and how does an affected resident use it in an emergency?',
+    a: 'During a sudden disaster, people do not have time to fill long sign-up forms. QuickSign lets a resident generate an instant digital safety pass in just 30 seconds using their phone or GPS location. The pass immediately assigns their designated safe shelter and shows the nearest evacuation route.'
   },
   {
-    category: '7. Geospatial Geohashes',
-    q: 'What is the purpose of the 8-character GeoHash codes (e.g., #tdv2n19z) displayed on the HUD?',
-    a: 'GeoHashes provide hierarchical spatial indexing that allows commanders to rapidly query, filter, and transmit bounding coordinates over low-bandwidth radios without transmitting bulky floating-point latitude and longitude strings.'
+    category: '7. Safe Shelter Balancing',
+    q: 'How does the platform ensure relief shelters do not get overcrowded?',
+    a: 'The platform dynamically calculates the carrying capacity of each shelter, factoring in beds, medical facilities, clean water supplies, and road width. If one shelter reaches full capacity, incoming evacuees are smoothly redirected to the next nearest safe facility.'
   },
   {
-    category: '8. Privacy & Cryptography',
-    q: 'How is citizen privacy and GPS telemetry protected during disaster operations?',
-    a: 'All citizen coordinates and family records are encrypted with AES-256-GCM. Public viewports only render aggregated risk polygons and geohash clusters, ensuring individual dwelling privacy while delivering macro-level tactical clarity to disaster commanders.'
+    category: '8. Privacy & Personal Data',
+    q: 'Is citizen and officer data kept private and secure?',
+    a: 'Yes. All personal contact details, passwords, and location traces are securely encrypted. Individual private homes are never displayed publicly; only high-level hazard zones and rescue coordination points are shown to commanders.'
   },
   {
-    category: '9. Integration with State Authorities',
-    q: 'Can District Magistrates and SDMAs export relocation matrices and GIS layers?',
-    a: 'Yes. The Command Console includes one-click export modules for GeoJSON shapefiles, CSV habitant rosters, PDF executive briefing dossiers, and automated REST webhooks compatible with NDMA portal standards.'
+    category: '9. Officer Account Security & Password Changes',
+    q: 'How are officer accounts protected when updating emails, phone numbers, or passwords?',
+    a: 'Officer profiles require two-factor authorization for contact updates: a verification code is dispatched before any change is applied. When changing passwords, the officer must verify their current password, and once updated, the old password is immediately invalidated across all sessions.'
   },
   {
-    category: '10. Hardware SOS Device Compatibility',
-    q: 'Can physical IoT beacon nodes and SOS field radios connect to the platform?',
-    a: 'Yes. SurakshaDrishti exposes an open hardware bridge that ingests telemetry from LoRaWAN field beacons, ESP32 microcontrollers, and satellite GPS trackers deployed along mountain ridges and river basins.'
+    category: '10. Who Coordinates the Disaster Response?',
+    q: 'How do multiple disaster agencies (NDRF, SDMA, Police, Fire Services) coordinate?',
+    a: 'All verified agencies log into a unified tactical view. Major decisions, such as closing a red zone after danger passes, use consensus verification where participating commanders confirm the ground situation is stable.'
+  },
+  {
+    category: '11. Compatibility with Hardware Sensors',
+    q: 'Can physical IoT sensors and field beacons connect to SurakshaDrishti?',
+    a: 'Yes. The system is built with open connection interfaces that can receive live telemetry from rain gauges, soil tilt sensors, and battery-powered LoRa emergency beacons placed in remote mountain valleys.'
+  },
+  {
+    category: '12. Real-Time Updates & Exports',
+    q: 'Can district administrators export reports and maps for field teams?',
+    a: 'Yes. District authorities can export incident rosters, shelter occupancy tables, and GIS map layers in standard formats (CSV, PDF summary reports, and GeoJSON files) for immediate printing or dispatch to field teams.'
+  },
+  {
+    category: '13. How Far in Advance Are Warnings Issued?',
+    q: 'What is the typical lead time for landslide and flash flood early warnings?',
+    a: 'By continuously tracking IMD weather forecasts and soil saturation trends, the platform detects rising instability 6 to 24 hours in advance. This gives response teams valuable time to alert families and organize transport before roads become blocked.'
+  },
+  {
+    category: '14. Preventing False Alarms',
+    q: 'How does the platform avoid triggering panic or false alarms?',
+    a: 'The system uses a multi-factor confirmation process. An alert is not triggered by high rainfall alone; it requires matching ground indicators such as high slope angle and critical soil moisture saturation before designating a zone as high-risk.'
+  },
+  {
+    category: '15. Family Grouping & Vulnerable Individuals',
+    q: 'How does the evacuation plan support elderly citizens, infants, and patients?',
+    a: 'When residents register or use QuickSign, they can mark vulnerable family members. The system flags these households on the commanders desk so rescue battalions can prioritize them with specialized transport and medical shelters.'
+  },
+  {
+    category: '16. Evacuation Route Safety',
+    q: 'Does the system guarantee that evacuation paths do not cross another active hazard?',
+    a: 'Yes. The route calculation engine constantly checks active red zones and automatically directs evacuees away from bridges or valleys that are in flood or landslide paths, choosing higher ground roads whenever available.'
+  },
+  {
+    category: '17. Device & Battery Requirements',
+    q: 'Can citizens use the system on low-end smartphones or with poor battery life?',
+    a: 'Yes. The citizen interface is lightweight, requires minimal battery and data, and works smoothly on standard budget Android smartphones as well as desktop browsers without needing high-end graphics.'
+  },
+  {
+    category: '18. What Does WGS84 GPS Mean in the Footer?',
+    q: 'What does the "SYSTEM ACTIVE • WGS84" badge in the footer mean?',
+    a: 'WGS84 (World Geodetic System 1984) is the global standard coordinate system used by GPS satellites, defense agencies, and aviation. The badge confirms that all map markers, shelter points, and rescue coordinates adhere to standard global coordinates without distortion.'
+  },
+  {
+    category: '19. Working with Local Volunteers and NGOs',
+    q: 'Can civil defense volunteers and relief NGOs use this platform?',
+    a: 'Yes. Authorized relief volunteers and non-governmental aid groups can receive real-time shelter supply requirements (such as food, warm blankets, and medical kits) so aid reaches exactly where relief capacity is needed most.'
+  },
+  {
+    category: '20. Scalability Across Different States',
+    q: 'Can SurakshaDrishti be expanded to other disaster-prone states in India?',
+    a: 'Yes. The architecture is modular and scalable. It is designed to work for Himalayan mountain landslides in Uttarakhand and Himachal Pradesh, coastal cyclone alerts in Odisha, and river flood plains across Kerala and Assam with zero core software changes.'
   }
 ];
 

@@ -47,13 +47,17 @@
 **SurakshaDrishti** is split into two physically distinct operating platforms to separate Central Authority commands from field operations.
 
 ### 1. `adminDash` (The Central Command Server & Dashboard)
-The `adminDash` directory contains the core intelligence of the system. 
+
+The `adminDash` directory contains the core intelligence of the system.
+
 - **The Backend (`adminDash/backend`)**: An Express.js & Socket.io server that powers the entire ecosystem. It connects to the Supabase PostgreSQL database, handles OTP and 2FA authentication logic, tracks global telemetry, and processes O(1) map locatives.
 - **The Web Dashboard (`adminDash/frontend`)**: A React/Vite web platform locked down exclusively for Central Command Desk Access (NDRF / SDMA). It provides a bird's-eye tactical GIS view of all active red zones and allows inter-agency consensus voting.
 
 ### 2. `userApp` (The Field Officer & Civilian Client App)
+
 The `userApp` directory contains a native Electron Desktop/Mobile application used by people physically on the ground.
-- It connects remotely to the `adminDash` backend. 
+
+- It connects remotely to the `adminDash` backend.
 - **Citizen Access**: Civilians log in with an instant QuickSign OTP, which automatically geolocates their IP/GPS and assigns them an immediate evacuation route or safe shelter.
 - **Field Officer Access**: Ground battalions log in securely using a 2-Step Email/Password + OTP flow to access the tactical GIS HUD and secure End-to-End Encrypted (E2EE) chat relay.
 
@@ -76,22 +80,26 @@ The `userApp` directory contains a native Electron Desktop/Mobile application us
 ## Core System Capabilities
 
 ### Central Command Console (NDRF / SDMA)
-* **16-Digit Cryptographic Zone Passkeys**: Each active red zone generates an isolated 16-character access key required for authorized battalion officers to join incident dispatch.
-* **Inter-Agency Consensus Voting**: Red Zones transition to "Situation Controlled" only when all assigned multi-agency commanders cast an authenticated consensus vote.
-* **Multi-Layer Tactical GIS HUD**: Open-source GIS rendering (OpenStreetMap, CARTO Dark, Esri Satellite) plotting red hazard perimeters alongside real-time civilian SOS coordinates.
+
+- **16-Digit Cryptographic Zone Passkeys**: Each active red zone generates an isolated 16-character access key required for authorized battalion officers to join incident dispatch.
+- **Inter-Agency Consensus Voting**: Red Zones transition to "Situation Controlled" only when all assigned multi-agency commanders cast an authenticated consensus vote.
+- **Multi-Layer Tactical GIS HUD**: Open-source GIS rendering (OpenStreetMap, CARTO Dark, Esri Satellite) plotting red hazard perimeters alongside real-time civilian SOS coordinates.
+- **Officer Profile 2FA & Credential Security**: Official contact changes (email, mobile phone) require two-factor clearance codes dispatched to the registered address before updating. Password modifications strictly enforce current password validation, length matching, and real-time credential synchronization across all active sessions.
 
 ### Resident Emergency & Evacuation Ecosystem
-* **QuickSign 30-Second Emergency Pass**: Generates authenticated digital evacuation passes instantly without standard 2FA bottlenecks during landslides or flash floods.
-* **Multi-Strategy GPS Cascade**: Location detection uses a 3-tier fallback: Browser GPS → HTTPS IP Geolocation → Hardcoded default. This ensures the app works on phones (with GPS), laptops (via IP), and even air-gapped devices.
-* **Red Zone Alarm System**: When the server detects that a user's coordinates fall inside a Red Zone circle (Haversine distance ≤ zone radius), it pushes a persistent Electron alert overlay with evacuation coordinates. The alert cannot be dismissed without acknowledgment.
-* **H3 Geohash Pathfinding**: Evacuation routes are computed using Uber's H3 hexagonal grid. The backend sends the user a list of safehouse coordinates, and the app resolves an offline-capable path using H3 cell adjacency — no GPS required during transit, only the initial fix.
-* **Dynamic Shelter Carrying Capacity**: Multi-objective spatial algorithms allocate residents across safe sites to avoid road bottlenecks or overloaded relief camps.
-* **8-Character Spatial Geohashing**: Sub-meter resolution indexing (`#tdv2n19z`) for instant hazard evaluation across millions of coordinates.
-* **GSM 3.4 Offline Telemetry** *(planned)*: Low-bandwidth geohash SMS alerts through local towers when broadband/cellular internet grids collapse.
+
+- **QuickSign 30-Second Emergency Pass**: Generates authenticated digital evacuation passes instantly without standard 2FA bottlenecks during landslides or flash floods.
+- **Multi-Strategy GPS Cascade**: Location detection uses a 3-tier fallback: Browser GPS → HTTPS IP Geolocation → Hardcoded default. This ensures the app works on phones (with GPS), laptops (via IP), and even air-gapped devices.
+- **Red Zone Alarm System**: When the server detects that a user's coordinates fall inside a Red Zone circle (Haversine distance ≤ zone radius), it pushes a persistent Electron alert overlay with evacuation coordinates. The alert cannot be dismissed without acknowledgment.
+- **H3 Geohash Pathfinding**: Evacuation routes are computed using Uber's H3 hexagonal grid. The backend sends the user a list of safehouse coordinates, and the app resolves an offline-capable path using H3 cell adjacency — no GPS required during transit, only the initial fix.
+- **Dynamic Shelter Carrying Capacity**: Multi-objective spatial algorithms allocate residents across safe sites to avoid road bottlenecks or overloaded relief camps.
+- **8-Character Spatial Geohashing**: Sub-meter resolution indexing (`#tdv2n19z`) for instant hazard evaluation across millions of coordinates.
+- **GSM 3.4 Offline Telemetry** *(planned)*: Low-bandwidth geohash SMS alerts through local towers when broadband/cellular internet grids collapse.
 
 ### AI & Telemetry Infrastructure
-* **AI Prediction History Logging**: Comprehensive PostgreSQL tracking of all proactive AI-generated Red Zone triggers. Logs include exact coordinate bounds, calculated hazard radii, trigger reasoning (e.g., 'Soil Moisture 88%'), and statistical confidence scores for human-in-the-loop validation and academic review.
-* **Hybrid Dynamic Shelter Allocation**: A dual-layer resilient architecture. The backend actively polls the database for officially registered government shelters (SDMA). If a Red Zone triggers in an undocumented area, the system gracefully falls back to the **OpenStreetMap (Overpass) API**, dynamically scraping nearby schools and hospitals using physical Haversine distance based on the AI's generated radius, and rendering them on the Civilian's UI with realistic assumed capacities and warning overlays.
+
+- **AI Prediction History Logging**: Comprehensive PostgreSQL tracking of all proactive AI-generated Red Zone triggers. Logs include exact coordinate bounds, calculated hazard radii, trigger reasoning (e.g., 'Soil Moisture 88%'), and statistical confidence scores for human-in-the-loop validation and academic review.
+- **Hybrid Dynamic Shelter Allocation**: A dual-layer resilient architecture. The backend actively polls the database for officially registered government shelters (SDMA). If a Red Zone triggers in an undocumented area, the system gracefully falls back to the **OpenStreetMap (Overpass) API**, dynamically scraping nearby schools and hospitals using physical Haversine distance based on the AI's generated radius, and rendering them on the Civilian's UI with realistic assumed capacities and warning overlays.
 
 ---
 
@@ -113,24 +121,31 @@ The relational data backbone operates on **Supabase PostgreSQL 17.6** across syn
 ## Quick Start & Local Development
 
 ### 1. Start the Central Backend Server (adminDash)
+
 The backend MUST be running for authentication, map data, and telemetry to work.
+
 ```bash
 cd adminDash/backend
 npm install
 npm start
 ```
+
 > Server starts on port `5000` with an active WebSocket listener.
 
 ### 2. Start the Civilian / Officer Client App (userApp)
+
 Open a **second terminal window** to boot the Electron Desktop application.
+
 ```bash
 cd userApp
 npm install
 npm run electron
 ```
+
 > This concurrently serves Vite on `http://localhost:5173` and boots the native Electron window. Hardware acceleration is disabled by default in `main.cjs` to ensure compatibility across all Windows drivers.
 
 *(Optional)* To start the Central Web Dashboard:
+
 ```bash
 cd adminDash/frontend
 npm install

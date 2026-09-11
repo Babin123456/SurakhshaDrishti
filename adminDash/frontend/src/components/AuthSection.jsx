@@ -17,7 +17,11 @@ import {
   Phone,
   Mail,
   Home,
-  Heart
+  Heart,
+  Sparkles,
+  Building2,
+  ChevronRight,
+  Key
 } from 'lucide-react';
 import { apiService, checkGeofenceRedZoneStatus } from '../utils/api';
 import { useToast } from './Toast';
@@ -25,20 +29,20 @@ import { useToast } from './Toast';
 export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuccess }) {
   const { addToast } = useToast();
   const [authMode, setAuthMode] = useState(initialMode); // 'signin' | 'signup'
-  const [loginType, setLoginType] = useState('authority'); // 'authority' | 'resident'
+  const [loginType, setLoginType] = useState('authority'); // Authority command desk only
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [tempAuthData, setTempAuthData] = useState(null);
 
-  const [signupRole, setSignupRole] = useState('resident'); // 'resident' | 'ndrf' | 'sdma'
+  const [signupRole, setSignupRole] = useState('ndrf'); // 'ndrf' | 'sdma' | 'police' | 'fire_rescue'
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [signupPassword, setSignupPassword] = useState('');
-  const [district, setDistrict] = useState('Wayanad, Kerala');
-  const [familyMembers, setFamilyMembers] = useState('4');
+  const [district, setDistrict] = useState('Wayanad Sector 4');
+  const [familyMembers, setFamilyMembers] = useState('1');
   const [hasVulnerable, setHasVulnerable] = useState(false);
   const [detectedLoc, setDetectedLoc] = useState(null);
   const [isDetectingGPS, setIsDetectingGPS] = useState(false);
@@ -101,29 +105,60 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
     setIsLoading(true);
     setMessage(null);
 
-    const res = await apiService.login({
-      username: username.trim(),
-      password,
-      loginType,
-      role: loginType,
-    });
+    const trimmedUsername = username.trim();
+    // Check if the officer has modified their password in real-time
+    const updatedCustomPassword = localStorage.getItem(`suraksha_pwd_${trimmedUsername}`);
+
+    let loginSuccessful = false;
+    let authResult = null;
+
+    if (updatedCustomPassword) {
+      if (password === updatedCustomPassword) {
+        loginSuccessful = true;
+        authResult = {
+          success: true,
+          token: 'jwt_officer_custom_' + Date.now(),
+          user: {
+            userId: trimmedUsername,
+            fullName: trimmedUsername === 'officer_vikram_singh' ? 'Commander Vikram Singh' : trimmedUsername,
+            role: 'NDRF',
+            district: 'Wayanad Sector 4',
+            zone: 'NDRF Tactical Sector'
+          }
+        };
+      } else {
+        setIsLoading(false);
+        const errText = 'Incorrect password. Note: If you updated your password in Profile, you must use your new password.';
+        addToast(errText, 'error');
+        setMessage({ type: 'error', text: errText });
+        return;
+      }
+    } else {
+      authResult = await apiService.login({
+        username: trimmedUsername,
+        password,
+        loginType,
+        role: loginType,
+      });
+      loginSuccessful = authResult.success;
+    }
 
     setIsLoading(false);
 
-    if (res.success) {
-      if (res.requires2FA || res.token === 'mock-jwt-token-sih2026') {
+    if (loginSuccessful && authResult) {
+      if (authResult.requires2FA || authResult.token === 'mock-jwt-token-sih2026') {
         // Enforce 2FA Step
-        setTempAuthData(res);
+        setTempAuthData(authResult);
         setAuthMode('otp');
         addToast('Credentials verified. Please enter 2FA OTP.', 'info');
       } else {
         addToast('Authentication successful! Initializing tactical session...', 'success');
         setTimeout(() => {
           onAuthSuccess({
-            token: res.token,
-            user: res.user || {
-              username: username,
-              name: username.split('@')[0].toUpperCase(),
+            token: authResult.token,
+            user: authResult.user || {
+              username: trimmedUsername,
+              name: trimmedUsername.split('@')[0].toUpperCase(),
               role: loginType === 'authority' ? 'NDRF Tactical Command' : 'Resident Citizen',
               department: loginType === 'authority' ? 'NDRF' : 'Civilian',
             }
@@ -131,7 +166,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
         }, 700);
       }
     } else {
-      const errText = res.error || res.message || 'Invalid credentials. Please verify your details.';
+      const errText = authResult?.error || authResult?.message || 'Invalid credentials. Please verify your details.';
       addToast(errText, 'error');
       setMessage({ type: 'error', text: errText });
     }
@@ -250,12 +285,12 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                 </span>
               </div>
               <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] tracking-tight">
-                {authMode === 'signin' ? 'Sign In to SurakshaDrishti' : authMode === 'otp' ? 'Two-Factor Authentication' : 'Create an Account'}
+                {authMode === 'otp' ? 'Two-Factor Authentication' : 'Official Command Desk Sign In'}
               </h2>
               <p className="text-xs text-[#5C544D] mt-0.5">
-                {authMode === 'signin' 
-                  ? 'Access real-time GIS intelligence, zone management, and emergency passes' 
-                  : authMode === 'otp' ? 'Enter the secure OTP code sent to your official device' : 'Register for priority evacuation passes and official consoles'}
+                {authMode === 'otp'
+                  ? 'Enter the secure OTP code sent to your official device'
+                  : 'Centralized access for NDRF, SDMA, Police, and Fire Rescue officers with pre-provisioned credentials'}
               </p>
             </div>
             <button
@@ -312,16 +347,22 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
               </form>
             </div>
           ) : (
-            /* ================= MODE: SIGN IN (AGENT ONLY) ================= */
+            /* ================= MODE: PRE-PROVISIONED OFFICIAL SIGN IN ================= */
           <div>
-            <div className="mb-4 p-3 bg-[#F6F4F0] rounded-xl border border-[#E8E1D5] flex items-center justify-center gap-2 text-[#1A1A1A] font-bold text-sm">
-              <Shield className="w-4 h-4 text-[#8B7355]" /> Central Command Desk Access Only
+            <div className="mb-4 p-3 bg-[#F6F4F0] rounded-xl border border-[#E8E1D5] flex items-center justify-between">
+              <div className="flex items-center gap-2 text-[#1A1A1A] font-bold text-xs sm:text-sm">
+                <Shield className="w-4 h-4 text-[#8B7355]" />
+                <span>Authorized Command Desk Access</span>
+              </div>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#E8E1D5] text-[#4A4238] font-bold uppercase">
+                Pre-Provisioned
+              </span>
             </div>
 
             <form onSubmit={handleSignIn} className="space-y-4">
               <div>
                 <label className="block text-xs font-semibold text-[#2C2A29] mb-1">
-                  Official Gov Email / Service ID
+                  Official Gov Email / Service ID / Username
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 absolute left-3.5 top-3 text-[#7A726A]" />
@@ -330,7 +371,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
-                    placeholder="ndrf.command@mha.gov.in"
+                    placeholder="ndrf.command@mha.gov.in or ndrf_admin"
                     className="w-full bg-[#FDFBF7] border border-[#E8E1D5] rounded-xl py-2.5 pl-10 pr-3 text-xs sm:text-sm text-[#1A1A1A] placeholder-[#8C847A] focus:outline-none focus:border-[#8B7355] transition-colors"
                   />
                 </div>
@@ -372,11 +413,19 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
                 {isLoading ? 'Authenticating...' : 'Sign In & Access Platform'}
                 <ArrowRight className="w-4 h-4 opacity-80" />
               </button>
+
+              {/* Notice for new or field personnel */}
+              <div className="mt-4 pt-3 border-t border-[#E8E1D5] text-center space-y-1.5">
+                <p className="text-[11px] text-[#5C544D]">
+                  Officer credentials are pre-provisioned by Ministry/SDMA IT Command.
+                </p>
+                <p className="text-[10px] text-[#7A726A]">
+                  For field incident reporting and citizen access, use the <span className="font-semibold text-[#8B7355]">SurakshaDrishti Civilian App</span>.
+                </p>
+              </div>
             </form>
           </div>
           )}
-
-          {/* SIGN UP REMOVED - Desk Agents are pre-provisioned */}
         </div>
 
       </div>
