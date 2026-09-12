@@ -29,7 +29,7 @@ function createWindow() {
 
   const isDev = process.env.NODE_ENV === 'development';
   if (isDev) {
-    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.loadURL('http://localhost:5175');
   } else {
     mainWindow.loadFile(path.join(__dirname, '../frontend/dist/index.html'));
   }
@@ -74,7 +74,7 @@ function triggerEmergencyAlert(message) {
 
   const isDev = process.env.NODE_ENV === 'development';
   if (isDev) {
-    alertWindow.loadURL('http://localhost:5173/alert');
+    alertWindow.loadURL('http://localhost:5175/alert');
   } else {
     alertWindow.loadURL(`file://${path.join(__dirname, '../frontend/dist/index.html')}#/alert`);
   }

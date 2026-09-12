@@ -73,6 +73,12 @@ flowchart TD
 - **Web Audio API Siren:** Synthesizes an emergency civil defense siren tone (`800Hz <-> 600Hz` square-wave oscillation) directly through hardware speakers without relying on external audio assets.
 - **Safe Teardown:** Closes cleanly upon citizen acknowledgment via `acknowledge-alert` IPC.
 
+### 2.4 SOS Beacon & Background GPS Heartbeat
+
+- **Automatic Location Transmission:** While emergency state (`isEmergency`) is active, `UserDashboard.jsx` initiates an automated background ping loop (`setInterval(30000)`).
+- **Endpoint (`POST /api/zones/update-location`):** Telemetry packets transmit the user's live latitude, longitude, and user ID (`email`, `phone`, or generated citizen identifier) to the command backend.
+- **Resilient Fallback Support:** Compatible with both live PostgreSQL and local offline mock database (`suraksha_local_db.json`), updating persistent tracking tokens without session dropouts.
+
 ---
 
 ## 3. Directory Structure
@@ -142,7 +148,7 @@ npm run electron
 
 ### 6.2 Browser Web Mode
 
-Runs the client as a browser application accessible at `http://localhost:5173`:
+Runs the client as a browser application accessible at `http://localhost:5175`:
 
 ```bash
 npm run dev
