@@ -57,12 +57,16 @@ let localStore = {
 };
 
 // Load saved local data if exists
-if (fs.existsSync(dbFile)) {
-  try {
-    const raw = fs.readFileSync(dbFile, "utf-8");
-    localStore = { ...localStore, ...JSON.parse(raw) };
-  } catch (e) {}
-}
+const loadLocalStore = () => {
+  if (fs.existsSync(dbFile)) {
+    try {
+      const raw = fs.readFileSync(dbFile, "utf-8");
+      const parsed = JSON.parse(raw);
+      localStore = { ...localStore, ...parsed };
+    } catch (e) {}
+  }
+};
+loadLocalStore();
 
 const saveLocalStore = () => {
   try {
@@ -72,6 +76,7 @@ const saveLocalStore = () => {
 };
 
 async function executeLocalQuery(text, params = []) {
+  loadLocalStore();
   const sql = text.trim();
   const lower = sql.toLowerCase();
 
@@ -225,11 +230,26 @@ async function executeLocalQuery(text, params = []) {
 
   // INSERT INTO emergency_passes
   if (lower.startsWith('insert into emergency_passes')) {
-    const [pass_id, user_id, phone, assigned_shelter_id, special_needs] = params;
-    const newPass = { pass_id, user_id, phone, assigned_shelter_id, special_needs, status: 'ACTIVE_RED_ZONE', created_at: new Date().toISOString() };
-    localStore.emergency_passes.push(newPass);
-    saveLocalStore();
-    return { rows: [newPass] };
+    if (lower.includes('(pass_id, user_id, lat, lng')) {
+      const [pass_id, user_id, lat, lng] = params;
+      const existing = localStore.emergency_passes.find(p => p.pass_id === pass_id);
+      if (existing) {
+        existing.lat = lat;
+        existing.lng = lng;
+        existing.updated_at = new Date().toISOString();
+      } else {
+        const newPass = { pass_id, user_id, lat, lng, status: 'ACTIVE_RED_ZONE', created_at: new Date().toISOString() };
+        localStore.emergency_passes.push(newPass);
+      }
+      saveLocalStore();
+      return { rows: [] };
+    } else {
+      const [pass_id, user_id, phone, assigned_shelter_id, special_needs] = params;
+      const newPass = { pass_id, user_id, phone, assigned_shelter_id, special_needs, status: 'ACTIVE_RED_ZONE', created_at: new Date().toISOString() };
+      localStore.emergency_passes.push(newPass);
+      saveLocalStore();
+      return { rows: [newPass] };
+    }
   }
 
   return { rows: [] };

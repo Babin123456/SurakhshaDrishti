@@ -192,6 +192,52 @@ adminDash/
 
 ---
 
+## 5.1 Tactical Operations Dashboard Modules & Operational Logic
+
+The command console exposes 4 tightly coupled incident control modules when managing active Red Zones:
+
+### 1. Assign Self to Red Zone (`16-DIGIT KEY`)
+
+- **Purpose:** Enforces localized zero-trust command perimeter. An officer cannot arbitrarily execute tactical actions or resolve incidents in a disaster sector without proving on-site jurisdiction.
+- **Workflow:** The officer enters the 16-digit cryptographic security key bound to that hazard sector (e.g. `RZ-99B2-3C44-1D7F`).
+- **Privileges Unlocked:** Transitions the officer from read-only observer to active duty commander (`ON DUTY`), unlocks the Inter-Agency Tactical Chat room, and activates consensus voting.
+
+### 2. Assigned Inter-Agency Team (`Active Deployment Roster`)
+
+- **Purpose:** Provides unified multi-agency transparency across disparate responding branches (NDRF, SDMA, District Police, Civil Defense, Emergency Medical Services).
+- **Workflow:** Shows live headcount of deployed commanders, department affiliation, and real-time status (`ON DUTY` vs `VOTED SAFE`).
+- **Impact:** Eliminates conflicting rescue directives and validates battalion deployment strength at a glance.
+
+### 3. Sector Resolution Vote (`Consensus De-escalation`)
+
+- **Purpose:** Prevents accidental or premature declaration of safety in volatile disaster zones (flash floods, destabilized hill slopes).
+- **Workflow:** A Red Zone cannot transition to `Situation Under Control` through single-officer discretion. The system mandates a configurable threshold (e.g. `0 / 3 Required`).
+- **Enforcement:** Remains locked (`Assign Yourself First to Vote`) until verified with the 16-digit key. Once affirmative consensus is reached, the backend atomically transitions the sector status to `SITUATION_UNDER_CONTROL (RESOLVED SAFE)` and notifies public GIS layers.
+
+### 4. Tactical Actions (`Evacuation Broadcast & Emergency Backup`)
+
+- **Send Evacuation Broadcast:** Transmits an immediate siren notification and geo-fenced push alert to all citizen terminals within the danger perimeter, directing evacuees to designated shelters.
+- **Request Emergency Backup:** Dispatches an urgent reinforcement beacon to NDRF Command and District EOC dispatchers with live coordinates to prioritize heavy equipment, rescue boats, or ambulances.
+
+---
+
+## 5.2 Dual-Mode Database Abstraction & Real-Time Telemetry Pipeline
+
+SurakshaDrishti implements an adaptive persistence layer in `adminDash/backend/handlers/dbHandler.js`:
+
+1. **Dual-Mode Execution:**
+   - **Local / Edge Deployment:** Uses `suraksha_local_db.json` for zero-configuration, offline tactical operations on field laptops.
+   - **Cloud Production:** Transparently points the same query signatures to Supabase/PostgreSQL.
+
+2. **Emergency Passes & Telemetry Upsert:**
+   - **QuickSign Passes:** Stores emergency tokens (`QS-XXXXXX`) with assigned shelter and special needs flags.
+   - **Live GPS Telemetry:** For background GPS updates from `userApp` (`POST /api/zones/update-location`), the handler performs atomic in-place updates on coordinate tokens (`LOC-userId`) with updated timestamps, preventing table bloat and ensuring continuous live tracking of evacuees.
+   - **SOS Pass Generation Flow (`POST /api/auth/quicksign`):** Atomically assigns the nearest open shelter based on remaining capacity (`(capacity_total - capacity_occupied) DESC`), generates evacuation routing directives, sets `bypassed_2fa: true`, and assigns status `ACTIVE_RED_ZONE`.
+   - **30-Second Heartbeat Beacon:** Background pings during active emergency keep civilian locations live on the EOC tactical radar map with direct status indicators.
+   - **Zero-Friction Modal State Lifecycle:** All modal lifecycle hooks (`useEffect`, body overflow locks) execute unconditionally at component root before render branching, preventing React Rules of Hooks desynchronization upon emergency pass validation.
+
+---
+
 ## 6. Setup & Installation
 
 ### 6.1 Backend Configuration

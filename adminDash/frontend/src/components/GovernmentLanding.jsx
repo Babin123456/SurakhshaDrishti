@@ -150,17 +150,7 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess, onOpenD
                 <ArrowRight className="w-4 h-4 text-[#8B7355] group-hover:translate-x-0.5 transition-transform shrink-0" />
               </button>
 
-              {!currentUser && (
-                <button
-                  onClick={onOpenDemo}
-                  className="w-full sm:w-auto px-6 py-3.5 bg-[#FAF8F5] hover:bg-[#F2ECE2] border border-[#E2DAD0] hover:border-[#8B7355] text-[#1A1A1A] rounded-2xl font-semibold text-sm transition-all duration-300 shadow-2xs flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 active:scale-[0.99] whitespace-nowrap"
-                  title="Test using predefined officer accounts"
-                >
-                  <Sparkles className="w-4 h-4 text-[#8B7355] shrink-0" />
-                  <span>Demo Officer (1-Click)</span>
-                </button>
-              )}
-              
+
               <button 
                 onClick={onEmergencyAccess}
                 className="w-full sm:w-auto px-7 py-3.5 bg-white/80 hover:bg-[#FFF5F2] border border-[#E8E1D5] hover:border-[#B85C38] text-[#B85C38] rounded-2xl font-semibold text-sm transition-all duration-300 shadow-xs flex items-center justify-center gap-2.5 cursor-pointer hover:-translate-y-0.5 active:scale-[0.99] whitespace-nowrap"

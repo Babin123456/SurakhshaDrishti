@@ -176,7 +176,7 @@ export default function AgentDashboard({ onLogout, session }) {
             {chatMode === 'E2EE' ? (
               <>
                 <div className="bg-[#242220] border border-[#383533] rounded-xl p-2.5 text-xs text-[#E8E1D5] w-[92%]">
-                  <span className="text-[#8B7355] font-bold text-[10px] block mb-1 flex items-center gap-1">
+                  <span className="text-[#8B7355] font-bold text-[10px] mb-1 flex items-center gap-1">
                     <ShieldCheck className="w-3 h-3 text-emerald-400" />
                     HQ Tactical Command
                   </span>
@@ -191,7 +191,7 @@ export default function AgentDashboard({ onLogout, session }) {
             ) : (
               <>
                 <div className="bg-[#382620] border border-[#523429] rounded-xl p-2.5 text-xs text-amber-100 w-[92%]">
-                  <span className="text-[#B85C38] font-bold text-[10px] block mb-1 flex items-center gap-1">
+                  <span className="text-[#B85C38] font-bold text-[10px] mb-1 flex items-center gap-1">
                     <Radio className="w-3 h-3" />
                     Local GSM Cell Tower
                   </span>

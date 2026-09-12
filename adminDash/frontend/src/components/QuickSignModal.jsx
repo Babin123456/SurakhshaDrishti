@@ -78,6 +78,17 @@ export default function QuickSignModal({ locationStatus, onClose, onSuccess }) {
     }
   }, [locationStatus]);
 
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    if (window.__lenis) window.__lenis.stop();
+
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      if (window.__lenis) window.__lenis.start();
+    };
+  }, []);
+
   const handleGetLocation = () => {
     if (!navigator.geolocation) return;
     setIsLocating(true);
@@ -177,17 +188,6 @@ export default function QuickSignModal({ locationStatus, onClose, onSuccess }) {
       </div>
     );
   }
-
-  useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    if (window.__lenis) window.__lenis.stop();
-
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      if (window.__lenis) window.__lenis.start();
-    };
-  }, []);
 
   return (
     <div
