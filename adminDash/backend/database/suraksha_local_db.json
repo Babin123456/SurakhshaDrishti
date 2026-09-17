@@ -369,6 +369,24 @@
       ],
       "status": "ACTIVE_RED_ZONE",
       "created_at": "2026-09-12T06:03:56.623Z"
+    },
+    {
+      "pass_id": "LOC-9123777679",
+      "user_id": "9123777679",
+      "lat": 22.569624,
+      "lng": 88.369601,
+      "status": "ACTIVE_RED_ZONE",
+      "created_at": "2026-09-17T11:47:29.845Z",
+      "updated_at": "2026-09-17T12:13:29.855Z"
+    },
+    {
+      "pass_id": "QS-JEQRVL",
+      "user_id": "mjhfbfjsbfkjgadshfkwdkhgfhwgdkhbfhdb",
+      "phone": "mjhfbfjsbfkjgadshfkwdkhgfhwgdkhbfhdb",
+      "assigned_shelter_id": 22.637463096350356,
+      "special_needs": 88.34466617983432,
+      "status": "ACTIVE_RED_ZONE",
+      "created_at": "2026-09-17T11:48:24.451Z"
     }
   ],
   "e2ee_conversations": [],
