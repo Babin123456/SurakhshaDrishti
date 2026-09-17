@@ -39,7 +39,7 @@ export default function DemoOfficerModal({ onClose, onAuthSuccess }) {
       badge: 'State Coordination Cell',
       details: 'Supervising regional evacuation zones and relief camp logistics.',
       username: 'sdma_officer',
-      password: '$2b$10$w09ZkF2xO59lU22qj4A24u7s2h/k8q5d/Z71d.a6f4s8b9c1d2e3f',
+      password: 'Commander@Pass2026',
     },
     {
       id: 'ndrf_hq',
@@ -50,7 +50,7 @@ export default function DemoOfficerModal({ onClose, onAuthSuccess }) {
       badge: 'Ministry / MHA Telemetry',
       details: 'Central Command overview for interstate disaster mitigation.',
       username: 'ndrf_admin',
-      password: '$2b$10$w09ZkF2xO59lU22qj4A24u7s2h/k8q5d/Z71d.a6f4s8b9c1d2e3f',
+      password: 'Commander@Pass2026',
     },
   ];
 

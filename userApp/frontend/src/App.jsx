@@ -61,13 +61,15 @@ export default function App() {
     return <AppLogin onLogin={handleLogin} />;
   }
 
-  if (session.role === 'user') {
+  const r = session.role?.toLowerCase() || 'user';
+  if (r === 'user' || r === 'resident') {
     return <UserDashboard onLogout={handleLogout} session={session} />;
   }
 
-  if (session.role === 'agent') {
+  if (r === 'agent' || r === 'ndrf' || r === 'sdma' || r === 'police' || r === 'authority') {
     return <AgentDashboard onLogout={handleLogout} session={session} />;
   }
 
-  return null;
+  // Fallback to UserDashboard instead of blank screen
+  return <UserDashboard onLogout={handleLogout} session={session} />;
 }

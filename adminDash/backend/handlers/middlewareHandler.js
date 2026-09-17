@@ -6,7 +6,7 @@ const API_Limiter = (window_seconds, rate_count, logger) => rate_limiter({
     windowMs: window_seconds * 1000,
     max: rate_count,
     message: {
-        sucess: false,
+        success: false,
         status: 429,
         error: `Too many requests from this IP, please try again later.`
     }, standardHeaders:true,
@@ -46,7 +46,7 @@ const masterErrorHandler = (err, req, res, next) => {
 
     console.log("Error: ", statusCode);
     res.status(statusCode).json({
-        sucess: false,
+        success: false,
         status: statusCode,
         error: err.message ||"Internal Server Error"
     });

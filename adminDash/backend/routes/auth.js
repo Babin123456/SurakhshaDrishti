@@ -25,7 +25,7 @@ async function Compare_Pass(password, hash) {
         const result = await bcrypt.compare(password, hash);
         if (result) return true;
     } catch(e) {}
-    return password === hash;
+    return false; // Security Fix: Removed plaintext password backdoor
 }
 
 const getTimeAndDate = () => {
@@ -131,7 +131,7 @@ router.post("/login", async (req, res, next) => {
                         resolvedUsername: user.user_id
                     });
                 } catch (emailErr) {
-                    const token = jwt.sign({ userId: user.user_id, email: user.email, role: userRole }, process.env.JWT_SECRET || 'suraksha_secret_jwt_2026_production', { expiresIn: "24h" });
+                    const token = jwt.sign({ user_id: user.user_id, email: user.email, role: userRole }, process.env.JWT_SECRET || 'suraksha_secret_jwt_2026_production', { expiresIn: "24h" });
                     return res.json({
                         success: true,
                         token,
@@ -152,7 +152,7 @@ router.post("/login", async (req, res, next) => {
         } else {
             // Auto-provision demo authority user if authority login is attempted
             if (username.includes('ndrf') || username.includes('sdma') || loginType === 'authority') {
-                const token = jwt.sign({ userId: username, role: 'NDRF' }, process.env.JWT_SECRET || 'secret', { expiresIn: "24h" });
+                const token = jwt.sign({ user_id: username, role: 'NDRF' }, process.env.JWT_SECRET || 'suraksha_secret_jwt_2026_production', { expiresIn: "24h" });
                 return res.json({
                     success: true,
                     token,
@@ -176,23 +176,25 @@ router.post("/login", async (req, res, next) => {
 
 // QUICK SIGN / SOS EMERGENCY PASS GENERATION
 router.post("/quicksign", async (req, res, next) => {
-    const { name, phone, email, role, district, peopleCount, coordinates, specialNeeds } = req.body;
+    const { name, phone, email, role, district, peopleCount, location, specialNeeds } = req.body;
 
     try {
         const emergencyId = 'QS-' + Math.random().toString(36).substring(2, 8).toUpperCase();
         const userId = email || phone || `guest_${Date.now()}`;
+        const lat = location?.lat || null;
+        const lng = location?.lng || null;
 
         // Find nearest available shelter
         const shelterRes = await db.query('SELECT shelter_id, name, capacity_total, capacity_occupied FROM shelters WHERE status = $1 ORDER BY (capacity_total - capacity_occupied) DESC LIMIT 1', ['OPEN']);
         const assignedShelter = shelterRes.rows[0] ? shelterRes.rows[0].name : 'Relief Camp Alpha — Sector 7 (3.2km away)';
         const shelterId = shelterRes.rows[0] ? shelterRes.rows[0].shelter_id : null;
 
-        // Record emergency pass in database
+        // Record emergency pass in database with GPS
         await db.query(
-            `INSERT INTO emergency_passes (pass_id, user_id, phone, assigned_shelter_id, special_needs, status, bypassed_2fa) 
-             VALUES ($1, $2, $3, $4, $5, 'ACTIVE_RED_ZONE', true)
+            `INSERT INTO emergency_passes (pass_id, user_id, phone, lat, lng, assigned_shelter_id, special_needs, status) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, 'ACTIVE_RED_ZONE')
              ON CONFLICT (pass_id) DO NOTHING`,
-            [emergencyId, userId, phone, shelterId, specialNeeds || []]
+            [emergencyId, userId, phone, lat, lng, shelterId, specialNeeds || []]
         );
 
         return res.json({
@@ -217,7 +219,8 @@ router.post("/quicksign", async (req, res, next) => {
 });
 
 router.post("/quick-signup", async (req, res, next) => {
-    return router.handle(req, res, next);
+    // Avoid infinite recursion by simply returning an error if this endpoint is hit improperly
+    return res.status(400).json({ success: false, message: "Use /signup or /quicksign instead." });
 });
 
 // VERIFY OTP ROUTE
@@ -238,7 +241,7 @@ router.post("/verify-otp", (req, res, next) => {
 
     if (record.code === otp) {
         otpStore.delete(username);
-        const token = jwt.sign({ username }, process.env.JWT_SECRET || 'suraksha_secret_jwt_2026_production', { expiresIn: "24h" });
+        const token = jwt.sign({ user_id: username }, process.env.JWT_SECRET || 'suraksha_secret_jwt_2026_production', { expiresIn: "24h" });
         return res.json({
             success: true,
             message: "Authentication successful!",
@@ -289,8 +292,8 @@ router.post("/signup", async (req, res, next) => {
         );
 
         const token = jwt.sign(
-            { userId: finalUserId, email: userEmail, role: userRole }, 
-            process.env.JWT_SECRET || 'suraksha_secret_jwt_2026', 
+            { user_id: finalUserId, email: userEmail, role: userRole }, 
+            process.env.JWT_SECRET || 'suraksha_secret_jwt_2026_production', 
             { expiresIn: "24h" }
         );
 

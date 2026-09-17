@@ -273,8 +273,8 @@ export default function RealGoogleMap({
             <div><span style="color: #64748b; font-size: 9px;">At-Risk Population:</span><br/><strong style="color: #0f172a; font-size: 12px;">${zone.populationRisk.toLocaleString()}</strong></div>
           </div>
           <div style="background: #ecfdf5; border: 1px solid #a7f3d0; padding: 5px 6px; border-radius: 5px; font-size: 10px; color: #065f46;">
-            <strong>Target Safe Hub:</strong> ${zone.safeSite.name}<br/>
-            <span style="font-size: 9px; color: #047857;">Capacity: ${zone.safeSite.capacity} | ETA: ${zone.evacEta}</span>
+            <strong>Target Safe Hub:</strong> ${zone.safeSite?.name || 'Assigned Relief Hub'}<br/>
+            <span style="font-size: 9px; color: #047857;">Capacity: ${zone.safeSite?.capacity || 'N/A'} | ETA: ${zone.evacEta || 'Unknown'}</span>
           </div>
         </div>
       `;

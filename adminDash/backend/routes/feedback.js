@@ -6,7 +6,7 @@ const nodemailer = require('nodemailer');
 // feedback routes
 router.post('/send_feedback', async (req, res, next) =>{
     const {message, rating} = req.body;
-    const username = req.user.username;
+    const username = req.user.user_id;
     const user = await db.query(`SELECT email FROM users WHERE user_id = $1`, [username]);
     if(user.rows.length === 0) {
         return res.status(404).json({error: "User not found"});

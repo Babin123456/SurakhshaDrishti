@@ -25,7 +25,7 @@ const DOMPurify = createDOMPurify(window);
 // Get or create a 1-on-1 conversation
 router.post('/conversation/direct', async (req, res, next) => {
     const { target_user } = req.body;
-    const currentUser = req.user.username;
+    const currentUser = req.user.user_id;
 
     if (!target_user) return res.status(400).json({ error: "target_user is required" });
 
@@ -66,7 +66,7 @@ router.post('/conversation/direct', async (req, res, next) => {
 
 router.post('/conversation/group/create', async (req, res, next) => {
     const { chain_data, groupName } = req.body;
-    const groupCreator = req.user.username;
+    const groupCreator = req.user.user_id;
 
     const groupID = crypto.randomUUID();
 
@@ -102,7 +102,7 @@ router.post('/conversation/group/create', async (req, res, next) => {
 
 router.post('/conversation/group/add', async (req, res, next) => {
     const { chain_link, groupID } = req.body;
-    const currentUser = req.user.username;
+    const currentUser = req.user.user_id;
 
     try {
         // Check if the current user is an admin of this group
@@ -131,7 +131,7 @@ router.post('/conversation/group/add', async (req, res, next) => {
 
 router.post('/conversation/group/delete', async (req, res, next) => {
     const { groupId, groupName, } = req.body;
-    const currentUser = req.user.username;
+    const currentUser = req.user.user_id;
 
     try {
         const roleCheck = await db.query(
@@ -158,7 +158,7 @@ router.post('/conversation/group/delete', async (req, res, next) => {
 
 router.post('/conversation/group/leave', async (req, res, next) => {
     const { groupId } = req.body;
-    const currentUser = req.user.username;
+    const currentUser = req.user.user_id;
 
     try {
         const countResult = await db.query('SELECT COUNT(*) FROM conversation_participants WHERE conversation_id = $1', [groupId]);
@@ -189,7 +189,7 @@ router.post('/conversation/group/leave', async (req, res, next) => {
 
 router.post('/conversation/group/kick', async (req, res, next) => {
     const { groupId, targetUser } = req.body;
-    const currentUser = req.user.username;
+    const currentUser = req.user.user_id;
 
     if (currentUser === targetUser) return res.status(400).json({ message: "You cannot kick yourself. Use leave instead." });
 
@@ -229,7 +229,7 @@ router.post('/conversation/group/kick', async (req, res, next) => {
 //ROLES: ADMIN [ONLY 1], ONDESK [MULTIPLE], ONSITE [MULTIPLE]
 router.post('/conversations/group/setRole', async (req, res, next) => {
     const { target_user, groupID, newRole } = req.body;
-    const currentUser = req.user.username;
+    const currentUser = req.user.user_id;
     if (target_user === currentUser) {
         return res.status(400).json("YOU can not set new Role to yourself!");
     }
@@ -258,7 +258,7 @@ router.post('/conversations/group/setRole', async (req, res, next) => {
 
 router.get('/conversation/group/keys/:groupID', async (req, res, next) => {
     const { groupID } = req.params;
-    const currentUser = req.user.username;
+    const currentUser = req.user.user_id;
     try {
         // Verify user is in the group
         const memberCheck = await db.query(
@@ -283,7 +283,7 @@ router.get('/conversation/group/keys/:groupID', async (req, res, next) => {
 
 router.get('/conversation/group/members/:groupId', async (req, res, next) => {
     const { groupId } = req.params;
-    const currentUser = req.user.username;
+    const currentUser = req.user.user_id;
     try {
         const memberCheck = await db.query(
             'SELECT 1 FROM conversation_participants WHERE conversation_id = $1 AND user_id = $2',
@@ -311,7 +311,7 @@ router.get('/conversation/group/members/:groupId', async (req, res, next) => {
 });
 
 router.get('/users', async (req, res) => {
-    const currentUser = req.user.username;
+    const currentUser = req.user.user_id;
     const searchPattern = `%${req.query.search || ""}%`;
 
     try {
@@ -330,7 +330,7 @@ router.get('/users', async (req, res) => {
 
 // GET /conversations - to list user's active conversations
 router.get('/conversations', async (req, res, next) => {
-    const currentUser = req.user.username;
+    const currentUser = req.user.user_id;
     const query = `
         SELECT c.id, c.is_group, c.name, 
                (SELECT user_id FROM conversation_participants WHERE conversation_id = c.id AND user_id != $1 LIMIT 1) as other_user,
@@ -358,7 +358,7 @@ router.get('/conversations', async (req, res, next) => {
 
 router.post('/message', async (req, res, next) => {
     let { conversation_id, message, recipient, bot_prompt, isGroup } = req.body;
-    const sender_id = req.user.username;
+    const sender_id = req.user.user_id;
 
     // Sanitize message to prevent XSS attacks before saving to database
     message = DOMPurify.sanitize(message);
@@ -508,7 +508,7 @@ router.get('/history/:conversation_id', async (req, res, next) => {
     const param = req.params.conversation_id;
     const limit = parseInt(req.query.limit) || 50;
     const offset = parseInt(req.query.offset) || 0;
-    const sender_id = req.user.username;
+    const sender_id = req.user.user_id;
 
     async function fetchHistory(convo_id) {
         try {
@@ -569,7 +569,7 @@ router.get('/history/:conversation_id', async (req, res, next) => {
 
 router.post('/reaction', async (req, res, next) => {
     const { chat_id, reaction } = req.body;
-    const user_id = req.user.username;
+    const user_id = req.user.user_id;
 
     if (!chat_id) return res.status(400).json({ error: "Chat ID required" });
 
@@ -605,7 +605,7 @@ router.post('/reaction', async (req, res, next) => {
 
 router.post('/read', async (req, res, next) => {
     const { conversation_id, last_read_message_id } = req.body;
-    const user_id = req.user.username;
+    const user_id = req.user.user_id;
 
     if (!conversation_id || !last_read_message_id) return res.status(400).json({ error: "Missing params" });
 

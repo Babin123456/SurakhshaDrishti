@@ -1,6 +1,7 @@
 const express = require("express");
 const crypto = require("crypto");
 const db = require("../handlers/dbHandler");
+const { FN_verifyTkn } = require("../handlers/middlewareHandler");
 
 const router = express.Router();
 
@@ -129,9 +130,9 @@ router.post("/create", async (req, res, next) => {
 
     try {
         await db.query(
-            `INSERT INTO hazard_zones (zone_id, name, state, lat, lng, zone_type, hazard_type, risk_score, geohash, population_risk, radius_meters, access_key, status, resolution_votes_required) 
-             VALUES ($1, $2, $3, $4, $5, 'RED', $6, 90, $7, $8, $9, $10, 'ACTIVE_RED_ZONE', $11)`,
-            [zoneId, name, state || 'India', lat, lng, hazard_type || 'LANDSLIDE', geohash, population_risk || 1200, radius_meters || 3000, accessKey, resolution_votes_required || 2]
+            `INSERT INTO hazard_zones (zone_id, name, state, lat, lng, zone_type, hazard_type, risk_score, geohash, population_risk, radius, radius_meters, access_key, status, resolution_votes_required) 
+             VALUES ($1, $2, $3, $4, $5, 'RED', $6, 90, $7, $8, $9, $10, $11, 'ACTIVE_RED_ZONE', $12)`,
+            [zoneId, name, state || 'India', lat, lng, hazard_type || 'LANDSLIDE', geohash, population_risk || 1200, radius_meters || 3000, radius_meters || 3000, accessKey, resolution_votes_required || 2]
         );
 
         return res.json({
@@ -166,11 +167,11 @@ router.post("/ai-satellite-detect", async (req, res, next) => {
 
     try {
         await db.query(
-            `INSERT INTO hazard_zones (zone_id, name, state, lat, lng, zone_type, hazard_type, risk_score, geohash, population_risk, radius_meters, access_key, status, resolution_votes_required) 
-             VALUES ($1, $2, 'AI Satellite Feed', $3, $4, $5, $6, $7, $8, $9, $10, $11, 'ACTIVE_RED_ZONE', 2)
+            `INSERT INTO hazard_zones (zone_id, name, state, lat, lng, zone_type, hazard_type, risk_score, geohash, population_risk, radius, radius_meters, access_key, status, resolution_votes_required) 
+             VALUES ($1, $2, 'AI Satellite Feed', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'ACTIVE_RED_ZONE', 2)
              ON CONFLICT (zone_id) DO UPDATE 
-             SET lat = EXCLUDED.lat, lng = EXCLUDED.lng, risk_score = EXCLUDED.risk_score, radius_meters = EXCLUDED.radius_meters`,
-            [zoneId, zoneName, lat, lng, calculatedZoneType, hazard_type || 'LANDSLIDE', risk_score || 92, geohash, population_risk || 1500, radius_meters || 3500, accessKey]
+             SET lat = EXCLUDED.lat, lng = EXCLUDED.lng, risk_score = EXCLUDED.risk_score, radius = EXCLUDED.radius, radius_meters = EXCLUDED.radius_meters`,
+            [zoneId, zoneName, lat, lng, calculatedZoneType, hazard_type || 'LANDSLIDE', risk_score || 92, geohash, population_risk || 1500, radius_meters || 3500, radius_meters || 3500, accessKey]
         );
 
         // Broadcast to all connected Administrator Consoles via Socket.io
@@ -209,8 +210,9 @@ router.post("/ai-satellite-detect", async (req, res, next) => {
 });
 
 // 3. POST /zones/assign — Officer assigns self to a Red Zone using 16-Digit Key
-router.post("/assign", async (req, res, next) => {
-    const { zone_id, access_key, user_id, officer_name, department } = req.body;
+router.post("/assign", FN_verifyTkn, async (req, res, next) => {
+    const { zone_id, access_key, officer_name, department } = req.body;
+    const user_id = req.user.user_id;
 
     if (!zone_id || !user_id) {
         res.statusCode = 400;
@@ -259,8 +261,9 @@ router.post("/assign", async (req, res, next) => {
 });
 
 // 4. POST /zones/vote-resolve — Officer votes to resolve Red Zone (Requires Majority Consensus)
-router.post("/vote-resolve", async (req, res, next) => {
-    const { zone_id, user_id } = req.body;
+router.post("/vote-resolve", FN_verifyTkn, async (req, res, next) => {
+    const { zone_id } = req.body;
+    const user_id = req.user.user_id;
 
     if (!zone_id || !user_id) {
         res.statusCode = 400;
@@ -299,8 +302,8 @@ router.post("/vote-resolve", async (req, res, next) => {
                 [zone_id]
             );
             await db.query(
-                `INSERT INTO history_red_zones (zone_id) VALUES ($1) ON CONFLICT DO NOTHING`,
-                [zone_id]
+                `INSERT INTO history_red_zones (zone_id, assigned_mem) VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+                [zone_id, []]
             ).catch(() => {}); // Fallback in case table doesn't exist
         } else {
             await db.query(
@@ -325,8 +328,9 @@ router.post("/vote-resolve", async (req, res, next) => {
 });
 
 // 4.5 POST /zones/unassign — Officer unassigns self from a Red Zone
-router.post("/unassign", async (req, res, next) => {
-    const { zone_id, user_id } = req.body;
+router.post("/unassign", FN_verifyTkn, async (req, res, next) => {
+    const { zone_id } = req.body;
+    const user_id = req.user.user_id;
 
     if (!zone_id || !user_id) {
         res.statusCode = 400;

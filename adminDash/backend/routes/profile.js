@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
         cb(null, uploadDir);
     },
     filename: function(req, file, cb) {
-        const uniqueSuffix = req.user.username + path.extname(file.originalname);
+        const uniqueSuffix = req.user.user_id + path.extname(file.originalname);
         cb(null, uniqueSuffix);
     }
 });
@@ -23,7 +23,7 @@ const router = express.Router();
 
 router.get('/', async (req, res, next) => {
     try {
-        const result = await db.query(`SELECT bio, profile_picture FROM users WHERE user_id = $1`, [req.user.username]);
+        const result = await db.query(`SELECT bio, profile_picture FROM users WHERE user_id = $1`, [req.user.user_id]);
         const user = result.rows[0];
         res.status(200).json({
             success: true,
@@ -60,7 +60,7 @@ router.get('/user/:username', async (req, res, next) => {
 
 router.post('/bio', async (req, res, next) => {
     const {bio_msg} = req.body;
-    const username = req.user.username;
+    const username = req.user.user_id;
 
     try {
         await db.query('UPDATE users SET bio = $1 WHERE user_id = $2', [bio_msg, username]);
@@ -72,7 +72,7 @@ router.post('/bio', async (req, res, next) => {
 });
 
 router.post('/pfp', upload.single('profile_picture'), async (req, res, next) =>{
-    const username = req.user.username;
+    const username = req.user.user_id;
 
     if(!req.file){
         return res.status(400).json({error: "No image was provided"})

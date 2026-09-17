@@ -17,3 +17,6 @@ out/
 .env.local
 .env.*.local
 ROADMAP.md
+
+# IDE configurations
+.vscode/
