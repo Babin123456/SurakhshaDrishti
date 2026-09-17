@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- Animated Header Wave with Title -->
-<img src="./assets/header.svg" width="100%" alt="SurakshaDrishti userApp Header"/>
+<img src="../assets/header-userapp.svg" width="100%" alt="SurakshaDrishti userApp Header"/>
 
 <!-- Animated Dynamic Typing Subtitle -->
 <img src="https://readme-typing-svg.demolab.com?font=Outfit&weight=700&size=18&duration=3000&pause=1000&color=41C9E2&center=true&vCenter=true&width=650&lines=Civilian+Rapid+Evacuation+and+Alert+Client;Offline-Capable+Dynamic+OSRM+Corridor+Routing;Real-Time+Proximity+Geofencing+and+Audio+Siren;Cross-Platform+Electron+Desktop+and+Mobile+Web" alt="Typing Subtitle" />
@@ -208,7 +208,7 @@ sequenceDiagram
 <div align="center">
 
 <!-- Animated Footer Wave -->
-<img src="./assets/footer.svg" width="100%" alt="SurakshaDrishti userApp Footer Wave"/>
+<img src="../assets/footer-userapp.svg" width="100%" alt="SurakshaDrishti userApp Footer Wave"/>
 
 **SurakshaDrishti UserApp — Rapid Civil Defense. Direct Evacuation. Built for Resilient Survival.**
 

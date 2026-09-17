@@ -7,10 +7,10 @@
 >
   <defs>
     <linearGradient id="footerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#2D7A4F" />
-      <stop offset="40%" stop-color="#B85C38" />
-      <stop offset="80%" stop-color="#8B7355" />
-      <stop offset="100%" stop-color="#1F2937" />
+      <stop offset="0%" stop-color="#D4AF37" />
+      <stop offset="35%" stop-color="#8B7355" />
+      <stop offset="70%" stop-color="#4A3B22" />
+      <stop offset="100%" stop-color="#1A1610" />
     </linearGradient>
   </defs>
 

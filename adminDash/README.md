@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- Animated Header Wave with Title -->
-<img src="./assets/header.svg" width="100%" alt="SurakshaDrishti adminDash Header"/>
+<img src="../assets/header-admindash.svg" width="100%" alt="SurakshaDrishti adminDash Header"/>
 
 <!-- Animated Dynamic Typing Subtitle -->
 <img src="https://readme-typing-svg.demolab.com?font=Outfit&weight=700&size=18&duration=3000&pause=1000&color=D4AF37&center=true&vCenter=true&width=700&lines=Central+Authority+Disaster+Decision+Support+Platform;Multi+Agency+Consensus+Resolution+and+Voting+Matrix;Real+Time+Socket+io+Alert+Hub+and+AI+Satellite+Telemetry;PostgreSQL+and+Supabase+Real+Time+State+Engine" alt="Typing Subtitle" />
@@ -18,13 +18,13 @@
 <br/>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Authority-NDRF_%2F_SDMA_%2F_MHA-2D7A4F?style=for-the-badge&labelColor=1A1A1A" alt="Authority"/>
+  <img src="https://img.shields.io/badge/Authority-NDRF_%2F_SDMA_%2F_MHA-D4AF37?style=for-the-badge&labelColor=1A1A1A" alt="Authority"/>
   &nbsp;
-  <img src="https://img.shields.io/badge/Engine-Express_v5_%2F_Socket.io-B85C38?style=for-the-badge&labelColor=1A1A1A" alt="Engine"/>
+  <img src="https://img.shields.io/badge/Engine-Express_v5_%2F_Socket.io-D4AF37?style=for-the-badge&labelColor=1A1A1A" alt="Engine"/>
   &nbsp;
-  <img src="https://img.shields.io/badge/Database-Supabase_PostgreSQL-8B7355?style=for-the-badge&labelColor=1A1A1A" alt="Database"/>
+  <img src="https://img.shields.io/badge/Database-Supabase_PostgreSQL-D4AF37?style=for-the-badge&labelColor=1A1A1A" alt="Database"/>
   &nbsp;
-  <img src="https://img.shields.io/badge/Console-React_18_%2F_Vite-1F2937?style=for-the-badge&labelColor=1A1A1A" alt="Console"/>
+  <img src="https://img.shields.io/badge/Console-React_18_%2F_Vite-D4AF37?style=for-the-badge&labelColor=1A1A1A" alt="Console"/>
 </p>
 
 </div>
@@ -323,7 +323,7 @@ SurakshaDrishti implements an adaptive persistence layer in `adminDash/backend/h
 <div align="center">
 
 <!-- Animated Footer Wave -->
-<img src="./assets/footer.svg" width="100%" alt="SurakshaDrishti adminDash Footer Wave"/>
+<img src="../assets/footer-admindash.svg" width="100%" alt="SurakshaDrishti adminDash Footer Wave"/>
 
 **SurakshaDrishti AdminDash — Tactical Intelligence. Multi-Agency Consensus. Disaster Defense.**
 
