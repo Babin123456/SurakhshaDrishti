@@ -248,7 +248,7 @@ export default function AgentDashboard({ onLogout, session }) {
                 const haveIVoted = myVoteObj?.vote_to_resolve === true;
 
                 const handleVote = async () => {
-                  const res = await apiService.voteResolveZone(zone.zone_id, session?.email || 'NDRF_CMD_104');
+                  const res = await apiService.voteResolveZone(zone.zone_id, session?.token);
                   if (res.success) {
                     alert(res.message);
                   } else {

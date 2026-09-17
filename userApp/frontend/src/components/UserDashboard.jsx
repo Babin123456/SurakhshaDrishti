@@ -75,9 +75,9 @@ export default function UserDashboard({ onLogout, session }) {
           activeZones = response.filter(z => z.status === 'ACTIVE_RED_ZONE' || z.status === 'ACTIVE_WARNING_ZONE');
         }
 
-        // Civilian filter: Only show the Red Zone if the user is actually inside its blast radius
+        let emergencyActive = false;
         if (activeZones.length > 0 && userLat && userLng) {
-          activeZones = activeZones.filter(z => {
+          emergencyActive = activeZones.some(z => {
             const distKm = calculateDistance(userLat, userLng, parseFloat(z.lat), parseFloat(z.lng));
             const radiusMeters = parseFloat(z.radius_meters) || 7000;
             return distKm * 1000 <= radiusMeters;
@@ -102,7 +102,7 @@ export default function UserDashboard({ onLogout, session }) {
             state: z.state || 'Local Sector'
           }));
           setZones(mappedZones);
-          setIsEmergency(true);
+          setIsEmergency(emergencyActive);
         } else {
           setZones([]);
           setIsEmergency(false);
@@ -175,8 +175,8 @@ export default function UserDashboard({ onLogout, session }) {
         }
       }
 
-      if (closestZone.radius_meters && closestZone.radius_meters !== currentRadius) {
-        setCurrentRadius(closestZone.radius_meters);
+      if (closestZone.radiusMeters && closestZone.radiusMeters !== currentRadius) {
+        setCurrentRadius(closestZone.radiusMeters);
       }
     }
   }, [zones, userLat, userLng, currentRadius]);

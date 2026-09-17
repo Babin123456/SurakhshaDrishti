@@ -75,6 +75,22 @@ export const fetchActiveAlerts = async () => {
 };
 
 export const apiService = {
+  verifyOtp: async (data) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-2fa`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      return await response.json();
+    } catch (error) {
+      console.error('Verify OTP Error:', error);
+      return { success: false, error: 'Network connection failed.' };
+    }
+  },
+
   login: async (credentials, isRedZoneHabitation) => {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/login`, {

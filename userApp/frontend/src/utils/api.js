@@ -216,12 +216,15 @@ export const apiService = {
     }
   },
 
-  voteResolveZone: async (zone_id, user_id) => {
+  voteResolveZone: async (zone_id, token) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/zones/vote-resolve`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ zone_id, user_id }),
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ zone_id }),
       });
       return await response.json();
     } catch (e) {

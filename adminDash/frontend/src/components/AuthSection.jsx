@@ -172,7 +172,7 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
     }
   };
 
-  const handleVerifyOTP = (e) => {
+  const handleVerifyOTP = async (e) => {
     e.preventDefault();
     if (!otpCode || otpCode.length < 6) {
       addToast('Please enter a valid 6-digit OTP code.', 'error');
@@ -181,14 +181,20 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
     
     setIsLoading(true);
     
-    // Simulate OTP Verification (as backend may not have full verify route yet)
-    setTimeout(() => {
-      setIsLoading(false);
+    // Call the backend OTP verification route
+    const res = await apiService.verifyOtp({ 
+      username: tempAuthData?.resolvedUsername || username, 
+      otpCode 
+    });
+
+    setIsLoading(false);
+
+    if (res.success && res.token) {
       addToast('2FA Verified! Initializing tactical session...', 'success');
       setTimeout(() => {
         onAuthSuccess({
-          token: tempAuthData?.token || 'jwt_registered_' + Date.now(),
-          user: tempAuthData?.user || {
+          token: res.token,
+          user: res.user || {
             username: username,
             name: username.split('@')[0].toUpperCase(),
             role: loginType === 'authority' ? 'NDRF Tactical Command' : 'Resident Citizen',
@@ -196,7 +202,9 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
           }
         });
       }, 700);
-    }, 1000);
+    } else {
+      addToast(res.error || res.message || 'Invalid 2FA OTP code.', 'error');
+    }
   };
 
   const handleSignUp = async (e) => {

@@ -4,7 +4,7 @@ require("dotenv").config({ path: path.join(__dirname, "../.env") });
 const express = require("express");
 const cors = require("cors");
 
-const {handle404, masterErrorHandler, FN_verifyTkn, API_Limiter} = require("../handlers/middlewareHandler");
+const {handle404, masterErrorHandler, FN_verifyTkn, API_Limiter, XSS_Sanitizer} = require("../handlers/middlewareHandler");
 const profileRoutes = require("../routes/profile");
 //DATABASE
 const db = require("../handlers/dbHandler");
@@ -21,6 +21,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+app.use(XSS_Sanitizer);
 app.use(express.static(path.join(__dirname, "../../frontend/dist")));
 app.use(express.static(path.join(__dirname, "../../frontend")));
 

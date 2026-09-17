@@ -41,6 +41,18 @@ export default function AppLogin({ onLogin }) {
 
   const [geoLoc, setGeoLoc] = useState({ lat: null, lng: null, address: 'Acquiring GPS...' });
 
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+  const [isVerifyingCaptcha, setIsVerifyingCaptcha] = useState(false);
+
+  const handleVerifyCaptcha = () => {
+    if (captchaVerified) return;
+    setIsVerifyingCaptcha(true);
+    setTimeout(() => {
+      setIsVerifyingCaptcha(false);
+      setCaptchaVerified(true);
+    }, 1500); // simulate network request for verification
+  };
+
   // Fetch location using multiple fallback strategies
   React.useEffect(() => {
     let cancelled = false;
@@ -190,6 +202,10 @@ export default function AppLogin({ onLogin }) {
   const handleUserLogin = async (e) => {
     e.preventDefault();
     setError('');
+
+    if (!captchaVerified) {
+      return setError('Please verify that you are not a robot.');
+    }
     
     // Clean numeric digits only
     const digitsOnly = phone.replace(/\D/g, '');
@@ -220,8 +236,10 @@ export default function AppLogin({ onLogin }) {
     const res = await apiService.quickSign({ 
       phone: formattedMobile, 
       role: 'resident', 
-      lat: geoLoc.lat, 
-      lng: geoLoc.lng, 
+      location: {
+        lat: geoLoc.lat, 
+        lng: geoLoc.lng
+      }, 
       address: geoLoc.address 
     });
     setLoading(false);
@@ -660,6 +678,28 @@ export default function AppLogin({ onLogin }) {
               </span>
             </div>
             
+            {/* Mock reCAPTCHA */}
+            <div className="mt-2 bg-[#FAFAFA] border border-[#D3D3D3] rounded-sm p-2 flex items-center justify-between shadow-sm w-[300px] mx-auto select-none">
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleVerifyCaptcha}
+                  className={`w-7 h-7 bg-white border-2 rounded-sm flex items-center justify-center transition-all cursor-pointer ${
+                    captchaVerified ? 'border-transparent' : 'border-[#C1C1C1] hover:border-[#A1A1A1]'
+                  }`}
+                >
+                  {isVerifyingCaptcha && <Loader2 className="w-5 h-5 text-[#4A90E2] animate-spin" />}
+                  {captchaVerified && <ShieldCheck className="w-6 h-6 text-green-600 scale-125" />}
+                </button>
+                <span className="text-sm text-[#555] font-roboto">I'm not a robot</span>
+              </div>
+              <div className="flex flex-col items-center justify-center mt-1">
+                <img src="/reCAPTCHA_logo.png" alt="" className="h-6 object-contain opacity-80" onError={(e) => e.target.style.display = 'none'} />
+                <span className="text-[9px] text-[#555] mt-0.5">reCAPTCHA</span>
+                <span className="text-[8px] text-[#999]">Privacy - Terms</span>
+              </div>
+            </div>
+
             <button 
               type="submit" 
               disabled={loading}

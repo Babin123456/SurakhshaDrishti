@@ -52,4 +52,22 @@ const masterErrorHandler = (err, req, res, next) => {
     });
 };
 
-module.exports = {handle404, masterErrorHandler, FN_verifyTkn, API_Limiter}
+const xss = require('xss');
+
+const XSS_Sanitizer = (req, res, next) => {
+    const sanitize = (obj) => {
+        for (const key in obj) {
+            if (typeof obj[key] === 'string') {
+                obj[key] = xss(obj[key]);
+            } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+                sanitize(obj[key]);
+            }
+        }
+    };
+    if (req.body) sanitize(req.body);
+    if (req.query) sanitize(req.query);
+    if (req.params) sanitize(req.params);
+    next();
+};
+
+module.exports = {handle404, masterErrorHandler, FN_verifyTkn, API_Limiter, XSS_Sanitizer}

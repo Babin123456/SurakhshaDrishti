@@ -244,12 +244,30 @@ async function executeLocalQuery(text, params = []) {
       saveLocalStore();
       return { rows: [] };
     } else {
-      const [pass_id, user_id, phone, assigned_shelter_id, special_needs] = params;
-      const newPass = { pass_id, user_id, phone, assigned_shelter_id, special_needs, status: 'ACTIVE_RED_ZONE', created_at: new Date().toISOString() };
+      const [pass_id, user_id, phone, lat, lng, assigned_shelter_id, special_needs] = params;
+      const newPass = { pass_id, user_id, phone, lat, lng, assigned_shelter_id, special_needs, status: 'ACTIVE_RED_ZONE', created_at: new Date().toISOString() };
       localStore.emergency_passes.push(newPass);
       saveLocalStore();
       return { rows: [newPass] };
     }
+  }
+
+  // INSERT INTO hazard_zones
+  if (lower.startsWith('insert into hazard_zones')) {
+    const [zone_id, name, state, lat, lng, zone_type, hazard_type, risk_score, geohash, population_risk, radius, radius_meters, access_key, status, resolution_votes_required] = params;
+    const existing = localStore.hazard_zones.find(z => z.zone_id === zone_id);
+    if (existing) {
+        existing.lat = lat;
+        existing.lng = lng;
+        existing.risk_score = risk_score;
+        existing.radius = radius;
+        existing.radius_meters = radius_meters;
+    } else {
+        const newZone = { zone_id, name, state, lat, lng, zone_type, hazard_type, risk_score, geohash, population_risk, radius, radius_meters, access_key, status, resolution_votes_required, created_at: new Date().toISOString() };
+        localStore.hazard_zones.push(newZone);
+    }
+    saveLocalStore();
+    return { rows: [] };
   }
 
   return { rows: [] };

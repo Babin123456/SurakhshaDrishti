@@ -247,7 +247,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
   }, []);
 
   // 2. Assign Officer to Red Zone using 16-digit Security Key -> Enters Deep Focus Mode + Opens TeamViewer Chat (#13)
-  const handleAssignSelf = () => {
+  const handleAssignSelf = async () => {
     setAssignSuccessMsg(null);
     setAssignErrorMsg(null);
 
@@ -261,30 +261,41 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
       return;
     }
 
-
-
-    setZones(prev => prev.map(z => {
-      if (z.zone_id === selectedZoneId) {
-        const officers = Array.isArray(z.assigned_officers) ? z.assigned_officers : [];
-        const alreadyIn = officers.some(o => o.user_id === currentOfficerId);
-        const updatedList = alreadyIn 
-          ? officers 
-          : [...officers, { user_id: currentOfficerId, officer_name: currentOfficerName, department: currentDept, vote_to_resolve: false }];
-        return { ...z, assigned_officers: updatedList };
+    try {
+      const res = await fetch('http://localhost:5000/api/zones/assign', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userSession.token}`
+        },
+        body: JSON.stringify({ 
+          zone_id: selectedZoneId, 
+          access_key: inputKey,
+          officer_name: currentOfficerName,
+          department: currentDept
+        })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        const refreshRes = await apiService.fetchZones();
+        if (refreshRes.success) setZones(refreshRes.zones);
+        const successMsg = `Assigned to ${activeZone.name}! Entered Deep Focus Mode & Team Dispatch.`;
+        setAssignSuccessMsg(successMsg);
+        addToast(successMsg, 'success');
+        setInputKey('');
+      } else {
+        const errMsg = data.error || data.message || 'Failed to assign';
+        setAssignErrorMsg(errMsg);
+        addToast(errMsg, 'error');
       }
-      return z;
-    }));
-
-    const successMsg = `Assigned to ${activeZone.name}! Entered Deep Focus Mode & Team Dispatch.`;
-    setAssignSuccessMsg(successMsg);
-    addToast(successMsg, 'success');
-    setInputKey('');
-    
-    // Chat is now natively part of Split View, Deep Focus mode removed
+    } catch (e) {
+      addToast('Failed to assign. Network error.', 'error');
+    }
   };
 
   // Helper to assign self directly from Map HUD card or search bar
-  const handleAssignSelfFromMap = (targetZone) => {
+  const handleAssignSelfFromMap = async (targetZone) => {
     setAssignSuccessMsg(null);
     setAssignErrorMsg(null);
 
@@ -294,25 +305,35 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
       
     setSelectedZoneId(target.zone_id);
 
-
-
-    setZones(prev => prev.map(z => {
-      if (z.zone_id === target.zone_id) {
-        const officers = Array.isArray(z.assigned_officers) ? z.assigned_officers : [];
-        const alreadyIn = officers.some(o => o.user_id === currentOfficerId);
-        const updatedList = alreadyIn 
-          ? officers 
-          : [...officers, { user_id: currentOfficerId, officer_name: currentOfficerName, department: currentDept, vote_to_resolve: false }];
-        return { ...z, assigned_officers: updatedList };
+    try {
+      const res = await fetch('http://localhost:5000/api/zones/assign', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${userSession.token}`
+        },
+        body: JSON.stringify({ 
+          zone_id: target.zone_id,
+          officer_name: currentOfficerName,
+          department: currentDept
+        })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        const refreshRes = await apiService.fetchZones();
+        if (refreshRes.success) setZones(refreshRes.zones);
+        const successMsg = `Assigned to ${target.name}! Response channel activated.`;
+        setAssignSuccessMsg(successMsg);
+        addToast(successMsg, 'success');
+        setInputKey('');
+        setIsChatOpen(true);
+      } else {
+        addToast(data.error || 'Failed to assign', 'error');
       }
-      return z;
-    }));
-
-    const successMsg = `Assigned to ${target.name}! Response channel activated.`;
-    setAssignSuccessMsg(successMsg);
-    addToast(successMsg, 'success');
-    setInputKey('');
-    setIsChatOpen(true);
+    } catch (e) {
+      addToast('Failed to assign. Network error.', 'error');
+    }
   };
 
   // Send message in TeamViewer-style popup chatting interface
@@ -354,8 +375,11 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
         // we hit the real backend and refresh the state.
         const res = await fetch('http://localhost:5000/api/zones/vote-resolve', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ zone_id: selectedZoneId, user_id: currentOfficerId })
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${userSession.token}`
+            },
+            body: JSON.stringify({ zone_id: selectedZoneId })
         });
         const data = await res.json();
         
