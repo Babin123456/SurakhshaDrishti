@@ -79,12 +79,12 @@ export default function QuickSignModal({ locationStatus, onClose, onSuccess }) {
   }, [locationStatus]);
 
   useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     if (window.__lenis) window.__lenis.stop();
 
     return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
+      document.body.style.overflow = originalOverflow;
       if (window.__lenis) window.__lenis.start();
     };
   }, []);
@@ -174,42 +174,12 @@ export default function QuickSignModal({ locationStatus, onClose, onSuccess }) {
           </p>
 
           <button
-            onClick={() => {
-              const matchedZone = HAZARD_ZONES.find(z => z.id === formData.zoneId);
-              const passData = {
-                type: 'emergency_resident',
-                isEmergencyResident: true,
-                emergencyId: result.emergencyId,
-                name: (formData.name && formData.name.trim()) || 'Emergency Evacuee',
-                phone: (formData.phone && formData.phone.trim()) || '',
-                familyCount: parseInt(formData.familyCount, 10) || 1,
-                hazardZone: matchedZone ? matchedZone.name : 'Teesta River Basin (Singtam & Rangpo)',
-                zoneId: formData.zoneId,
-                location: detectedLoc || locationStatus?.coords || { lat: 11.5583, lng: 76.1384 },
-                specialNeeds: formData.specialNeeds || [],
-                assignedShelter: result.assignedShelter,
-                shelterCapacity: result.shelterCapacity,
-                evacuationRoute: result.evacuationRoute,
-                status: 'ACTIVE_RED_ZONE',
-                timestamp: new Date().toISOString(),
-              };
-
-              try {
-                localStorage.setItem('suraksha_emergency_pass', JSON.stringify(passData));
-                localStorage.setItem('suraksha_emergency_resident', JSON.stringify(passData));
-                const existingHistory = localStorage.getItem('suraksha_emergency_passes_history');
-                const parsedHistory = existingHistory ? JSON.parse(existingHistory) : [];
-                parsedHistory.unshift(passData);
-                localStorage.setItem('suraksha_emergency_passes_history', JSON.stringify(parsedHistory.slice(0, 20)));
-              } catch {}
-
-              document.body.style.overflow = '';
-              document.documentElement.style.overflow = '';
-              if (window.__lenis) window.__lenis.start();
-
-              onSuccess?.(passData);
-              onClose?.();
-            }}
+            onClick={() => onSuccess?.({
+              success: true,
+              isGuestAccount: true,
+              guestId: result.emergencyId,
+              status: 'QUICKSIGN_EMERGENCY',
+            })}
             className="w-full py-3.5 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-medium text-xs tracking-wide shadow-md transition-all cursor-pointer hover:-translate-y-0.5"
           >
             Access Emergency Command Dashboard

@@ -97,19 +97,15 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess, onOpenD
                     <Lock className="w-5 h-5" />
                   </div>
                   <h3 className="text-sm font-bold text-[#1A1A1A] mb-1">
-                    {currentUser && !currentUser.isGuestAccount && !currentUser.isEmergencyResident
-                      ? (currentUser.fullName || currentUser.name || 'Command Console')
-                      : 'Command Console'}
+                    {currentUser ? (currentUser.fullName || currentUser.name || 'Command Console') : 'Command Console'}
                   </h3>
                   <p className="text-[11px] text-[#5C544D] leading-relaxed">
-                    {currentUser && !currentUser.isGuestAccount && !currentUser.isEmergencyResident
-                      ? `Active Tactical Session • Department: ${currentUser.role || 'NDRF'}`
-                      : 'Tactical console for NDRF commanders and SDMA authorities.'}
+                    {currentUser ? `Active Tactical Session • Department: ${currentUser.role || 'NDRF'}` : 'Tactical console for NDRF commanders and SDMA authorities.'}
                   </p>
                 </div>
                 <div className="mt-3 pt-2 border-t border-[#E8E1D5] flex items-center justify-between text-[10px] font-mono text-[#8C847A]">
-                  <span>{currentUser && !currentUser.isGuestAccount && !currentUser.isEmergencyResident ? 'AUTHENTICATED OFFICER' : 'OFFICIAL ACCESS'}</span>
-                  <span className="font-bold text-[#4A4238]">{currentUser && !currentUser.isGuestAccount && !currentUser.isEmergencyResident ? 'LIVE SESSION' : '16-DIGIT KEY'}</span>
+                  <span>{currentUser ? 'AUTHENTICATED OFFICER' : 'OFFICIAL ACCESS'}</span>
+                  <span className="font-bold text-[#4A4238]">{currentUser ? 'LIVE SESSION' : '16-DIGIT KEY'}</span>
                 </div>
               </div>
 
@@ -150,7 +146,7 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess, onOpenD
                 ) : (
                   <Users className="w-4 h-4 opacity-80 shrink-0" />
                 )}
-                <span>{currentUser && !currentUser.isGuestAccount && !currentUser.isEmergencyResident ? 'Enter Command Console' : 'Officer Sign In'}</span>
+                <span>{currentUser ? 'Enter Command Console' : 'Officer Sign In'}</span>
                 <ArrowRight className="w-4 h-4 text-[#8B7355] group-hover:translate-x-0.5 transition-transform shrink-0" />
               </button>
 

@@ -919,8 +919,8 @@ Implement a background self-healing interval probe (`SELECT 1`) every 30 seconds
 | **BUG-01** | `auth.js` / `dbHandler.js` | **CRITICAL** | Seed demo passwords fail bcrypt validation against `Commander@Pass2026`. | Identified |
 | **BUG-02** | `AuthSection.jsx` | **HIGH** | 2FA verification simulated client-side, producing malformed JWTs. | Identified |
 | **BUG-03** | `auth.js` / `schema.sql` | **HIGH** | Authority login auto-provisioning bypasses `users` table, violating foreign keys. | Identified |
-| **BUG-04** | `dbHandler.js` | **CRITICAL** | `emergency_passes` fallback query maps coordinates into shelter & needs columns. | Fixed |
-| **BUG-05** | `dbHandler.js` | **HIGH** | `INSERT INTO hazard_zones` missing from local fallback engine. | Fixed |
+| **BUG-04** | `dbHandler.js` | **CRITICAL** | `emergency_passes` fallback query maps coordinates into shelter & needs columns. | Identified |
+| **BUG-05** | `dbHandler.js` | **HIGH** | `INSERT INTO hazard_zones` missing from local fallback engine. | Identified |
 | **BUG-06** | `Dashboard.jsx` | **CRITICAL** | Officer self-assignment is local state only and never hits `POST /api/zones/assign`. | Identified |
 | **BUG-07** | `Dashboard.jsx` / `userApp` | **CRITICAL** | `POST /api/zones/vote-resolve` called without `Authorization` header, returning 401. | Identified |
 | **BUG-08** | `AppLogin.jsx` | **CRITICAL** | Root-level `lat`/`lng` in QuickSign results in null coordinates in database. | Identified |
@@ -928,17 +928,17 @@ Implement a background self-healing interval probe (`SELECT 1`) every 30 seconds
 | **BUG-10** | `RealGoogleMap.jsx` | **MEDIUM** | Map "Assign Self" button bypasses 16-digit key verification. | Identified |
 | **BUG-11** | Full Stack | **HIGH** | Socket.IO client completely missing from frontends; polling fallback only. | Identified |
 | **BUG-12** | `AgentDashboard.jsx` | **HIGH** | Tactical chat Send button lacks `onClick` and submission handler. | Identified |
-| **BUG-13** | `UserProfile.jsx` | **HIGH** | Password modification persisted solely to `localStorage` under custom key. | Fixed |
+| **BUG-13** | `UserProfile.jsx` | **HIGH** | Password modification persisted solely to `localStorage` under custom key. | Identified |
 | **BUG-14** | `chat.js` | **HIGH** | `/chat/upload` lacks MIME/extension whitelist, allowing Stored XSS. | Identified |
 | **BUG-15** | `AlertNotification.jsx` | **MEDIUM** | Web Audio `AudioContext` unclosed on unmount, leaking audio output channels. | Identified |
 | **BUG-16** | `App.jsx` | **MEDIUM** | `handleAuthSuccess` does not redirect authority users to `/dashboard`. | Identified |
 | **BUG-17** | `RealGoogleMap.jsx` | **LOW** | `ResizeObserver` not disconnected in map unmount cleanup. | Identified |
 | **BUG-18** | Full Stack | **LOW** | Orphaned dead code (`HeroSection.jsx`, `crypto.js`, `math_engine.cpp`). | Identified |
-| **BUG-19** | `App.jsx` / `QuickSign` | **CRITICAL** | QuickSign guest emergency pass overwrites authenticated officer session. | Fixed |
-| **BUG-20** | `UserProfile.jsx` | **HIGH** | Global un-scoped `suraksha_user_credentials` leaks credentials across sessions. | Fixed |
-| **BUG-21** | `UserProfile.jsx` | **HIGH** | Hardcoded Level 4 clearance and `'ndrf_admin'` fallback for all users. | Fixed |
-| **BUG-22** | Modals / Lenis | **MEDIUM** | Nested modal unmount captures `'hidden'` and permanently locks body scroll. | Fixed |
-| **BUG-23** | `dbHandler.js` | **HIGH** | PostgreSQL connection pool permanent failure on initial boot timeout without retry. | Fixed |
+| **BUG-19** | `App.jsx` / `QuickSign` | **CRITICAL** | QuickSign guest emergency pass overwrites authenticated officer session. | Identified |
+| **BUG-20** | `UserProfile.jsx` | **HIGH** | Global un-scoped `suraksha_user_credentials` leaks credentials across sessions. | Identified |
+| **BUG-21** | `UserProfile.jsx` | **HIGH** | Hardcoded Level 4 clearance and `'ndrf_admin'` fallback for all users. | Identified |
+| **BUG-22** | Modals / Lenis | **MEDIUM** | Nested modal unmount captures `'hidden'` and permanently locks body scroll. | Identified |
+| **BUG-23** | `dbHandler.js` | **HIGH** | PostgreSQL connection pool permanent failure on initial boot timeout without retry. | Identified |
 
 ---
 

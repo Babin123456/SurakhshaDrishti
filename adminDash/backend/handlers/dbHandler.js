@@ -244,54 +244,12 @@ async function executeLocalQuery(text, params = []) {
       saveLocalStore();
       return { rows: [] };
     } else {
-      let pass_id, user_id, phone, lat, lng, assigned_shelter_id, special_needs;
-      if (params.length >= 7) {
-        [pass_id, user_id, phone, lat, lng, assigned_shelter_id, special_needs] = params;
-      } else {
-        [pass_id, user_id, phone, assigned_shelter_id, special_needs] = params;
-      }
-      const newPass = {
-        pass_id,
-        user_id,
-        phone: phone || null,
-        lat: lat || null,
-        lng: lng || null,
-        assigned_shelter_id: assigned_shelter_id || null,
-        special_needs: Array.isArray(special_needs) ? special_needs : [],
-        status: 'ACTIVE_RED_ZONE',
-        created_at: new Date().toISOString()
-      };
+      const [pass_id, user_id, phone, assigned_shelter_id, special_needs] = params;
+      const newPass = { pass_id, user_id, phone, assigned_shelter_id, special_needs, status: 'ACTIVE_RED_ZONE', created_at: new Date().toISOString() };
       localStore.emergency_passes.push(newPass);
       saveLocalStore();
       return { rows: [newPass] };
     }
-  }
-
-  // INSERT INTO hazard_zones
-  if (lower.startsWith('insert into hazard_zones')) {
-    const [zone_id, name, state, lat, lng, zone_type, hazard_type, risk_score, geohash, population_risk, radius, radius_meters, access_key, status, resolution_votes_required] = params;
-    const newZone = {
-      zone_id,
-      name,
-      state: state || 'Kerala',
-      lat: parseFloat(lat),
-      lng: parseFloat(lng),
-      zone_type: zone_type || 'RED',
-      hazard_type: hazard_type || 'LANDSLIDE',
-      risk_score: parseInt(risk_score, 10) || 85,
-      geohash: geohash || 'tdv2n19z',
-      population_risk: parseInt(population_risk, 10) || 1000,
-      radius_meters: parseInt(radius_meters || radius, 10) || 4000,
-      access_key: access_key || `RZ-${Math.random().toString(36).substring(2, 6).toUpperCase()}`,
-      status: status || 'ACTIVE_RED_ZONE',
-      resolution_votes_required: parseInt(resolution_votes_required, 10) || 2,
-      resolution_votes_cast: 0,
-      is_open: true,
-      created_at: new Date().toISOString()
-    };
-    localStore.hazard_zones.push(newZone);
-    saveLocalStore();
-    return { rows: [newZone] };
   }
 
   return { rows: [] };
@@ -327,8 +285,7 @@ async function initDB() {
             client.release();
         }
     } catch (err) {
-        const reason = err.code || err.message || 'Connection Timeout';
-        console.warn(`[SurakshaDrishti Database] PostgreSQL offline/unreachable (${reason}). Resilient local fallback ACTIVE.`);
+        console.warn("[SurakshaDrishti Database] PostgreSQL offline/unreachable. Resilient local fallback ACTIVE.");
         pgHealthy = false;
     }
 }
@@ -336,21 +293,6 @@ async function initDB() {
 initDB().catch(() => {
     pgHealthy = false;
 });
-
-// Periodic background self-healing reconnection probe
-setInterval(async () => {
-    if (!pgHealthy) {
-        try {
-            const probe = await pool.query('SELECT 1');
-            if (probe && probe.rows) {
-                console.log("[SurakshaDrishti Database] PostgreSQL connection restored! Switching back to primary database rail.");
-                pgHealthy = true;
-            }
-        } catch (err) {
-            // Keep running on local fallback silently until upstream database responds
-        }
-    }
-}, 30000);
 
 const dbWrapper = {
     query: async (text, params) => {

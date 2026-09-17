@@ -23,7 +23,7 @@ const SHELTERS = [
   { name: 'Meppadi High Ground Camp', dist: '2.1 km', lat: 11.5510, lng: 76.1280, cap: '620 Beds Open', route: 'Via Bypass Road #2' }
 ];
 
-export default function EmergencyMode({ onClose, onAuthSuccess, onQuickSignSuccess }) {
+export default function EmergencyMode({ onClose, onAuthSuccess }) {
   const [showQuickSign, setShowQuickSign] = useState(false);
   const [activeModalAction, setActiveModalAction] = useState(null); // 'shelter' | 'help' | 'evacuate' | null
   const [locationStatus, setLocationStatus] = useState(null);
@@ -31,12 +31,12 @@ export default function EmergencyMode({ onClose, onAuthSuccess, onQuickSignSucce
   const [helpRequested, setHelpRequested] = useState(false);
 
   useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     if (window.__lenis) window.__lenis.stop();
 
     return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
+      document.body.style.overflow = originalOverflow;
       if (window.__lenis) window.__lenis.start();
     };
   }, []);
@@ -81,7 +81,7 @@ export default function EmergencyMode({ onClose, onAuthSuccess, onQuickSignSucce
       <QuickSignModal
         locationStatus={locationStatus}
         onClose={() => setShowQuickSign(false)}
-        onSuccess={onQuickSignSuccess || onAuthSuccess}
+        onSuccess={onAuthSuccess}
       />
     );
   }
