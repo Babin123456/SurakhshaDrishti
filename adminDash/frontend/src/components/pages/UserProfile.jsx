@@ -23,15 +23,40 @@ import { apiService } from '../../utils/api';
 
 export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNavigateHome }) {
   const { addToast } = useToast();
+  
+  const isOfficer = !['RESIDENT', 'CIVILIAN', 'EVACUEE'].includes((user?.role || user?.department || '').toUpperCase());
+  const defaultName = isOfficer ? 'NDRF Commander Chief' : (user?.name || user?.fullName || 'Civilian Evacuee');
+  const defaultEmail = isOfficer ? 'vikram.singh@ndrf.gov.in' : (user?.email || '');
+  const defaultPhone = isOfficer ? '9876501234' : (user?.phone || '');
+  const defaultDept = isOfficer ? (user?.role || user?.department || 'NDRF') : 'Resident';
+
   // Form states initialized from user session
-  const [fullName, setFullName] = useState(user?.fullName || user?.name || user?.username || 'NDRF Commander Chief');
-  const [email, setEmail] = useState(user?.email || 'vikram.singh@ndrf.gov.in');
-  const [phone, setPhone] = useState(user?.phone || '9876501234');
-  const [department, setDepartment] = useState(user?.role || user?.department || 'NDRF');
+  const [fullName, setFullName] = useState(user?.fullName || user?.name || user?.username || defaultName);
+  const [email, setEmail] = useState(user?.email || defaultEmail);
+  const [phone, setPhone] = useState(user?.phone || defaultPhone);
+  const [department, setDepartment] = useState(user?.role || user?.department || defaultDept);
   
   // Baseline initial values to detect modifications
-  const [initialEmail, setInitialEmail] = useState(user?.email || 'vikram.singh@ndrf.gov.in');
-  const [initialPhone, setInitialPhone] = useState(user?.phone || '9876501234');
+  const [initialEmail, setInitialEmail] = useState(user?.email || defaultEmail);
+  const [initialPhone, setInitialPhone] = useState(user?.phone || defaultPhone);
+
+  const getClearanceLevel = () => {
+    if (user?.clearanceLevel) return user.clearanceLevel;
+    const roleUpper = (department || user?.role || user?.department || '').toUpperCase();
+    if (roleUpper.includes('NDRF') || roleUpper.includes('ADMIN') || roleUpper.includes('COMMAND')) {
+      return 'Level 4 (Disaster Response Administrator)';
+    }
+    if (roleUpper.includes('SDMA')) {
+      return 'Level 3 (State Disaster Authority Coordinator)';
+    }
+    if (roleUpper.includes('POLICE') || roleUpper.includes('FIRE')) {
+      return 'Level 2 (Field Operations Officer)';
+    }
+    if (roleUpper.includes('RESIDENT') || roleUpper.includes('CIVILIAN') || roleUpper.includes('EVACUEE')) {
+      return 'Civilian Evacuee (No Command Clearance)';
+    }
+    return 'Level 1 (Authorized Tactical Observer)';
+  };
 
   // Password change states
   const [currentPassword, setCurrentPassword] = useState('');
@@ -43,17 +68,19 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
   const [enteredOtp, setEnteredOtp] = useState('');
 
   // Profile picture state (supports local preview, upload, remove)
+  const targetUserId = user?.userId || user?.user_id || user?.username || (isOfficer ? 'officer_vikram_singh' : 'resident_user');
   const [profileImage, setProfileImage] = useState(
-    user?.profile_picture || user?.avatar || localStorage.getItem('suraksha_user_pfp') || null
+    user?.profile_picture || user?.avatar || localStorage.getItem(`suraksha_user_pfp_${targetUserId}`) || localStorage.getItem('suraksha_user_pfp') || null
   );
 
   // Sync state whenever user prop updates externally
   useEffect(() => {
     if (user) {
-      const uName = user.fullName || user.name || user.username || 'NDRF Commander Chief';
-      const uMail = user.email || 'vikram.singh@ndrf.gov.in';
-      const uPhone = user.phone || '9876501234';
-      const uDept = user.role || user.department || 'NDRF';
+      const uIsOfficer = !['RESIDENT', 'CIVILIAN', 'EVACUEE'].includes((user?.role || user?.department || '').toUpperCase());
+      const uName = user.fullName || user.name || user.username || (uIsOfficer ? 'NDRF Commander Chief' : 'Civilian Evacuee');
+      const uMail = user.email || (uIsOfficer ? 'vikram.singh@ndrf.gov.in' : '');
+      const uPhone = user.phone || (uIsOfficer ? '9876501234' : '');
+      const uDept = user.role || user.department || (uIsOfficer ? 'NDRF' : 'Resident');
 
       setFullName(uName);
       setEmail(uMail);
@@ -197,7 +224,7 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
       };
 
       try {
-        localStorage.setItem('suraksha_user_credentials', JSON.stringify({
+        localStorage.setItem(`suraksha_user_credentials_${targetUserId}`, JSON.stringify({
           fullName: fullName.trim(),
           email: verifiedMail,
           phone: initialPhone.trim(),
@@ -237,7 +264,7 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
       };
 
       try {
-        localStorage.setItem('suraksha_user_credentials', JSON.stringify({
+        localStorage.setItem(`suraksha_user_credentials_${targetUserId}`, JSON.stringify({
           fullName: fullName.trim(),
           email: initialEmail.trim(),
           phone: verifiedPhone,
@@ -372,9 +399,9 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
       avatar: profileImage
     };
 
-    // Save locally for persistence
+    // Save locally for persistence with user-scoped isolation
     try {
-      localStorage.setItem('suraksha_user_credentials', JSON.stringify({
+      localStorage.setItem(`suraksha_user_credentials_${targetUserId}`, JSON.stringify({
         fullName: fullName.trim(),
         email: initialEmail.trim(),
         phone: initialPhone.trim(),
@@ -382,7 +409,7 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
         profile_picture: profileImage
       }));
 
-      // Update active user session
+      // Update active user session only if matching session exists
       const existingSession = localStorage.getItem('suraksha_user_session');
       if (existingSession) {
         const parsed = JSON.parse(existingSession);
@@ -522,16 +549,16 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
               </div>
               
               <p className="text-xs text-[#5C544D]">
-                Operational Clearance: <strong className="text-[#1A1A1A]">Level 4 (Disaster Response Administrator)</strong>
+                Operational Clearance: <strong className="text-[#1A1A1A]">{getClearanceLevel()}</strong>
               </p>
 
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2 text-xs text-[#7A726A]">
                 <span className="flex items-center gap-1.5">
-                  <BadgeCheck className="w-3.5 h-3.5 text-[#2D7A4F]" /> Verified Officer ID
+                  <BadgeCheck className="w-3.5 h-3.5 text-[#2D7A4F]" /> {isOfficer ? 'Verified Officer ID' : 'Verified Evacuee ID'}
                 </span>
                 <span>•</span>
                 <span className="font-mono text-[#5C544D]">
-                  ID: {user?.userId || user?.user_id || user?.username || 'ndrf_admin'}
+                  ID: {user?.userId || user?.user_id || user?.username || (user?.emergencyId || 'OFFICER-SESSION')}
                 </span>
               </div>
             </div>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { ShieldCheck } from 'lucide-react';
 
 import Navbar from './components/Navbar';
 import GovernmentLanding from './components/GovernmentLanding';
@@ -71,12 +72,19 @@ export default function App() {
       const saved = localStorage.getItem('suraksha_user_session');
       if (!saved) return null;
       const parsed = JSON.parse(saved);
-      const customCreds = localStorage.getItem('suraksha_user_credentials');
-      const customPfp = localStorage.getItem('suraksha_user_pfp');
+      // Ensure emergency pass records do not masquerade as officer sessions
+      if (parsed.isGuestAccount || parsed.isEmergencyResident || parsed.status === 'QUICKSIGN_EMERGENCY') {
+        return null;
+      }
+      const activeUser = parsed.user || parsed;
+      const targetUserId = activeUser.userId || activeUser.user_id || activeUser.username;
+      
+      const customCreds = targetUserId ? localStorage.getItem(`suraksha_user_credentials_${targetUserId}`) : null;
+      const customPfp = targetUserId ? (localStorage.getItem(`suraksha_user_pfp_${targetUserId}`) || localStorage.getItem('suraksha_user_pfp')) : null;
       const creds = customCreds ? JSON.parse(customCreds) : {};
       
       const mergedUser = {
-        ...(parsed.user || parsed),
+        ...activeUser,
         ...creds,
         ...(customPfp ? { profile_picture: customPfp, avatar: customPfp } : {})
       };
@@ -86,6 +94,15 @@ export default function App() {
         ...mergedUser,
         user: mergedUser
       };
+    } catch {
+      return null;
+    }
+  });
+
+  const [emergencyPass, setEmergencyPass] = useState(() => {
+    try {
+      const saved = localStorage.getItem('suraksha_emergency_pass');
+      return saved ? JSON.parse(saved) : null;
     } catch {
       return null;
     }
@@ -116,6 +133,22 @@ export default function App() {
     setShowEmergency(false);
     setShowDemoOfficer(false);
     setShowQuickSign(false);
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+    if (window.__lenis) window.__lenis.start();
+  };
+
+  const handleQuickSignSuccess = (passData) => {
+    setEmergencyPass(passData);
+    try {
+      localStorage.setItem('suraksha_emergency_pass', JSON.stringify(passData));
+      localStorage.setItem('suraksha_emergency_resident', JSON.stringify(passData));
+    } catch {}
+    setShowQuickSign(false);
+    setShowEmergency(false);
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
+    if (window.__lenis) window.__lenis.start();
   };
 
   const handleLogout = () => {
@@ -282,18 +315,92 @@ export default function App() {
   // Profile Route: accessible when on /profile
   if (location.pathname === '/profile') {
     if (!userSession) {
-      // Non-authenticated user accessing /profile -> redirect to home
+      if (emergencyPass) {
+        return (
+          <div className="min-h-screen bg-[#FDFBF7] text-[#2C2A29] font-sans py-12 px-4 flex flex-col items-center justify-center relative">
+            <div className="paper-texture"></div>
+            <div className="max-w-lg w-full bg-white/90 backdrop-blur-md border border-[#E8E1D5] rounded-3xl p-6 sm:p-8 shadow-md relative z-20 space-y-5 animate-scale-in text-center">
+              <div className="w-16 h-16 mx-auto rounded-full bg-[#FFF5F2] border border-[#FADED4] flex items-center justify-center text-[#B85C38] shadow-xs">
+                <ShieldCheck className="w-8 h-8" />
+              </div>
+
+              <div>
+                <span className="inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#FFF5F2] border border-[#FADED4] text-[#B85C38]">
+                  Civilian Emergency Pass • Verified Evacuee
+                </span>
+                <h2 className="text-xl sm:text-2xl font-bold text-[#1A1A1A] mt-2">
+                  {emergencyPass.name || 'Emergency Evacuee'}
+                </h2>
+                <div className="inline-block px-4 py-2 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] text-xl font-mono font-bold text-[#B85C38] mt-2 shadow-xs">
+                  Pass ID: {emergencyPass.emergencyId}
+                </div>
+              </div>
+
+              <div className="space-y-2 text-left text-xs">
+                <div className="p-3 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-between">
+                  <span className="text-[#5C544D]">Hazard Zone:</span>
+                  <span className="text-[#1A1A1A] font-bold">{emergencyPass.hazardZone}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-between">
+                  <span className="text-[#5C544D]">Assigned Shelter:</span>
+                  <span className="text-[#2D7A4F] font-bold">{emergencyPass.assignedShelter}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-between">
+                  <span className="text-[#5C544D]">Evacuation Corridor:</span>
+                  <span className="text-[#2E5B88] font-bold">{emergencyPass.evacuationRoute}</span>
+                </div>
+                <div className="p-3 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-between">
+                  <span className="text-[#5C544D]">Family Members:</span>
+                  <span className="text-[#1A1A1A] font-bold">{emergencyPass.familyCount}</span>
+                </div>
+                {emergencyPass.phone && (
+                  <div className="p-3 rounded-xl bg-[#F6F4F0] border border-[#E8E1D5] flex items-center justify-between">
+                    <span className="text-[#5C544D]">Emergency Contact:</span>
+                    <span className="text-[#1A1A1A] font-mono font-bold">{emergencyPass.phone}</span>
+                  </div>
+                )}
+              </div>
+
+              <p className="text-[11px] text-[#7A726A] leading-relaxed">
+                This emergency pass is issued exclusively for civilian relief shelter relocation. Tactical authority controls and commander operational clearances require an authorized officer session.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/')}
+                  className="flex-1 py-3 rounded-xl bg-white hover:bg-[#F6F4F0] border border-[#E8E1D5] text-[#2C2A29] font-medium text-xs transition-colors cursor-pointer shadow-2xs"
+                >
+                  Return to Home
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate('/');
+                    handleOpenAuth('signin');
+                  }}
+                  className="flex-1 py-3 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] font-medium text-xs transition-all cursor-pointer shadow-md"
+                >
+                  Officer Sign In
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Non-authenticated user without civilian pass
       return (
-        <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center">
-          <div className="text-center p-6 max-w-sm">
-            <h2 className="text-base font-bold text-[#1A1A1A] mb-2">Authentication Required</h2>
-            <p className="text-xs text-[#5C544D] mb-4">Please sign in to access officer profile credentials.</p>
+        <div className="min-h-screen bg-[#FDFBF7] flex items-center justify-center p-4">
+          <div className="text-center p-6 max-w-sm bg-white border border-[#E8E1D5] rounded-3xl shadow-sm space-y-3">
+            <h2 className="text-base font-bold text-[#1A1A1A]">Authentication Required</h2>
+            <p className="text-xs text-[#5C544D]">Please sign in with official credentials to access tactical officer management.</p>
             <button
               onClick={() => {
                 navigate('/');
                 handleOpenAuth('signin');
               }}
-              className="px-4 py-2 rounded-xl bg-[#2C2A29] text-[#FDFBF7] text-xs font-semibold"
+              className="px-5 py-2.5 rounded-xl bg-[#2C2A29] hover:bg-[#1A1A1A] text-[#FDFBF7] text-xs font-semibold shadow-xs cursor-pointer"
             >
               Sign In
             </button>
@@ -309,7 +416,8 @@ export default function App() {
         <UserProfile
           user={currentUser}
           onUpdateUser={(updated) => {
-            const currentPfp = updated.profile_picture || updated.avatar || localStorage.getItem('suraksha_user_pfp');
+            const targetUserId = updated.userId || updated.user_id || updated.username;
+            const currentPfp = updated.profile_picture || updated.avatar || (targetUserId ? localStorage.getItem(`suraksha_user_pfp_${targetUserId}`) : null) || localStorage.getItem('suraksha_user_pfp');
             const nextUserData = {
               ...(userSession.user || userSession),
               ...updated,
@@ -324,6 +432,9 @@ export default function App() {
             setUserSession(nextSession);
             try {
               localStorage.setItem('suraksha_user_session', JSON.stringify(nextSession));
+              if (targetUserId) {
+                localStorage.setItem(`suraksha_user_credentials_${targetUserId}`, JSON.stringify(nextUserData));
+              }
             } catch {}
           }}
           onBack={() => {
@@ -471,8 +582,14 @@ export default function App() {
 
       {showEmergency && (
         <EmergencyMode
-          onClose={() => setShowEmergency(false)}
+          onClose={() => {
+            setShowEmergency(false);
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            if (window.__lenis) window.__lenis.start();
+          }}
           onAuthSuccess={handleAuthSuccess}
+          onQuickSignSuccess={handleQuickSignSuccess}
         />
       )}
 
@@ -482,8 +599,11 @@ export default function App() {
           onClose={() => {
             setShowQuickSign(false);
             setQuickSignLocation(null);
+            document.body.style.overflow = '';
+            document.documentElement.style.overflow = '';
+            if (window.__lenis) window.__lenis.start();
           }}
-          onSuccess={handleAuthSuccess}
+          onSuccess={handleQuickSignSuccess}
         />
       )}
     </div>

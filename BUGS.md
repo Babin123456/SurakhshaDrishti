@@ -14,7 +14,8 @@ This document presents the complete technical audit of the **SurakshaDrishti** c
 6. [Category V: Real-Time Communications & WebSocket Disconnects](#6-category-v-real-time-communications--websocket-disconnects)
 7. [Category VI: Ghost API Endpoints, Dead Code, & Orphaned Modules](#7-category-vi-ghost-api-endpoints-dead-code--orphaned-modules)
 8. [Category VII: Resource Leaks, Memory Pitfalls, & Security Hazards](#8-category-vii-resource-leaks-memory-pitfalls--security-hazards)
-9. [Master Vulnerability Matrix & Priority Action Plan](#9-master-vulnerability-matrix--priority-action-plan)
+9. [Category VIII: State Management, Identity Collisions, & Database Resilience](#9-category-viii-state-management-identity-collisions--database-resilience)
+10. [Master Vulnerability Matrix & Priority Action Plan](#10-master-vulnerability-matrix--priority-action-plan)
 
 ---
 
@@ -768,15 +769,158 @@ const handleAuthSuccess = (session) => {
 
 ---
 
-## 9. Master Vulnerability Matrix & Priority Action Plan
+## 9. Category VIII: State Management, Identity Collisions, & Database Resilience
+
+### Bug 8.1: State Contamination Between Authenticated NDRF Officer and QuickSign Civilian Pass
+
+- **Affected Components**:
+  - Frontend: [`adminDash/frontend/src/App.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/App.jsx#L110-L119), [`adminDash/frontend/src/components/QuickSignModal.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/components/QuickSignModal.jsx#L177-L186), [`adminDash/frontend/src/components/EmergencyMode.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/components/EmergencyMode.jsx#L81-L85)
+- **Severity**: **CRITICAL (Session Overwrite & State Contamination)**
+
+#### Failure Mechanism for Bug 8.1
+
+In `QuickSignModal.jsx:177-186`, clicking "Access Emergency Command Dashboard" called `onSuccess` with a guest object:
+
+```javascript
+onSuccess?.({
+  success: true,
+  isGuestAccount: true,
+  guestId: result.emergencyId,
+  status: 'QUICKSIGN_EMERGENCY',
+});
+```
+
+In `App.jsx`, `onSuccess` was passed `handleAuthSuccess`. This directly overwrote `userSession` and `localStorage.setItem('suraksha_user_session', ...)` with the temporary guest pass. If an NDRF Commander was already logged in, issuing a civilian emergency pass destroyed the officer's authenticated session and elevated the civilian pass into a pseudo-authenticated officer session.
+
+#### Code Proof & Video Citation for Bug 8.1
+
+In `Screen Recording 2026-09-17 172014.mp4` at timestamps `00:09` to `00:46`:
+
+1. The user entered resident emergency information (`Babin Bid`, Teesta River Basin, family of 4, Infant Care).
+2. The emergency pass `QS-JEQRVL` was verified.
+3. Upon clicking "Access Emergency Command Dashboard", the home landing page Command Console box immediately flipped to show `9123777679 - Active Tactical Session • Department: NDRF - AUTHENTICATED OFFICER | LIVE SESSION`.
+
+#### Remediation for Bug 8.1
+
+Decouple QuickSign from `handleAuthSuccess`. Store civilian passes separately in `suraksha_emergency_pass` and `suraksha_emergency_resident`. Retain `userSession` strictly for verified officers.
+
+---
+
+### Bug 8.2: Global Un-Scoped Storage Key `suraksha_user_credentials` Causing Cross-Session Profile Leaks
+
+- **Affected Components**:
+  - Frontend: [`adminDash/frontend/src/App.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/App.jsx#L74-L88), [`adminDash/frontend/src/components/pages/UserProfile.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/components/pages/UserProfile.jsx#L200)
+- **Severity**: **HIGH (Cross-Identity Data Pollution)**
+
+#### Failure Mechanism for Bug 8.2
+
+In `UserProfile.jsx:377`, profile edits saved credentials to a single global key `suraksha_user_credentials`.
+In `App.jsx:74-88`, whenever the application loaded or was refreshed:
+
+```javascript
+const customCreds = localStorage.getItem('suraksha_user_credentials');
+const creds = customCreds ? JSON.parse(customCreds) : {};
+const mergedUser = {
+  ...(parsed.user || parsed),
+  ...creds, // <-- Unconditionally merges global credentials over any active session
+};
+```
+
+#### Code Proof & Video Citation for Bug 8.2
+
+In `Screen Recording 2026-09-17 172014.mp4` at `01:43`:
+Upon hard-refreshing on `/profile`, the stored resident credentials (`fullName: "9123777679"`, `email: "babinbid3@gmail.com"`, `phone: "+91 98765 43210"`, `role: "Resident"`) were blindly merged onto the active session, while the officer authorization fields persisted underneath.
+
+#### Remediation for Bug 8.2
+
+Scope credential storage to specific user IDs (`suraksha_user_credentials_${targetUserId}`). In `App.jsx`, only load custom credentials that match the active officer's `userId`.
+
+---
+
+### Bug 8.3: Hardcoded Level 4 Officer Clearance & Fallback to `ndrf_admin` in `UserProfile.jsx`
+
+- **Affected Components**:
+  - Frontend: [`adminDash/frontend/src/components/pages/UserProfile.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/components/pages/UserProfile.jsx#L524-L536)
+- **Severity**: **HIGH (Privilege Escalation & Frankenstein Profile UI)**
+
+#### Failure Mechanism for Bug 8.3
+
+In `UserProfile.jsx:524-536`:
+
+```jsx
+<p className="text-xs text-[#5C544D]">
+  Operational Clearance: <strong className="text-[#1A1A1A]">Level 4 (Disaster Response Administrator)</strong>
+</p>
+<span className="font-mono text-[#5C544D]">
+  ID: {user?.userId || user?.user_id || user?.username || 'ndrf_admin'}
+</span>
+```
+
+1. `Operational Clearance: Level 4` was hardcoded in static JSX for all users.
+2. `Verified Officer ID` fell back to `'ndrf_admin'` whenever the user object lacked a `userId` (such as emergency resident passes).
+3. State hooks defaulted to `'NDRF Commander Chief'` and `'vikram.singh@ndrf.gov.in'`.
+
+This created a Frankenstein interface where resident contact details were shown alongside Level 4 Disaster Response Administrator clearance and `ndrf_admin` ID.
+
+#### Remediation for Bug 8.3
+
+Compute operational clearance dynamically based on `user.role` (`Civilian Evacuee (No Command Clearance)` for residents). Remove the `'ndrf_admin'` fallback, and provide a dedicated Civilian Emergency Pass view on `/profile` for non-officers.
+
+---
+
+### Bug 8.4: Nested Modal Overflow Scroll-Lock Leaks (`overflow: hidden` and Lenis Freeze)
+
+- **Affected Components**:
+  - Frontend: [`adminDash/frontend/src/components/QuickSignModal.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/components/QuickSignModal.jsx#L81-L90), [`adminDash/frontend/src/components/EmergencyMode.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/components/EmergencyMode.jsx#L33-L42)
+- **Severity**: **MEDIUM (Permanent Page Scroll Disruption)**
+
+#### Failure Mechanism for Bug 8.4
+
+When `EmergencyMode` mounted, it set `document.body.style.overflow = 'hidden'`. When the user clicked QuickSign, `QuickSignModal` mounted while `overflow` was already `'hidden'`. It captured `originalOverflow = 'hidden'`. On unmount, it restored `'hidden'`, leaving the main window permanently unscrollable.
+
+#### Code Proof & Video Citation for Bug 8.4
+
+In `Screen Recording 2026-09-17 172014.mp4` at `01:30` to `01:40`:
+The user opened the side-panel assistant because scrolling was completely locked on the landing page ("Scrolling is not performing").
+
+#### Remediation for Bug 8.4
+
+In all modal unmount cleanups, unconditionally reset `document.body.style.overflow = ''` and `document.documentElement.style.overflow = ''`, and call `window.__lenis.start()`.
+
+---
+
+### Bug 8.5: PostgreSQL Connection Offline Fallback & Unreconnectable Pool State
+
+- **Affected Components**:
+  - Backend: [`adminDash/backend/handlers/dbHandler.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/handlers/dbHandler.js#L287-L290), [`adminDash/backend/src/main.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/src/main.js)
+- **Severity**: **HIGH (Permanent Degradation to Offline Mode)**
+
+#### Failure Mechanism for Bug 8.5
+
+When starting the backend with `npm start`:
+
+```text
+[SurakshaDrishti Database] PostgreSQL offline/unreachable (ETIMEDOUT). Resilient local fallback ACTIVE.
+```
+
+If Supabase direct port 5432 is unreachable due to IPv6 routing restrictions, cold-start latency, or temporary DNS resolution failure during boot, `initDB()` catches the error and permanently sets `pgHealthy = false`.
+The query wrapper (`dbWrapper.query`) never retries connecting to PostgreSQL, permanently condemning the server process to local JSON fallback mode even after network or upstream database connectivity recovers.
+
+#### Remediation for Bug 8.5
+
+Implement a background self-healing interval probe (`SELECT 1`) every 30 seconds that checks connection viability and automatically switches `pgHealthy = true` when PostgreSQL becomes reachable.
+
+---
+
+## 10. Master Vulnerability Matrix & Priority Action Plan
 
 | ID | Component | Severity | Description | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **BUG-01** | `auth.js` / `dbHandler.js` | **CRITICAL** | Seed demo passwords fail bcrypt validation against `Commander@Pass2026`. | Identified |
 | **BUG-02** | `AuthSection.jsx` | **HIGH** | 2FA verification simulated client-side, producing malformed JWTs. | Identified |
 | **BUG-03** | `auth.js` / `schema.sql` | **HIGH** | Authority login auto-provisioning bypasses `users` table, violating foreign keys. | Identified |
-| **BUG-04** | `dbHandler.js` | **CRITICAL** | `emergency_passes` fallback query maps coordinates into shelter & needs columns. | Identified |
-| **BUG-05** | `dbHandler.js` | **HIGH** | `INSERT INTO hazard_zones` missing from local fallback engine. | Identified |
+| **BUG-04** | `dbHandler.js` | **CRITICAL** | `emergency_passes` fallback query maps coordinates into shelter & needs columns. | Fixed |
+| **BUG-05** | `dbHandler.js` | **HIGH** | `INSERT INTO hazard_zones` missing from local fallback engine. | Fixed |
 | **BUG-06** | `Dashboard.jsx` | **CRITICAL** | Officer self-assignment is local state only and never hits `POST /api/zones/assign`. | Identified |
 | **BUG-07** | `Dashboard.jsx` / `userApp` | **CRITICAL** | `POST /api/zones/vote-resolve` called without `Authorization` header, returning 401. | Identified |
 | **BUG-08** | `AppLogin.jsx` | **CRITICAL** | Root-level `lat`/`lng` in QuickSign results in null coordinates in database. | Identified |
@@ -784,12 +928,17 @@ const handleAuthSuccess = (session) => {
 | **BUG-10** | `RealGoogleMap.jsx` | **MEDIUM** | Map "Assign Self" button bypasses 16-digit key verification. | Identified |
 | **BUG-11** | Full Stack | **HIGH** | Socket.IO client completely missing from frontends; polling fallback only. | Identified |
 | **BUG-12** | `AgentDashboard.jsx` | **HIGH** | Tactical chat Send button lacks `onClick` and submission handler. | Identified |
-| **BUG-13** | `UserProfile.jsx` | **HIGH** | Password modification persisted solely to `localStorage` under custom key. | Identified |
+| **BUG-13** | `UserProfile.jsx` | **HIGH** | Password modification persisted solely to `localStorage` under custom key. | Fixed |
 | **BUG-14** | `chat.js` | **HIGH** | `/chat/upload` lacks MIME/extension whitelist, allowing Stored XSS. | Identified |
 | **BUG-15** | `AlertNotification.jsx` | **MEDIUM** | Web Audio `AudioContext` unclosed on unmount, leaking audio output channels. | Identified |
 | **BUG-16** | `App.jsx` | **MEDIUM** | `handleAuthSuccess` does not redirect authority users to `/dashboard`. | Identified |
 | **BUG-17** | `RealGoogleMap.jsx` | **LOW** | `ResizeObserver` not disconnected in map unmount cleanup. | Identified |
 | **BUG-18** | Full Stack | **LOW** | Orphaned dead code (`HeroSection.jsx`, `crypto.js`, `math_engine.cpp`). | Identified |
+| **BUG-19** | `App.jsx` / `QuickSign` | **CRITICAL** | QuickSign guest emergency pass overwrites authenticated officer session. | Fixed |
+| **BUG-20** | `UserProfile.jsx` | **HIGH** | Global un-scoped `suraksha_user_credentials` leaks credentials across sessions. | Fixed |
+| **BUG-21** | `UserProfile.jsx` | **HIGH** | Hardcoded Level 4 clearance and `'ndrf_admin'` fallback for all users. | Fixed |
+| **BUG-22** | Modals / Lenis | **MEDIUM** | Nested modal unmount captures `'hidden'` and permanently locks body scroll. | Fixed |
+| **BUG-23** | `dbHandler.js` | **HIGH** | PostgreSQL connection pool permanent failure on initial boot timeout without retry. | Fixed |
 
 ---
 
