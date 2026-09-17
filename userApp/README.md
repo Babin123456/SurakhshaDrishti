@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- Animated Header Wave with Title -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0B192C,45:1E3E62,80:008DDA,100:41C9E2&height=220&section=header&text=SurakshaDrishti%20UserApp&fontSize=42&fontColor=ffffff&fontAlignY=36&desc=Civilian%20Incident%20Hub%20and%20Tactical%20Field%20Client&descSize=16&descColor=ACE2E1&descAlignY=58" width="100%" alt="SurakshaDrishti userApp Header"/>
+<img src="./assets/header.svg" width="100%" alt="SurakshaDrishti userApp Header"/>
 
 <!-- Animated Dynamic Typing Subtitle -->
 <img src="https://readme-typing-svg.demolab.com?font=Outfit&weight=700&size=18&duration=3000&pause=1000&color=41C9E2&center=true&vCenter=true&width=650&lines=Civilian+Rapid+Evacuation+and+Alert+Client;Offline-Capable+Dynamic+OSRM+Corridor+Routing;Real-Time+Proximity+Geofencing+and+Audio+Siren;Cross-Platform+Electron+Desktop+and+Mobile+Web" alt="Typing Subtitle" />
@@ -208,7 +208,7 @@ sequenceDiagram
 <div align="center">
 
 <!-- Animated Footer Wave -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:41C9E2,35:008DDA,70:1E3E62,100:0B192C&height=120&section=footer" width="100%" alt="SurakshaDrishti userApp Footer Wave"/>
+<img src="./assets/footer.svg" width="100%" alt="SurakshaDrishti userApp Footer Wave"/>
 
 **SurakshaDrishti UserApp — Rapid Civil Defense. Direct Evacuation. Built for Resilient Survival.**
 

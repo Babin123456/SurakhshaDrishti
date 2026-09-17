@@ -1,7 +1,7 @@
 <div align="center">
 
 <!-- Animated Header Wave with Title -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:1F2937,40:8B7355,80:B85C38,100:2D7A4F&height=220&section=header&text=SurakshaDrishti%20AdminDash&fontSize=40&fontColor=ffffff&fontAlignY=36&desc=Central%20Command%20Hub%20and%20Tactical%20Operations%20Server&descSize=16&descColor=F3EDE2&descAlignY=58" width="100%" alt="SurakshaDrishti adminDash Header"/>
+<img src="./assets/header.svg" width="100%" alt="SurakshaDrishti adminDash Header"/>
 
 <!-- Animated Dynamic Typing Subtitle -->
 <img src="https://readme-typing-svg.demolab.com?font=Outfit&weight=700&size=18&duration=3000&pause=1000&color=D4AF37&center=true&vCenter=true&width=700&lines=Central+Authority+Disaster+Decision+Support+Platform;Multi+Agency+Consensus+Resolution+and+Voting+Matrix;Real+Time+Socket+io+Alert+Hub+and+AI+Satellite+Telemetry;PostgreSQL+and+Supabase+Real+Time+State+Engine" alt="Typing Subtitle" />
@@ -323,7 +323,7 @@ SurakshaDrishti implements an adaptive persistence layer in `adminDash/backend/h
 <div align="center">
 
 <!-- Animated Footer Wave -->
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:2D7A4F,40:B85C38,80:8B7355,100:1F2937&height=120&section=footer" width="100%" alt="SurakshaDrishti adminDash Footer Wave"/>
+<img src="./assets/footer.svg" width="100%" alt="SurakshaDrishti adminDash Footer Wave"/>
 
 **SurakshaDrishti AdminDash — Tactical Intelligence. Multi-Agency Consensus. Disaster Defense.**
 
