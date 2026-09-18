@@ -75,6 +75,7 @@ export default function RealGoogleMap({
   const layersGroupRef = useRef(null);
   const userLocationLayerRef = useRef(null);
   const markersMapRef = useRef({});
+  const userInteractedRef = useRef(false);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeLayerType, setActiveLayerType] = useState('streets');
@@ -109,7 +110,12 @@ export default function RealGoogleMap({
             if (match.safeSite) {
               bounds.extend([match.safeSite.lat, match.safeSite.lng]);
             }
-            bounds.extend([match.lat, match.lng]);
+            if (match.lat && match.lng && match.safeSite?.lat) {
+              const d = getHaversineDistanceKm(match.lat, match.lng, match.safeSite.lat, match.safeSite.lng);
+              if (d < 50) {
+                bounds.extend([match.lat, match.lng]);
+              }
+            }
             if (mapInstanceRef.current.flyToBounds) {
               mapInstanceRef.current.flyToBounds(bounds, {
                 paddingTopLeft: [50, 50],
@@ -171,7 +177,12 @@ export default function RealGoogleMap({
             if (targetZone.safeSite) {
               bounds.extend([targetZone.safeSite.lat, targetZone.safeSite.lng]);
             }
-            bounds.extend([targetZone.lat, targetZone.lng]);
+            if (targetZone.lat && targetZone.lng && targetZone.safeSite?.lat) {
+              const d = getHaversineDistanceKm(targetZone.lat, targetZone.lng, targetZone.safeSite.lat, targetZone.safeSite.lng);
+              if (d < 50) {
+                bounds.extend([targetZone.lat, targetZone.lng]);
+              }
+            }
             if (mapInstanceRef.current.flyToBounds) {
               mapInstanceRef.current.flyToBounds(bounds, {
                 paddingTopLeft: [50, 50],
@@ -198,8 +209,11 @@ export default function RealGoogleMap({
   useEffect(() => {
     if (!mapContainerRef.current) return;
 
-    const initialCenter = center || (zones.length > 0 ? [zones[0].lat, zones[0].lng] : [22.9734, 78.6569]);
-    const initialZoom = zoom || (zones.length > 0 ? 13 : 5); // zoom out if India view
+    const hasUserLoc = userLocationOverride?.lat && userLocationOverride?.lng;
+    const initialCenter = hasUserLoc
+      ? [userLocationOverride.lat, userLocationOverride.lng]
+      : (center || (zones.length > 0 ? [zones[0].lat, zones[0].lng] : [22.9734, 78.6569]));
+    const initialZoom = hasUserLoc ? 14 : (zoom || (zones.length > 0 ? 13 : 13));
 
     if (!mapInstanceRef.current) {
       const map = L.map(mapContainerRef.current, {
@@ -207,6 +221,18 @@ export default function RealGoogleMap({
         zoom: initialZoom,
         zoomControl: true,
         scrollWheelZoom: true,
+      });
+
+      map.on('movestart', (e) => {
+        if (e.originalEvent) {
+          userInteractedRef.current = true;
+        }
+      });
+
+      map.on('zoomstart', (e) => {
+        if (e.originalEvent) {
+          userInteractedRef.current = true;
+        }
       });
 
       map.on('click', (e) => {
@@ -249,9 +275,10 @@ export default function RealGoogleMap({
 
   useEffect(() => {
     if (mapInstanceRef.current && center && Array.isArray(center) && center.length === 2) {
+      if (userInteractedRef.current) return; // Retain user's focused position
       mapInstanceRef.current.flyTo(center, zoom || 13, { 
         animate: true, 
-        duration: 1.8,
+        duration: 1.5,
         easeLinearity: 0.25 
       });
       setTimeout(() => {
@@ -325,8 +352,10 @@ export default function RealGoogleMap({
     userMarker.bindPopup(userPopup).openPopup();
     uGroup.addLayer(userMarker);
 
-    // Fly to user location
-    mapInstanceRef.current.flyTo([lat, lng], zoom || 14, { duration: 1.5 });
+    // Fly to user location only if user hasn't manually panned
+    if (!userInteractedRef.current) {
+      mapInstanceRef.current.flyTo([lat, lng], zoom || 14, { duration: 1.5 });
+    }
   }, [userLocationOverride?.lat, userLocationOverride?.lng]);
 
   useEffect(() => {
@@ -523,6 +552,7 @@ export default function RealGoogleMap({
   }, [zones, safehouses, citizens, selectedZone, showRedZones, showSafeSites, showRoutes, standalone]);
 
   const handleFlyTo = (zone) => {
+    userInteractedRef.current = false;
     setSelectedZone(zone);
     if (mapInstanceRef.current) {
       if (zone.wayroute && zone.wayroute.length > 0) {
@@ -530,7 +560,12 @@ export default function RealGoogleMap({
         if (zone.safeSite) {
           bounds.extend([zone.safeSite.lat, zone.safeSite.lng]);
         }
-        bounds.extend([zone.lat, zone.lng]);
+        if (zone.lat && zone.lng && zone.safeSite?.lat) {
+          const d = getHaversineDistanceKm(zone.lat, zone.lng, zone.safeSite.lat, zone.safeSite.lng);
+          if (d < 50) {
+            bounds.extend([zone.lat, zone.lng]);
+          }
+        }
 
         if (mapInstanceRef.current.flyToBounds) {
           mapInstanceRef.current.flyToBounds(bounds, {
@@ -568,19 +603,24 @@ export default function RealGoogleMap({
 
 
   const handleResetView = () => {
+    userInteractedRef.current = false;
     setSelectedZone(null);
     setShowRedZones(true);
     setShowSafeSites(true);
     setShowRoutes(true);
     if (mapInstanceRef.current) {
-      mapInstanceRef.current.flyTo([20.5937, 78.9629], 5, {
-        duration: 1.2
-      });
+      if (userLocationOverride?.lat && userLocationOverride?.lng) {
+        mapInstanceRef.current.flyTo([userLocationOverride.lat, userLocationOverride.lng], 14, { duration: 1.2 });
+      } else if (center && Array.isArray(center) && center.length === 2) {
+        mapInstanceRef.current.flyTo(center, zoom || 13, { duration: 1.2 });
+      } else {
+        mapInstanceRef.current.flyTo([20.5937, 78.9629], 5, { duration: 1.2 });
+      }
     }
   };
 
-
   const handleDetectLocation = async () => {
+    userInteractedRef.current = false;
     // When user clicks My GPS, hide path, safe zones and other markers
     setShowRoutes(false);
     setShowSafeSites(false);

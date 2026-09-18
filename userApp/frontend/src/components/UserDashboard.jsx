@@ -230,24 +230,42 @@ export default function UserDashboard({ onLogout, session }) {
   const zonesWithSafehouse = React.useMemo(() => {
     const safehouse = sortedSafehouses.find(sh => sh.shelter_id === selectedSafehouse) || sortedSafehouses[0];
     
-    // If user is inside an emergency zone, augment those zones
-    if (zones && zones.length > 0) {
+    // If user is inside an emergency hazard zone, only augment their immediate local zone with the shelter & route
+    if (isEmergency && zones && zones.length > 0) {
       if (!safehouse) return zones;
-      return zones.map(z => ({
-        ...z,
-        safeSite: { 
-          name: safehouse.name, 
-          capacity: safehouse.capacity_total, 
-          lat: parseFloat(safehouse.lat), 
-          lng: parseFloat(safehouse.lng) 
-        },
-        wayroute: routeCoordinates,
-        corridorName: safehouse.evacuation_corridor || 'Designated Evacuation Corridor',
-        evacEta: safehouse.distance ? `${Math.ceil(safehouse.distance * 15)} mins` : 'Immediate'
-      }));
+      
+      let closestZone = zones[0];
+      if (userLat && userLng) {
+        let minDist = Infinity;
+        zones.forEach(z => {
+          const d = calculateDistance(userLat, userLng, z.lat, z.lng);
+          if (d < minDist) {
+            minDist = d;
+            closestZone = z;
+          }
+        });
+      }
+
+      return zones.map(z => {
+        if (z.id === closestZone.id) {
+          return {
+            ...z,
+            safeSite: { 
+              name: safehouse.name, 
+              capacity: safehouse.capacity_total, 
+              lat: parseFloat(safehouse.lat), 
+              lng: parseFloat(safehouse.lng) 
+            },
+            wayroute: routeCoordinates,
+            corridorName: safehouse.evacuation_corridor || 'Designated Evacuation Corridor',
+            evacEta: safehouse.distance ? `${Math.ceil(safehouse.distance * 15)} mins` : 'Immediate'
+          };
+        }
+        return z;
+      });
     }
 
-    // When standby/all-clear: generate a safe relocation zone with route from user's current GPS to the chosen safehouse
+    // When standby / all-clear: generate a safe relocation sector around the user's nearest shelter
     if (safehouse && userLat && userLng) {
       return [{
         id: 'STANDBY-SAFEHOUSE-CORRIDOR',
@@ -269,11 +287,11 @@ export default function UserDashboard({ onLogout, session }) {
         wayroute: routeCoordinates,
         corridorName: safehouse.evacuation_corridor || 'Primary Evacuation Route',
         evacEta: safehouse.distance ? `${Math.ceil(safehouse.distance * 15)} mins` : 'Immediate'
-      }];
+      }, ...zones];
     }
 
-    return [];
-  }, [zones, sortedSafehouses, selectedSafehouse, userLat, userLng, routeCoordinates]);
+    return zones || [];
+  }, [zones, sortedSafehouses, selectedSafehouse, userLat, userLng, routeCoordinates, isEmergency]);
 
   return (
     <div className="w-screen h-screen relative overflow-hidden bg-[#FDFBF7] font-sans select-none">
@@ -413,7 +431,7 @@ export default function UserDashboard({ onLogout, session }) {
       <RealGoogleMap
         standalone={true}
         zones={zonesWithSafehouse}
-        zoom={isEmergency ? 11 : 13}
+        zoom={13}
         center={userLat && userLng ? [userLat, userLng] : undefined}
         userLocationOverride={userLat && userLng ? { lat: userLat, lng: userLng, address: session?.location?.address } : null}
         forceRoutesTrigger={routeTrigger}
