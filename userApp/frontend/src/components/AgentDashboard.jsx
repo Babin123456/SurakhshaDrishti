@@ -17,15 +17,65 @@ import {
 } from 'lucide-react';
 import RealGoogleMap from './RealGoogleMap';
 import AlertNotification from './AlertNotification';
-import { apiService } from '../utils/api';
+import { apiService, API_BASE_URL } from '../utils/api';
 
 export default function AgentDashboard({ onLogout, session }) {
   const [isEmergency, setIsEmergency] = useState(false);
   const [zones, setZones] = useState([]);
   const [chatMessage, setChatMessage] = useState('');
   const [chatMode, setChatMode] = useState('E2EE'); // 'E2EE' or 'GSM'
+  const [e2eeMessages, setE2eeMessages] = useState([
+    {
+      id: 1,
+      sender: 'HQ Tactical Command',
+      text: 'Singtam riverbank perimeter alerted. Dispatching SAR units to corridor Alpha.',
+      isSelf: false,
+      isHQ: true
+    },
+    {
+      id: 2,
+      sender: 'Field Unit',
+      text: 'Acknowledged. Evac corridor verified. Relocating citizens to higher sector.',
+      isSelf: true
+    }
+  ]);
+  const [gsmMessages, setGsmMessages] = useState([
+    {
+      id: 1,
+      sender: 'Local GSM Cell Tower',
+      text: 'Main power grid down. Cell repeaters on emergency battery reserve.',
+      isSelf: false,
+      isTower: true
+    },
+    {
+      id: 2,
+      sender: 'Field Unit',
+      text: 'Copy. Minimizing network polling to extend reserve lifespan.',
+      isSelf: true
+    }
+  ]);
   const [safehouses, setSafehouses] = useState([]);
   const [trappedCitizens, setTrappedCitizens] = useState([]);
+
+  const handleSendMessage = (e) => {
+    if (e) e.preventDefault();
+    const trimmed = chatMessage.trim();
+    if (!trimmed) return;
+
+    const newMsg = {
+      id: Date.now(),
+      sender: session?.user?.fullName || session?.fullName || 'Field Unit',
+      text: trimmed,
+      isSelf: true
+    };
+
+    if (chatMode === 'E2EE') {
+      setE2eeMessages(prev => [...prev, newMsg]);
+    } else {
+      setGsmMessages(prev => [...prev, newMsg]);
+    }
+    setChatMessage('');
+  };
   
   // Poll for zones
   useEffect(() => {
@@ -56,7 +106,7 @@ export default function AgentDashboard({ onLogout, session }) {
     if (zones.length === 0) return;
     const fetchSafehouses = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/zones/shelters/dynamic?lat=${zones[0].lat}&lng=${zones[0].lng}&radius=30000`);
+        const response = await fetch(`${API_BASE_URL}/api/zones/shelters/dynamic?lat=${zones[0].lat}&lng=${zones[0].lng}&radius=30000`);
         const data = await response.json();
         if (data.success) {
           setSafehouses(data.shelters);
@@ -73,7 +123,7 @@ export default function AgentDashboard({ onLogout, session }) {
     if (zones.length === 0) return;
     const fetchCitizens = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/zones/${zones[0].id || zones[0].zone_id}/trapped-citizens`);
+        const response = await fetch(`${API_BASE_URL}/api/zones/${zones[0].id || zones[0].zone_id}/trapped-citizens`);
         const data = await response.json();
         if (data.success) {
           setTrappedCitizens(data.citizens);
@@ -175,38 +225,44 @@ export default function AgentDashboard({ onLogout, session }) {
             
             {chatMode === 'E2EE' ? (
               <>
-                <div className="bg-[#242220] border border-[#383533] rounded-xl p-2.5 text-xs text-[#E8E1D5] w-[92%]">
-                  <span className="text-[#8B7355] font-bold text-[10px] mb-1 flex items-center gap-1">
-                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                    HQ Tactical Command
-                  </span>
-                  Singtam riverbank perimeter alerted. Dispatching SAR units to corridor Alpha.
-                </div>
-                
-                <div className="bg-[#8B7355]/20 border border-[#8B7355]/40 rounded-xl p-2.5 text-xs text-white w-[92%] self-end">
-                  <span className="text-[#E8E1D5] font-bold text-[10px] block mb-1">Field Unit</span>
-                  Acknowledged. Evac corridor verified. Relocating citizens to higher sector.
-                </div>
+                {e2eeMessages.map((msg) => (
+                  <div 
+                    key={msg.id}
+                    className={msg.isSelf 
+                      ? "bg-[#8B7355]/20 border border-[#8B7355]/40 rounded-xl p-2.5 text-xs text-white w-[92%] self-end"
+                      : "bg-[#242220] border border-[#383533] rounded-xl p-2.5 text-xs text-[#E8E1D5] w-[92%]"
+                    }
+                  >
+                    <span className={`font-bold text-[10px] mb-1 flex items-center gap-1 ${msg.isSelf ? 'text-[#E8E1D5]' : 'text-[#8B7355]'}`}>
+                      {msg.isHQ && <ShieldCheck className="w-3 h-3 text-emerald-400" />}
+                      {msg.sender}
+                    </span>
+                    {msg.text}
+                  </div>
+                ))}
               </>
             ) : (
               <>
-                <div className="bg-[#382620] border border-[#523429] rounded-xl p-2.5 text-xs text-amber-100 w-[92%]">
-                  <span className="text-[#B85C38] font-bold text-[10px] mb-1 flex items-center gap-1">
-                    <Radio className="w-3 h-3" />
-                    Local GSM Cell Tower
-                  </span>
-                  Main power grid down. Cell repeaters on emergency battery reserve.
-                </div>
-
-                <div className="bg-[#2C2A29] border border-[#45423E] rounded-xl p-2.5 text-xs text-[#E8E1D5] w-[92%] self-end">
-                  <span className="text-amber-300 font-bold text-[10px] block mb-1">Field Unit</span>
-                  Copy. Minimizing network polling to extend reserve lifespan.
-                </div>
+                {gsmMessages.map((msg) => (
+                  <div 
+                    key={msg.id}
+                    className={msg.isSelf 
+                      ? "bg-[#2C2A29] border border-[#45423E] rounded-xl p-2.5 text-xs text-[#E8E1D5] w-[92%] self-end"
+                      : "bg-[#382620] border border-[#523429] rounded-xl p-2.5 text-xs text-amber-100 w-[92%]"
+                    }
+                  >
+                    <span className={`font-bold text-[10px] mb-1 flex items-center gap-1 ${msg.isSelf ? 'text-amber-300' : 'text-[#B85C38]'}`}>
+                      {msg.isTower && <Radio className="w-3 h-3" />}
+                      {msg.sender}
+                    </span>
+                    {msg.text}
+                  </div>
+                ))}
               </>
             )}
           </div>
 
-          <div className="flex gap-2">
+          <form onSubmit={handleSendMessage} className="flex gap-2">
             <input 
               type="text" 
               value={chatMessage}
@@ -215,13 +271,13 @@ export default function AgentDashboard({ onLogout, session }) {
               className="flex-1 bg-[#171615] border border-[#383533] text-xs text-white rounded-xl px-3 py-2 focus:outline-none focus:border-[#8B7355] transition-colors placeholder:text-[#6E6860]"
             />
             <button 
-              type="button"
+              type="submit"
               className="bg-[#8B7355] hover:bg-[#A38968] text-white rounded-xl px-3 py-2 transition-colors cursor-pointer flex items-center justify-center"
               title="Transmit message"
             >
               <Send className="w-3.5 h-3.5" />
             </button>
-          </div>
+          </form>
         </div>
 
         {/* Zone Consensus Voting (80% Multi-Sig Protocol) */}

@@ -71,8 +71,9 @@ export default function App() {
       const saved = localStorage.getItem('suraksha_user_session');
       if (!saved) return null;
       const parsed = JSON.parse(saved);
-      const customCreds = localStorage.getItem('suraksha_user_credentials');
-      const customPfp = localStorage.getItem('suraksha_user_pfp');
+      const targetUserId = parsed?.user?.userId || parsed?.user?.user_id || parsed?.user?.username || parsed?.user?.email || parsed?.userId;
+      const customCreds = targetUserId ? localStorage.getItem(`suraksha_user_credentials_${targetUserId}`) : null;
+      const customPfp = targetUserId ? localStorage.getItem(`suraksha_user_pfp_${targetUserId}`) : localStorage.getItem('suraksha_user_pfp');
       const creds = customCreds ? JSON.parse(customCreds) : {};
       
       const mergedUser = {
@@ -99,8 +100,11 @@ export default function App() {
   const [quickSignLocation, setQuickSignLocation] = useState(null);
 
   useEffect(() => {
-    document.body.style.overflow = '';
-  }, []);
+    if (!showAuth && !showEmergency && !showDemoOfficer && !showQuickSign) {
+      document.body.style.overflow = '';
+      if (window.__lenis) window.__lenis.start();
+    }
+  }, [showAuth, showEmergency, showDemoOfficer, showQuickSign]);
 
   const handleOpenAuth = (mode = 'signin') => {
     setAuthMode(mode);
@@ -108,6 +112,25 @@ export default function App() {
   };
 
   const handleAuthSuccess = (session) => {
+    // If incoming session is a QuickSign guest pass and user is already an authenticated officer, don't overwrite officer session
+    if (session?.isGuestAccount || session?.status === 'QUICKSIGN_EMERGENCY') {
+      try {
+        localStorage.setItem('suraksha_civilian_pass', JSON.stringify(session));
+      } catch {}
+      
+      const currentRole = (userSession?.user?.role || userSession?.role || '').toUpperCase();
+      const isOfficer = ['NDRF', 'SDMA', 'DDMA', 'POLICE', 'FIRE_FORCE', 'AUTHORITY', 'NDRF_OFFICER', 'DEMO_OFFICER'].includes(currentRole);
+      
+      if (userSession && isOfficer) {
+        // Keep officer session active
+        setShowAuth(false);
+        setShowEmergency(false);
+        setShowDemoOfficer(false);
+        setShowQuickSign(false);
+        return;
+      }
+    }
+
     setUserSession(session);
     try {
       localStorage.setItem('suraksha_user_session', JSON.stringify(session));
@@ -116,6 +139,12 @@ export default function App() {
     setShowEmergency(false);
     setShowDemoOfficer(false);
     setShowQuickSign(false);
+
+    // If authority/officer, navigate to dashboard
+    const role = (session?.user?.role || session?.role || '').toUpperCase();
+    if (['NDRF', 'SDMA', 'DDMA', 'POLICE', 'FIRE_FORCE', 'AUTHORITY', 'NDRF_OFFICER', 'DEMO_OFFICER'].includes(role)) {
+      navigate('/dashboard');
+    }
   };
 
   const handleLogout = () => {

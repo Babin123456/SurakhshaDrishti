@@ -693,9 +693,14 @@ export default function AppLogin({ onLogin }) {
                 </button>
                 <span className="text-sm text-[#555] font-roboto">I'm not a robot</span>
               </div>
-              <div className="flex flex-col items-center justify-center mt-1">
-                <img src="/reCAPTCHA_logo.png" alt="" className="h-6 object-contain opacity-80" onError={(e) => e.target.style.display = 'none'} />
-                <span className="text-[9px] text-[#555] mt-0.5">reCAPTCHA</span>
+              <div className="flex flex-col items-center justify-center mt-0.5">
+                <div className="w-5 h-5 flex items-center justify-center">
+                  <svg className="w-5 h-5" viewBox="0 0 48 48" fill="none">
+                    <path d="M24 4C12.95 4 4 12.95 4 24c0 4.1 1.25 7.9 3.4 11.08l4.47-2.61A14.92 14.92 0 0 1 9 24c0-8.28 6.72-15 15-15 4.3 0 8.18 1.81 10.92 4.71L29 19h15V4l-5.64 5.64A19.92 19.92 0 0 0 24 4z" fill="#1A73E8"/>
+                    <path d="M38.6 12.92l-4.47 2.61A14.92 14.92 0 0 1 39 24c0 8.28-6.72 15-15 15-4.3 0-8.18-1.81-10.92-4.71L19 29H4v15l5.64-5.64A19.92 19.92 0 0 0 24 44c11.05 0 20-8.95 20-20 0-4.1-1.25-7.9-3.4-11.08z" fill="#34A853"/>
+                  </svg>
+                </div>
+                <span className="text-[9px] text-[#555] font-medium mt-0.5">reCAPTCHA</span>
                 <span className="text-[8px] text-[#999]">Privacy - Terms</span>
               </div>
             </div>
