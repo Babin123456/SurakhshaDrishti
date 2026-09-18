@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import AppLogin from './components/AppLogin';
 import UserDashboard from './components/UserDashboard';
 import AgentDashboard from './components/AgentDashboard';
@@ -13,12 +13,19 @@ export default function App() {
 
   const [session, setSession] = useState(() => {
     try {
-      const saved = localStorage.getItem('suraksha_app_session');
+      const saved = sessionStorage.getItem('suraksha_app_session');
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
       return null;
     }
   });
+
+  // Purge any stale localStorage session on boot to guarantee clean role & phone authentication
+  useEffect(() => {
+    try {
+      localStorage.removeItem('suraksha_app_session');
+    } catch (e) {}
+  }, []);
 
   // If the Electron alert window loads this app at /alert, show the alert immediately
   // regardless of session state. This is critical — the alert window is a SEPARATE 
@@ -42,7 +49,7 @@ export default function App() {
   const handleLogin = (userData) => {
     setSession(userData);
     try {
-      localStorage.setItem('suraksha_app_session', JSON.stringify(userData));
+      sessionStorage.setItem('suraksha_app_session', JSON.stringify(userData));
     } catch (e) {
       console.error('Failed to persist session', e);
     }
@@ -51,6 +58,7 @@ export default function App() {
   const handleLogout = () => {
     setSession(null);
     try {
+      sessionStorage.removeItem('suraksha_app_session');
       localStorage.removeItem('suraksha_app_session');
     } catch (e) {
       console.error('Failed to clear session', e);
