@@ -15,7 +15,8 @@ This document presents the complete technical audit of the **SurakshaDrishti** c
 7. [Category VI: Ghost API Endpoints, Dead Code, & Orphaned Modules](#7-category-vi-ghost-api-endpoints-dead-code--orphaned-modules)
 8. [Category VII: Resource Leaks, Memory Pitfalls, & Security Hazards](#8-category-vii-resource-leaks-memory-pitfalls--security-hazards)
 9. [Category VIII: State Management, Identity Collisions, & Database Resilience](#9-category-viii-state-management-identity-collisions--database-resilience)
-10. [Master Vulnerability Matrix & Priority Action Plan](#10-master-vulnerability-matrix--priority-action-plan)
+10. [Category IX: Flawed Code-Fix Regressions & Unhandled Operational Edge Cases](#10-category-ix-flawed-code-fix-regressions--unhandled-operational-edge-cases)
+11. [Master Vulnerability Matrix & Priority Action Plan](#11-master-vulnerability-matrix--priority-action-plan)
 
 ---
 
@@ -912,7 +913,361 @@ Implement a background self-healing interval probe (`SELECT 1`) every 30 seconds
 
 ---
 
-## 10. Master Vulnerability Matrix & Priority Action Plan
+## 10. Category IX: Flawed Code-Fix Regressions & Unhandled Operational Edge Cases
+
+### Bug 9.1: Broken 2FA Verification Endpoint and Field Mismatch in `AuthSection.jsx`
+
+- **Affected Components**:
+  - Admin Frontend: [`adminDash/frontend/src/components/AuthSection.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/components/AuthSection.jsx#L185)
+  - Admin API Client: [`adminDash/frontend/src/utils/api.js`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/utils/api.js#L80)
+  - Backend Auth Router: [`adminDash/backend/routes/auth.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/routes/auth.js#L234-L261)
+- **Severity**: **CRITICAL (2FA Authentication Completely Inoperable)**
+
+#### Failure Mechanism for Bug 9.1
+
+**URL Route Name Mismatch**:
+In `adminDash/frontend/src/utils/api.js:80`:
+
+```javascript
+const response = await fetch(`${API_BASE_URL}/auth/verify-2fa`, { ... });
+```
+
+However, the backend in `adminDash/backend/routes/auth.js:234` defines:
+
+```javascript
+router.post("/verify-otp", (req, res, next) => { ... });
+```
+
+No `/auth/verify-2fa` route exists. The request triggers the Express `handle404` handler, returning an HTTP 404 response.
+
+**Payload Property Name Mismatch**:
+In `AuthSection.jsx:185`, the client passes:
+
+```javascript
+{ username: tempAuthData?.resolvedUsername || username, otpCode }
+```
+
+The backend route `/verify-otp` destructures:
+
+```javascript
+const { username, otp } = req.body;
+```
+
+Even if routed to the right path, `otp` is `undefined`, causing `record.code === otp` to evaluate to `false`.
+
+#### Code Proof for Bug 9.1
+
+In `AuthSection.jsx:206`, when entering any 6-digit OTP, `res.error` displays `"Cannot POST /auth/verify-2fa"`. Users can never complete 2FA authentication when SMTP email delivery is enabled.
+
+#### Remediation for Bug 9.1
+
+Unify the route path and request contract: update `adminDash/frontend/src/utils/api.js` to target `/auth/verify-otp` and send `{ username, otp: data.otpCode }`, or add an alias `router.post("/verify-2fa", ...)` accepting either `otp` or `otpCode`.
+
+---
+
+### Bug 9.2: Parameter Order Mismatch & Missing Password / Invalid Column in Auto-Provisioning
+
+- **Affected Components**:
+  - Backend Auth Router: [`adminDash/backend/routes/auth.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/routes/auth.js#L155)
+  - Backend Database Handler: [`adminDash/backend/handlers/dbHandler.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/handlers/dbHandler.js#L109), [`adminDash/backend/handlers/dbHandler.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/handlers/dbHandler.js#L282-L295)
+- **Severity**: **HIGH (Database Record Corruption & Foreign Key Failure)**
+
+#### Failure Mechanism for Bug 9.2
+
+In `adminDash/backend/routes/auth.js:155`, authority login executes:
+
+```javascript
+await db.query(
+    `INSERT INTO users (user_id, full_name, email, role, district) 
+     VALUES ($1, $2, $3, $4, $5) 
+     ON CONFLICT (user_id) DO NOTHING`,
+    [username, 'NDRF Command Officer', `${username}@gov.in`, 'NDRF', 'Wayanad Sector 4']
+).catch(e => console.error('Auto-provision error:', e));
+```
+
+**PostgreSQL Mode**:
+Table `users` defined in `dbHandler.js:282-295` requires `password TEXT NOT NULL` and defines the column name as `user_role` (not `role`). Because `password` is omitted and `role` does not exist, the query fails with:
+
+- `null value in column "password" of relation "users" violates not-null constraint`
+- `column "role" of relation "users" does not exist`
+
+The `.catch()` hides the rejection, leaving the user unprovisioned in PostgreSQL and breaking subsequent foreign key references in `zone_assignments`.
+
+**Local Fallback Mode**:
+In `dbHandler.js:109`, the local query engine expects:
+
+```javascript
+const [user_id, email, password, full_name, phone, user_role, district, family_members, has_vulnerable] = params;
+```
+
+Passing five positional values without aligning column positions corrupts the record:
+
+- `user.email` receives `'NDRF Command Officer'` (name assigned to email).
+- `user.password` receives the email string (email assigned to password).
+- `user.full_name` receives `'NDRF'` (role assigned to full name).
+- `user.phone` receives `'Wayanad Sector 4'` (district assigned to phone).
+- `user.user_role` falls back to `'RESIDENT'`, stripping officer authority.
+
+#### Code Proof for Bug 9.2
+
+Executing authority login in local store mode produces an invalid user record in `localStore.users` with `user_role: 'RESIDENT'` and swapped contact details.
+
+#### Remediation for Bug 9.2
+
+Align the SQL column list and parameter array with the database schema:
+
+```javascript
+await db.query(
+    `INSERT INTO users (user_id, email, password, full_name, phone, user_role, district) 
+     VALUES ($1, $2, $3, $4, $5, $6, $7) 
+     ON CONFLICT (user_id) DO NOTHING`,
+    [username, `${username}@gov.in`, '$2b$10$hashedPlaceholderPass', 'NDRF Command Officer', '+910000000000', 'NDRF', 'Wayanad Sector 4']
+);
+```
+
+---
+
+### Bug 9.3: Hardcoded `localhost:5000` URLs in Production Components
+
+- **Affected Components**:
+  - Admin Frontend: [`adminDash/frontend/src/components/Dashboard.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/components/Dashboard.jsx#L265), [`adminDash/frontend/src/components/Dashboard.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/components/Dashboard.jsx#L309), [`adminDash/frontend/src/components/Dashboard.jsx`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/components/Dashboard.jsx#L376)
+  - Civilian Frontend: [`userApp/frontend/src/components/AgentDashboard.jsx`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/src/components/AgentDashboard.jsx#L59), [`userApp/frontend/src/components/AgentDashboard.jsx`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/src/components/AgentDashboard.jsx#L76)
+- **Severity**: **HIGH (Non-Deployable in Networked/Production Environments)**
+
+#### Failure Mechanism for Bug 9.3
+
+In `Dashboard.jsx`:
+
+```javascript
+const res = await fetch('http://localhost:5000/api/zones/assign', ...);
+const res = await fetch('http://localhost:5000/api/zones/vote-resolve', ...);
+```
+
+In `AgentDashboard.jsx`:
+
+```javascript
+const response = await fetch(`http://localhost:5000/api/zones/shelters/dynamic?lat=${zones[0].lat}&lng=${zones[0].lng}&radius=30000`);
+const response = await fetch(`http://localhost:5000/api/zones/${zones[0].id || zones[0].zone_id}/trapped-citizens`);
+```
+
+Both applications bypass `API_BASE_URL` and `apiService`. When deployed in Docker, on LAN, behind a reverse proxy, or on cloud hosting, these network requests target the client browser machine's `localhost:5000` rather than the remote backend server, resulting in connection timeouts (`ERR_CONNECTION_REFUSED`).
+
+#### Remediation for Bug 9.3
+
+Route all requests through `apiService` or use the configured `API_BASE_URL` environment variable.
+
+---
+
+### Bug 9.4: Resolution Splicing Destroys Hazard Zones in Local DB, Permanently Blocking Officer Unassignment
+
+- **Affected Components**:
+  - Backend Database Handler: [`adminDash/backend/handlers/dbHandler.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/handlers/dbHandler.js#L201-L211)
+  - Backend Zones Router: [`adminDash/backend/routes/zones.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/routes/zones.js#L305), [`adminDash/backend/routes/zones.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/routes/zones.js#L341-L345)
+- **Severity**: **HIGH (Data Loss & Permanent Assignment Lock)**
+
+#### Failure Mechanism for Bug 9.4
+
+When consensus voting succeeds in `zones.js:305`:
+
+```javascript
+await db.query(`INSERT INTO history_red_zones (zone_id, assigned_mem) VALUES ($1, $2) ON CONFLICT DO NOTHING`, [zone_id, []]);
+```
+
+In `dbHandler.js:203-209`:
+
+```javascript
+const zoneIdx = localStore.hazard_zones.findIndex(z => z.zone_id === zone_id);
+if (zoneIdx >= 0) {
+    const closedZone = localStore.hazard_zones.splice(zoneIdx, 1)[0];
+    closedZone.is_open = false;
+    closedZone.status = 'SITUATION_UNDER_CONTROL';
+    localStore.history_red_zones.push(closedZone);
+    saveLocalStore();
+}
+```
+
+`splice(zoneIdx, 1)` deletes the zone record from `hazard_zones`.
+Subsequently, when an officer attempts to unassign from the resolved zone via `POST /zones/unassign` (`zones.js:341`):
+
+```javascript
+const zoneRes = await db.query(`SELECT status FROM hazard_zones WHERE zone_id = $1`, [zone_id]);
+if (!zoneRes.rows[0]) {
+    res.statusCode = 404;
+    return next(new Error("Red Zone not found in database."));
+}
+```
+
+Because the zone was deleted from `hazard_zones`, `zoneRes.rows` is empty. The backend responds with HTTP 404: `"Red Zone not found in database."` Officers can never unassign themselves once a zone is resolved.
+
+#### Remediation for Bug 9.4
+
+Retain resolved zones in `localStore.hazard_zones` with `status: 'SITUATION_UNDER_CONTROL'`, mirroring PostgreSQL behavior rather than splicing them out.
+
+---
+
+### Bug 9.5: Destructive Global Middleware XSS Sanitizer Alters Passwords and Misses Route Parameters
+
+- **Affected Components**:
+  - Backend Middleware: [`adminDash/backend/handlers/middlewareHandler.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/handlers/middlewareHandler.js#L57-L69)
+  - Backend Main: [`adminDash/backend/src/main.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/src/main.js#L24)
+- **Severity**: **MEDIUM (Password Mutation & Process Crash Hazard)**
+
+#### Failure Mechanism for Bug 9.5
+
+- **Password Mutation**:
+  `XSS_Sanitizer` iterates through all string fields of `req.body`, running `xss(obj[key])`. Passwords containing characters such as `<` or `>` are HTML-entity encoded (e.g. `P@ss<word>` becomes `P@ss&lt;word&gt;`). This corrupts passwords before hashing, breaking compatibility across clients and external tools.
+- **Missing Route Parameters**:
+  `app.use(XSS_Sanitizer)` is mounted globally in `main.js` before routes are processed. At this point in the Express middleware pipeline, `req.params` is `{}`. Route parameters (such as `:zone_id` and `:username`) are never sanitized by this middleware.
+- **Circular Reference Hazard**:
+  If an incoming object has circular structures or deep nested payloads, the recursive `sanitize` function triggers `RangeError: Maximum call stack size exceeded`, crashing the entire Node.js server.
+
+#### Remediation for Bug 9.5
+
+Exclude sensitive fields such as `password`, `token`, and binary buffers from sanitization, and use schema-based validation (e.g., Joi/Zod) instead of unconstrained recursive mutation.
+
+---
+
+### Bug 9.6: Missing Database Schema DDL in `initDB()` & Unhandled Chat / E2EE Entities in Local Database
+
+- **Affected Components**:
+  - Backend Database Handler: [`adminDash/backend/handlers/dbHandler.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/handlers/dbHandler.js#L281-L295)
+  - Backend Chat Router: [`adminDash/backend/routes/chat.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/routes/chat.js#L35-L61)
+- **Severity**: **HIGH (Missing Tables in Clean Database & Broken Chat Persistence)**
+
+#### Failure Mechanism for Bug 9.6
+
+- In `adminDash/backend/handlers/dbHandler.js:281-295`, `initDB()` only executes `CREATE TABLE IF NOT EXISTS users`. It never creates `hazard_zones`, `zone_assignments`, `emergency_passes`, `shelters`, `conversations`, `conversation_participants`, or `messages`. Connecting to a fresh PostgreSQL instance causes all non-user operations to fail.
+- In local JSON fallback mode, `conversations` and `conversation_participants` are completely unhandled by `executeLocalQuery`. Any call to `POST /chat/conversation/direct` or `POST /chat/conversation/group/create` executes queries against `conversations`, returning empty rows and dropping conversations completely.
+
+#### Remediation for Bug 9.6
+
+Include all table creation DDL statements inside `initDB()` and implement local store handlers for `conversations` and `messages` in `executeLocalQuery`.
+
+---
+
+### Bug 9.7: Fake Client-Side Captcha & Missing Asset in `AppLogin.jsx`
+
+- **Affected Components**:
+  - Civilian Frontend: [`userApp/frontend/src/components/AppLogin.jsx`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/src/components/AppLogin.jsx#L46-L54), [`userApp/frontend/src/components/AppLogin.jsx`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/src/components/AppLogin.jsx#L681-L701)
+  - Civilian Public Assets: [`userApp/frontend/public/`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/public)
+- **Severity**: **MEDIUM (Missing Image 404 & Pseudo-Security)**
+
+#### Failure Mechanism for Bug 9.7
+
+In `AppLogin.jsx:697`, the component renders `<img src="/reCAPTCHA_logo.png" />`.
+Inspection of `userApp/frontend/public/` reveals only `favicon.webp`. This results in a persistent 404 network failure on every page load.
+
+Furthermore, verification is purely simulated client-side:
+
+```javascript
+const handleVerifyCaptcha = () => {
+  setIsVerifyingCaptcha(true);
+  setTimeout(() => {
+    setIsVerifyingCaptcha(false);
+    setCaptchaVerified(true);
+  }, 1500);
+};
+```
+
+There is zero backend cryptographic token validation. Automated scripts can call `/auth/quicksign` or submit the form directly without solving any challenge.
+
+#### Remediation for Bug 9.7
+
+Remove the non-existent image reference and either integrate a real server-verified captcha service (e.g. Cloudflare Turnstile / hCaptcha) or remove the mock widget.
+
+---
+
+### Bug 9.8: Profile Bio & Picture Routes Fail in Both PostgreSQL and Local DB Modes
+
+- **Affected Components**:
+  - Backend Profile Router: [`adminDash/backend/routes/profile.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/routes/profile.js#L26), [`adminDash/backend/routes/profile.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/routes/profile.js#L66), [`adminDash/backend/routes/profile.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/routes/profile.js#L85)
+  - Backend Database Handler: [`adminDash/backend/handlers/dbHandler.js`](file:///d:/Projects/SurakshaDrishti/adminDash/backend/handlers/dbHandler.js#L282-L295)
+- **Severity**: **MEDIUM (Profile Personalization Inoperable)**
+
+#### Failure Mechanism for Bug 9.8
+
+- In PostgreSQL mode, table `users` in `dbHandler.js:282-295` lacks `bio` and `profile_picture` columns. Calling `GET /profile`, `POST /profile/bio`, or `POST /profile/pfp` triggers `column "bio" does not exist` or `column "profile_picture" does not exist`.
+- In local JSON mode, `executeLocalQuery` in `dbHandler.js` has no clause matching `SELECT bio, profile_picture FROM users`, `UPDATE users SET bio`, or `UPDATE users SET profile_picture`. All profile updates return `{ rows: [] }` without saving.
+
+#### Remediation for Bug 9.8
+
+Add `bio TEXT` and `profile_picture TEXT` to `CREATE TABLE users` in `dbHandler.js`, and add query parsing branches in `executeLocalQuery` to read and update `bio` and `profile_picture` in `localStore.users`.
+
+---
+
+### Bug 9.9: Unclosable Electron Alert Window Blocks Application and System Shutdown
+
+- **Affected Components**:
+  - Civilian Electron Main: [`userApp/backend/main.cjs`](file:///d:/Projects/SurakshaDrishti/userApp/backend/main.cjs#L69-L73)
+- **Severity**: **MEDIUM (Application Close Blocked)**
+
+#### Failure Mechanism for Bug 9.9
+
+In `userApp/backend/main.cjs:69-73`:
+
+```javascript
+alertWindow.on('close', (e) => {
+  if (alertWindow && !alertWindow.isAcknowledged) {
+    e.preventDefault();
+  }
+});
+```
+
+If an alert window is displayed and the operating system attempts to shut down, restart, or terminate the application, `e.preventDefault()` unconditionally cancels window destruction. The user cannot close the alert from the taskbar, window manager, or OS shutdown signals unless the alert acknowledgment button is explicitly pressed.
+
+#### Remediation for Bug 9.9
+
+Allow forced window destruction during application quit by checking `app.isQuitting`:
+
+```javascript
+alertWindow.on('close', (e) => {
+  if (!app.isQuitting && alertWindow && !alertWindow.isAcknowledged) {
+    e.preventDefault();
+  }
+});
+```
+
+---
+
+### Bug 9.10: Fake Network Fallback in `adminDash` `apiService.login` & `register` Grants False Success
+
+- **Affected Components**:
+  - Admin API Client: [`adminDash/frontend/src/utils/api.js`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/utils/api.js#L105-L116), [`adminDash/frontend/src/utils/api.js`](file:///d:/Projects/SurakshaDrishti/adminDash/frontend/src/utils/api.js#L137-L148)
+- **Severity**: **HIGH (Deceptive Ghost Authentication State)**
+
+#### Failure Mechanism for Bug 9.10
+
+In `adminDash/frontend/src/utils/api.js:105-116`:
+
+```javascript
+login: async (credentials, isRedZoneHabitation) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, { ... });
+    return await response.json();
+  } catch {
+    return {
+      success: true,
+      bypassed2FA: isRedZoneHabitation,
+      user: {
+        username: credentials.username || 'NDRF_Officer',
+        role: isRedZoneHabitation ? 'REDZONE_CIVILIAN' : 'NDRF_OFFICER',
+        zone: isRedZoneHabitation ? 'Red Zone - Wayanad Sector 4' : 'Safe Zone',
+      },
+      token: 'mock-jwt-token-sih2026',
+    };
+  }
+}
+```
+
+If the backend server is completely offline or the network is disconnected, `catch` returns `success: true` with a fake token `'mock-jwt-token-sih2026'`. The user is told authentication succeeded and enters the dashboard. However, all subsequent requests fail with `401 Unauthorized` or network errors because the mock token is rejected by the backend's `FN_verifyTkn` middleware.
+
+#### Remediation for Bug 9.10
+
+In the `catch` block, return `{ success: false, error: 'Network offline. Unable to reach authentication server.' }` rather than granting pseudo-authenticated access.
+
+---
+
+## 11. Master Vulnerability Matrix & Priority Action Plan
 
 | ID | Component | Severity | Description | Status |
 | :--- | :--- | :--- | :--- | :--- |
@@ -939,6 +1294,16 @@ Implement a background self-healing interval probe (`SELECT 1`) every 30 seconds
 | **BUG-21** | `UserProfile.jsx` | **HIGH** | Hardcoded Level 4 clearance and `'ndrf_admin'` fallback for all users. | Identified |
 | **BUG-22** | Modals / Lenis | **MEDIUM** | Nested modal unmount captures `'hidden'` and permanently locks body scroll. | Identified |
 | **BUG-23** | `dbHandler.js` | **HIGH** | PostgreSQL connection pool permanent failure on initial boot timeout without retry. | Identified |
+| **BUG-24** | `AuthSection.jsx` / `api.js` | **CRITICAL** | 2FA verification calls non-existent `/auth/verify-2fa` with mismatched `otpCode` field. | Identified |
+| **BUG-25** | `auth.js` / `dbHandler.js` | **HIGH** | Auto-provision query omits `password`, references missing column `role`, and swaps params in local store. | Identified |
+| **BUG-26** | `Dashboard.jsx` / `AgentDashboard.jsx` | **HIGH** | Hardcoded `http://localhost:5000` URLs break execution in networked environments. | Identified |
+| **BUG-27** | `dbHandler.js` / `zones.js` | **HIGH** | `splice` on zone resolution deletes record, causing unassignment to 404. | Identified |
+| **BUG-28** | `middlewareHandler.js` | **MEDIUM** | Global `XSS_Sanitizer` mutates raw passwords, misses URL parameters, and lacks recursion limits. | Identified |
+| **BUG-29** | `dbHandler.js` / `chat.js` | **HIGH** | Missing DDL statements in `initDB()` and unhandled chat tables in local fallback engine. | Identified |
+| **BUG-30** | `AppLogin.jsx` | **MEDIUM** | Fake client-side captcha requests missing `/reCAPTCHA_logo.png` image (404 error). | Identified |
+| **BUG-31** | `profile.js` / `dbHandler.js` | **MEDIUM** | `bio` and `profile_picture` columns missing in PostgreSQL schema and unhandled in local store. | Identified |
+| **BUG-32** | `main.cjs` (Electron) | **MEDIUM** | `alertWindow` unacknowledged close cancellation traps user and prevents OS shutdown. | Identified |
+| **BUG-33** | `api.js` (`adminDash`) | **HIGH** | `login` and `register` network failure catch blocks return mock success tokens. | Identified |
 
 ---
 
