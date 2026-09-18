@@ -41,7 +41,7 @@ import {
 } from 'lucide-react';
 import RealGoogleMap from './RealGoogleMap';
 import { useToast } from './Toast';
-import { apiService } from '../utils/api';
+import { apiService, API_BASE_URL } from '../utils/api';
 
 export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigateHome }) {
   const { addToast } = useToast();
@@ -83,7 +83,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
   useEffect(() => {
     const fetchSafehouses = async () => {
       try {
-        const response = await fetch(`http://localhost:5000/api/zones/shelters/dynamic?lat=22.9734&lng=78.6569&radius=10000000`);
+        const response = await fetch(`${API_BASE_URL}/api/zones/shelters/dynamic?lat=22.9734&lng=78.6569&radius=10000000`);
         const data = await response.json();
         if (data.success) {
           setSafehouses(data.shelters);
@@ -262,7 +262,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
     }
 
     try {
-      const res = await fetch('http://localhost:5000/api/zones/assign', {
+      const res = await fetch(`${API_BASE_URL}/api/zones/assign`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -306,7 +306,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
     setSelectedZoneId(target.zone_id);
 
     try {
-      const res = await fetch('http://localhost:5000/api/zones/assign', {
+      const res = await fetch(`${API_BASE_URL}/api/zones/assign`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -373,7 +373,7 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
     try {
         // Optimistic UI updates could go here, but since this triggers a major state change (movement to history), 
         // we hit the real backend and refresh the state.
-        const res = await fetch('http://localhost:5000/api/zones/vote-resolve', {
+        const res = await fetch(`${API_BASE_URL}/api/zones/vote-resolve`, {
             method: 'POST',
             headers: { 
               'Content-Type': 'application/json',

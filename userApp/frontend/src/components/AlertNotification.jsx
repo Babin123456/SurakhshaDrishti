@@ -44,8 +44,13 @@ export default function AlertNotification() {
     return () => {
       if (sirenInterval) clearInterval(sirenInterval);
       if (oscillator) {
-        oscillator.stop();
-        oscillator.disconnect();
+        try {
+          oscillator.stop();
+          oscillator.disconnect();
+        } catch (_) {}
+      }
+      if (audioCtx && audioCtx.state !== 'closed') {
+        audioCtx.close().catch(() => {});
       }
     };
   }, []);

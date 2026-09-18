@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:5000';
+export const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_URL) ? import.meta.env.VITE_API_URL : 'http://localhost:5000';
 
 const KNOWN_RED_ZONES = [
   { name: 'Wayanad Sector 4', lat: 11.5583, lng: 76.1384, radiusMeters: 4000 },
@@ -77,12 +77,15 @@ export const fetchActiveAlerts = async () => {
 export const apiService = {
   verifyOtp: async (data) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/verify-2fa`, {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(data),
+        body: JSON.stringify({
+          username: data.username,
+          otp: data.otp || data.otpCode,
+        }),
       });
       return await response.json();
     } catch (error) {
@@ -102,16 +105,11 @@ export const apiService = {
         }),
       });
       return await response.json();
-    } catch {
+    } catch (err) {
+      console.error('Login network error:', err);
       return {
-        success: true,
-        bypassed2FA: isRedZoneHabitation,
-        user: {
-          username: credentials.username || 'NDRF_Officer',
-          role: isRedZoneHabitation ? 'REDZONE_CIVILIAN' : 'NDRF_OFFICER',
-          zone: isRedZoneHabitation ? 'Red Zone - Wayanad Sector 4' : 'Safe Zone',
-        },
-        token: 'mock-jwt-token-sih2026',
+        success: false,
+        error: 'Network error. Server is unreachable.',
       };
     }
   },
@@ -134,22 +132,11 @@ export const apiService = {
         }),
       });
       return await response.json();
-    } catch {
-      const uname = userData.email || userData.phone || 'User';
+    } catch (err) {
+      console.error('Register network error:', err);
       return {
-        success: true,
-        message: 'Account registered successfully!',
-        token: 'jwt_registered_' + Date.now(),
-        user: {
-          userId: uname,
-          fullName: userData.fullName || uname,
-          email: userData.email,
-          phone: userData.phone,
-          role: userData.role || 'RESIDENT',
-          district: userData.district || 'Wayanad, Kerala',
-          familyMembers: userData.familyMembers || 1,
-          hasVulnerable: !!userData.hasVulnerable,
-        },
+        success: false,
+        error: 'Network error. Server is unreachable.',
       };
     }
   },

@@ -36,7 +36,7 @@ export default function EmergencyMode({ onClose, onAuthSuccess }) {
     if (window.__lenis) window.__lenis.stop();
 
     return () => {
-      document.body.style.overflow = originalOverflow;
+      document.body.style.overflow = originalOverflow === 'hidden' ? '' : originalOverflow;
       if (window.__lenis) window.__lenis.start();
     };
   }, []);

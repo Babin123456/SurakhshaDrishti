@@ -34,8 +34,8 @@ An initial inspection assessed whether separate `adminDash/assets` and `userApp/
 ### 1.2 Audit Status Summary
 
 - **Total Audited Surface**: 33 Distinct System Findings
-- **Resolved Issues**: 8 Flaws (Verified fixed in codebase commits `9882999` & `6f586c6`)
-- **Active Existing Bugs**: 25 Documented Defects requiring architectural remediation
+- **Resolved Issues**: 19 Flaws (8 full-stack fixes in commits `9882999` & `6f586c6` + 11 frontend-isolated fixes)
+- **Active Existing Bugs**: 14 Documented Defects requiring backend or full-stack architectural remediation
 
 ---
 
@@ -894,24 +894,24 @@ alertWindow.on('close', (e) => {
 | **BUG-04** | `dbHandler.js` / `chat.js` | **HIGH** | Missing DDL statements in `initDB()` and unhandled chat tables in local fallback engine. | Active |
 | **BUG-05** | `dbHandler.js` | **HIGH** | PostgreSQL connection pool permanent failure on initial boot timeout without retry. | Active |
 | **BUG-06** | `dbHandler.js` / `zones.js` | **HIGH** | `splice` on zone resolution deletes record, causing unassignment to 404. | Active |
-| **BUG-07** | `Dashboard.jsx` / `AgentDashboard.jsx` | **HIGH** | Hardcoded `http://localhost:5000` URLs break execution in networked environments. | Active |
+| **BUG-07** | `Dashboard.jsx` / `AgentDashboard.jsx` | **HIGH** | Hardcoded `http://localhost:5000` URLs break execution in networked environments. | Resolved |
 | **BUG-08** | Full Stack | **HIGH** | Socket.IO client completely missing from frontends; polling fallback only. | Active |
 | **BUG-09** | `main.js` / `chat.js` | **MEDIUM** | Missing WebSocket room join handler for tactical chat on backend (`join_conversation` missing). | Active |
-| **BUG-10** | `Dashboard.jsx` / `AgentDashboard.jsx` | **HIGH** | Disconnected static chat in `Dashboard.jsx` and non-functional Send button in `AgentDashboard.jsx`. | Active |
+| **BUG-10** | `Dashboard.jsx` / `AgentDashboard.jsx` | **HIGH** | Disconnected static chat in `Dashboard.jsx` and non-functional Send button in `AgentDashboard.jsx`. | Resolved (Frontend Send & Chat State Wired) |
 | **BUG-11** | `api.js` (`adminDash` / `userApp`) | **MEDIUM** | Ghost API endpoints returning 404 (`/stats/live`, `/alerts/active`, `/profile/credentials`). | Active |
 | **BUG-12** | `UserProfile.jsx` | **HIGH** | Password modification persisted solely to `localStorage` under custom key. | Active |
 | **BUG-13** | Full Stack | **LOW** | Orphaned dead code (`HeroSection.jsx`, `crypto.js`, `math_engine.cpp`, `h3PathfindingTest.js`). | Active |
-| **BUG-14** | `AlertNotification.jsx` | **MEDIUM** | Web Audio `AudioContext` unclosed on unmount, leaking audio output channels. | Active |
+| **BUG-14** | `AlertNotification.jsx` | **MEDIUM** | Web Audio `AudioContext` unclosed on unmount, leaking audio output channels. | Resolved |
 | **BUG-15** | `chat.js` | **HIGH** | `/chat/upload` lacks MIME/extension whitelist, allowing Stored XSS. | Active |
-| **BUG-16** | `App.jsx` | **MEDIUM** | `handleAuthSuccess` does not redirect authority users to `/dashboard`. | Active |
+| **BUG-16** | `App.jsx` | **MEDIUM** | `handleAuthSuccess` does not redirect authority users to `/dashboard`. | Resolved |
 | **BUG-17** | `middlewareHandler.js` | **MEDIUM** | Global `XSS_Sanitizer` mutates raw passwords, misses URL parameters, and lacks recursion limits. | Active |
-| **BUG-18** | `api.js` (`adminDash`) | **HIGH** | `login` and `register` network failure catch blocks return mock success tokens. | Active |
-| **BUG-19** | `App.jsx` / `QuickSignModal.jsx` | **CRITICAL** | QuickSign guest emergency pass overwrites authenticated officer session. | Active |
-| **BUG-20** | `UserProfile.jsx` | **HIGH** | Global un-scoped `suraksha_user_credentials` leaks credentials across sessions. | Active |
-| **BUG-21** | `UserProfile.jsx` | **HIGH** | Hardcoded Level 4 clearance and `'ndrf_admin'` fallback for all users. | Active |
-| **BUG-22** | Modals / Lenis | **MEDIUM** | Nested modal unmount captures `'hidden'` and permanently locks body scroll. | Active |
-| **BUG-23** | `AuthSection.jsx` / `api.js` | **CRITICAL** | 2FA verification calls non-existent `/auth/verify-2fa` with mismatched `otpCode` field. | Active |
-| **BUG-24** | `AppLogin.jsx` | **MEDIUM** | Fake client-side captcha requests missing `/reCAPTCHA_logo.png` image (404 error). | Active |
+| **BUG-18** | `api.js` (`adminDash`) | **HIGH** | `login` and `register` network failure catch blocks return mock success tokens. | Resolved |
+| **BUG-19** | `App.jsx` / `QuickSignModal.jsx` | **CRITICAL** | QuickSign guest emergency pass overwrites authenticated officer session. | Resolved |
+| **BUG-20** | `UserProfile.jsx` | **HIGH** | Global un-scoped `suraksha_user_credentials` leaks credentials across sessions. | Resolved |
+| **BUG-21** | `UserProfile.jsx` | **HIGH** | Hardcoded Level 4 clearance and `'ndrf_admin'` fallback for all users. | Resolved |
+| **BUG-22** | Modals / Lenis | **MEDIUM** | Nested modal unmount captures `'hidden'` and permanently locks body scroll. | Resolved |
+| **BUG-23** | `AuthSection.jsx` / `api.js` | **CRITICAL** | 2FA verification calls non-existent `/auth/verify-2fa` with mismatched `otpCode` field. | Resolved |
+| **BUG-24** | `AppLogin.jsx` | **MEDIUM** | Fake client-side captcha requests missing `/reCAPTCHA_logo.png` image (404 error). | Resolved |
 | **BUG-25** | `profile.js` / `dbHandler.js` | **MEDIUM** | `bio` and `profile_picture` columns missing in PostgreSQL schema and unhandled in local store. | Active |
 | **BUG-26** | `main.cjs` (Electron) | **MEDIUM** | `alertWindow` unacknowledged close cancellation traps user and prevents OS shutdown. | Active |
 
@@ -919,7 +919,7 @@ alertWindow.on('close', (e) => {
 
 ## 10. Resolved & Closed Flaws Audit Log
 
-The following 8 defects previously identified during codebase audits have been verified as resolved in the codebase:
+The following 19 defects previously identified during codebase audits have been verified as resolved in the codebase:
 
 | Original ID | Component | Defect Description | Resolution Mechanism & Commit |
 | :--- | :--- | :--- | :--- |
@@ -931,6 +931,17 @@ The following 8 defects previously identified during codebase audits have been v
 | **FIX-06** | `AppLogin.jsx` | Root-level `lat`/`lng` in QuickSign payload caused coordinates to be recorded as null. | Updated `AppLogin.jsx:239-242` to send nested `location: { lat, lng }` matching backend expectations. |
 | **FIX-07** | `UserDashboard.jsx` | Client-side blast radius distance filter dropped all hazard zones when user was outside perimeter. | Updated `UserDashboard.jsx:78-106` to retain all zones in state and toggle emergency UI conditionally without dropping zones. |
 | **FIX-08** | `UserDashboard.jsx` | Property name discrepancy (`radius_meters` vs `radiusMeters`) froze dynamic shelter search radius. | Updated reference to `closestZone.radiusMeters` in `UserDashboard.jsx:178`. |
+| **FIX-09** | `Dashboard.jsx` / `AgentDashboard.jsx` / `UserDashboard.jsx` | Hardcoded `http://localhost:5000` URLs prevented execution in LAN, Docker, and production deployments. | Exported dynamic `API_BASE_URL` in `api.js` and replaced all hardcoded fetch URLs across components. |
+| **FIX-10** | `AgentDashboard.jsx` | Tactical chat Send button had no click handler and input lacked submission handling. | Added reactive message state, wired Send button `onClick`, and implemented form submission. |
+| **FIX-11** | `AlertNotification.jsx` | Web Audio `AudioContext` remained unclosed on component unmount, leaking hardware audio channels. | Added `audioCtx.close()` invocation in `useEffect` cleanup hook. |
+| **FIX-12** | `App.jsx` | Successful authority authentication did not navigate officer to `/dashboard`. | Added automatic route transition to `/dashboard` for authority roles in `handleAuthSuccess`. |
+| **FIX-13** | `api.js` (`adminDash` & `userApp`) | Network catch blocks in `login` and `register` returned fake success JWT tokens on server failure. | Replaced deceptive mock tokens with proper failure responses (`success: false`). |
+| **FIX-14** | `App.jsx` / `QuickSignModal.jsx` | Generating a civilian emergency pass while an officer was logged in obliterated the officer session. | Updated `handleAuthSuccess` to store civilian passes under `suraksha_civilian_pass` without demoting active officer session. |
+| **FIX-15** | `UserProfile.jsx` / `App.jsx` | Global un-scoped `suraksha_user_credentials` leaked profile modifications across different user logins. | Scoped credential storage key by target user ID (`suraksha_user_credentials_${targetUserId}`). |
+| **FIX-16** | `UserProfile.jsx` | Profile header unconditionally rendered "Level 4 (Disaster Response Administrator)" and defaulted ID to `'ndrf_admin'`. | Implemented `getClearanceInfo` to dynamically format operational clearance by role and eliminated hardcoded fallback. |
+| **FIX-17** | `EmergencyMode.jsx` / `QuickSignModal.jsx` / `App.jsx` | Nested modal unmounting restored captured `'hidden'` body overflow and permanently froze Lenis scroll. | Sanitized unmount cleanups and added modal state watcher in `App.jsx` to guarantee body scroll and Lenis resumption. |
+| **FIX-18** | `api.js` (`adminDash`) | 2FA verification called non-existent `/auth/verify-2fa` route with mismatched payload property. | Updated endpoint to `${API_BASE_URL}/auth/verify-otp` and mapped payload to `{ username, otp }`. |
+| **FIX-19** | `AppLogin.jsx` | Civilian login requested non-existent `/reCAPTCHA_logo.png`, producing a 404 network failure on every mount. | Replaced missing image asset tag with an inline SVG badge. |
 
 ---
 

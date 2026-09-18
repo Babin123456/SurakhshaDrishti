@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 import RealGoogleMap from './RealGoogleMap';
 import AlertNotification from './AlertNotification';
-import { apiService } from '../utils/api';
+import { apiService, API_BASE_URL } from '../utils/api';
 
 // Haversine distance helper (km)
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -144,7 +144,7 @@ export default function UserDashboard({ onLogout, session }) {
 
     const transmitLocation = async () => {
       try {
-        await fetch('http://localhost:5000/api/zones/update-location', {
+        await fetch(`${API_BASE_URL}/api/zones/update-location`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

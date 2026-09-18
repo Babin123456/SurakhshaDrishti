@@ -21,6 +21,23 @@ import {
 import { useToast } from '../Toast';
 import { apiService } from '../../utils/api';
 
+function getClearanceInfo(role) {
+  const r = (role || '').toUpperCase();
+  if (r.includes('NDRF') || r.includes('COMMANDER')) {
+    return 'Level 4 (Disaster Response Administrator)';
+  }
+  if (r.includes('SDMA') || r.includes('STATE')) {
+    return 'Level 3 (State Disaster Management Authority)';
+  }
+  if (r.includes('DDMA') || r.includes('DISTRICT') || r.includes('POLICE') || r.includes('FIRE')) {
+    return 'Level 2 (District Tactical Responder)';
+  }
+  if (r.includes('CIVILIAN') || r.includes('RESIDENT') || r.includes('GUEST')) {
+    return 'Level 1 (Civilian Emergency Access)';
+  }
+  return 'Level 1 (Field Access)';
+}
+
 export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNavigateHome }) {
   const { addToast } = useToast();
   // Form states initialized from user session
@@ -322,7 +339,7 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
 
     setIsSaving(true);
 
-    const targetUserId = user?.userId || user?.user_id || user?.username || 'officer_vikram_singh';
+    const targetUserId = user?.userId || user?.user_id || user?.username || user?.email || 'officer_vikram_singh';
 
     // If password change is requested, verify current password against custom storage or backend /auth/login
     if (isPasswordChangeAttempted) {
@@ -372,9 +389,9 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
       avatar: profileImage
     };
 
-    // Save locally for persistence
+    // Save locally for persistence (scoped to active user ID to avoid cross-session contamination)
     try {
-      localStorage.setItem('suraksha_user_credentials', JSON.stringify({
+      localStorage.setItem(`suraksha_user_credentials_${targetUserId}`, JSON.stringify({
         fullName: fullName.trim(),
         email: initialEmail.trim(),
         phone: initialPhone.trim(),
@@ -522,16 +539,16 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
               </div>
               
               <p className="text-xs text-[#5C544D]">
-                Operational Clearance: <strong className="text-[#1A1A1A]">Level 4 (Disaster Response Administrator)</strong>
+                Operational Clearance: <strong className="text-[#1A1A1A]">{getClearanceInfo(department || user?.role)}</strong>
               </p>
 
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2 text-xs text-[#7A726A]">
                 <span className="flex items-center gap-1.5">
-                  <BadgeCheck className="w-3.5 h-3.5 text-[#2D7A4F]" /> Verified Officer ID
+                  <BadgeCheck className="w-3.5 h-3.5 text-[#2D7A4F]" /> Verified ID
                 </span>
                 <span>•</span>
                 <span className="font-mono text-[#5C544D]">
-                  ID: {user?.userId || user?.user_id || user?.username || 'ndrf_admin'}
+                  ID: {user?.userId || user?.user_id || user?.username || user?.email || 'OFFICER-PENDING'}
                 </span>
               </div>
             </div>
