@@ -1,3 +1,5 @@
+<!-- markdownlint-disable -->
+
 <div align="center">
 
 <!-- Animated Header Wave -->

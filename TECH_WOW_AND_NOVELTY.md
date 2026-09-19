@@ -1,3 +1,5 @@
+<!-- markdownlint-disable -->
+
 <div align="center">
 
 # Technical WOW Factors & Novelty

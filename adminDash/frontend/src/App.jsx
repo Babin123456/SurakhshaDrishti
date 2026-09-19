@@ -430,6 +430,7 @@ export default function App() {
         <Navbar 
           onSignIn={() => handleOpenAuth('signin')}
           onSignUp={() => handleOpenAuth('signup')}
+          onOpenDemo={() => handleOpenAuth('signin')}
           onEmergencyAccess={() => setShowEmergency(true)}
           userSession={userSession}
           onNavigateDashboard={() => navigate('/dashboard')}
@@ -466,6 +467,7 @@ export default function App() {
               else handleOpenAuth('signin');
             }}
             onSignUp={() => handleOpenAuth('signup')}
+            onOpenDemo={() => handleOpenAuth('signin')}
             onNavigateDashboard={() => navigate('/dashboard')}
             onEmergencyAccess={() => setShowEmergency(true)}
             onQuickSign={() => setShowQuickSign(true)}

@@ -5,32 +5,55 @@ import AgentDashboard from './components/AgentDashboard';
 import AlertNotification from './components/AlertNotification';
 import IntroSequence from './components/IntroSequence';
 
+import { mobileStorage } from './utils/storage';
+
 export default function App() {
   const [showIntro, setShowIntro] = useState(() => {
     // Show intro on initial application boot
-    return !sessionStorage.getItem('suraksha_intro_shown');
+    return !mobileStorage.getItem('suraksha_intro_shown');
   });
 
   const [session, setSession] = useState(() => {
     try {
-      const saved = sessionStorage.getItem('suraksha_app_session');
+      const saved = mobileStorage.getItem('suraksha_app_session');
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
       return null;
     }
   });
 
-  // Purge any stale localStorage session on boot to guarantee clean role & phone authentication
+  const [currentPath, setCurrentPath] = useState(() => {
+    return window.location.pathname + window.location.hash;
+  });
+
+  // Listen for mobile back button, URL hash change, and push/popstate
   useEffect(() => {
-    try {
-      localStorage.removeItem('suraksha_app_session');
-    } catch (e) {}
+    const handleRouteSync = () => {
+      setCurrentPath(window.location.pathname + window.location.hash);
+    };
+
+    window.addEventListener('popstate', handleRouteSync);
+    window.addEventListener('hashchange', handleRouteSync);
+
+    // Capacitor / React Native Android Hardware Back Button Hook
+    const handleAndroidBackButton = (e) => {
+      if (window.location.hash || window.location.pathname !== '/') {
+        window.history.back();
+      }
+    };
+    window.addEventListener('ionBackButton', handleAndroidBackButton);
+    document.addEventListener('backbutton', handleAndroidBackButton);
+
+    return () => {
+      window.removeEventListener('popstate', handleRouteSync);
+      window.removeEventListener('hashchange', handleRouteSync);
+      window.removeEventListener('ionBackButton', handleAndroidBackButton);
+      document.removeEventListener('backbutton', handleAndroidBackButton);
+    };
   }, []);
 
-  // If the Electron alert window loads this app at /alert, show the alert immediately
-  // regardless of session state. This is critical — the alert window is a SEPARATE 
-  // BrowserWindow that has no session context.
-  const isAlertRoute = window.location.pathname === '/alert' || window.location.hash === '#/alert';
+  // Check if current route is emergency alert route
+  const isAlertRoute = currentPath.includes('/alert') || currentPath.includes('#/alert');
   if (isAlertRoute) {
     return <AlertNotification />;
   }
@@ -39,7 +62,7 @@ export default function App() {
     return (
       <IntroSequence 
         onComplete={() => {
-          sessionStorage.setItem('suraksha_intro_shown', 'true');
+          mobileStorage.setItem('suraksha_intro_shown', 'true');
           setShowIntro(false);
         }} 
       />
@@ -49,7 +72,7 @@ export default function App() {
   const handleLogin = (userData) => {
     setSession(userData);
     try {
-      sessionStorage.setItem('suraksha_app_session', JSON.stringify(userData));
+      mobileStorage.setItem('suraksha_app_session', JSON.stringify(userData));
     } catch (e) {
       console.error('Failed to persist session', e);
     }
@@ -58,8 +81,7 @@ export default function App() {
   const handleLogout = () => {
     setSession(null);
     try {
-      sessionStorage.removeItem('suraksha_app_session');
-      localStorage.removeItem('suraksha_app_session');
+      mobileStorage.removeItem('suraksha_app_session');
     } catch (e) {
       console.error('Failed to clear session', e);
     }
