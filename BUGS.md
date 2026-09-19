@@ -14,8 +14,9 @@ This document presents the complete technical audit of the **SurakshaDrishti** c
 6. [Category V: Ghost API Endpoints, Dead Code, & Orphaned Modules](#6-category-v-ghost-api-endpoints-dead-code--orphaned-modules)
 7. [Category VI: Resource Leaks, Memory Pitfalls, & Security Hazards](#7-category-vi-resource-leaks-memory-pitfalls--security-hazards)
 8. [Category VII: State Management, Identity Collisions, & UI Resilience](#8-category-vii-state-management-identity-collisions--ui-resilience)
-9. [Master Active Vulnerability Matrix](#9-master-active-vulnerability-matrix)
-10. [Resolved & Closed Flaws Audit Log](#10-resolved--closed-flaws-audit-log)
+9. [Category VIII: Mobile / Android Migration Readiness & Platform Portability Blockers](#8-category-viii-mobile--android-migration-readiness--platform-portability-blockers)
+10. [Master Active Vulnerability Matrix](#9-master-active-vulnerability-matrix)
+11. [Resolved & Closed Flaws Audit Log](#10-resolved--closed-flaws-audit-log)
 
 ---
 
@@ -884,6 +885,97 @@ alertWindow.on('close', (e) => {
 
 ---
 
+---
+
+## 8. Category VIII: Mobile / Android Migration Readiness & Platform Portability Blockers
+
+This section assesses the architectural feasibility of migrating `userApp` from its current Electron desktop container to native/hybrid Android (e.g., Capacitor, React Native / Expo). While the pure React business logic, Haversine geo-math, OSRM routing, and HTTP API layer are 100% portable, the following 4 structural platform dependencies must be refactored.
+
+### Bug 8.1: Hard Platform Lock-in to Desktop Electron Runtime (`main.cjs` / IPC)
+
+- **Affected Components**:
+  - Runtime Layer: [`userApp/backend/main.cjs`](file:///d:/Projects/SurakshaDrishti/userApp/backend/main.cjs#L1-L114)
+  - Preload Script: [`userApp/backend/preload.cjs`](file:///d:/Projects/SurakshaDrishti/userApp/backend/preload.cjs)
+  - IPC Listeners: [`userApp/frontend/src/components/AlertNotification.jsx`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/src/components/AlertNotification.jsx)
+- **Severity**: **CRITICAL (Platform Migration Blocker)**
+
+#### Failure Mechanism for Bug 8.1
+
+The application lifecycle, emergency priority display, and inter-window communications are coupled directly to Node.js/Electron modules:
+- `main.cjs` instantiates two separate desktop `BrowserWindow` instances (`mainWindow` and `alertWindow`) using `screen.getPrimaryDisplay()`.
+- Emergency alerts rely on Electron IPC channels (`trigger-alert`, `acknowledge-alert`, `alert-data`).
+- Android has no concept of Electron `BrowserWindow` or Node.js IPC. Running this app on an Android device without replacing the runtime causes complete startup failure.
+
+#### Remediation for Bug 8.1
+
+- **For Capacitor / Cordova**: Replace the Electron main process with `@capacitor/core` and bridge the emergency alerts to native Android notifications via `@capacitor/push-notifications` or `@capacitor/local-notifications`.
+- **For React Native / Expo**: Replace window management with React Navigation and Firebase Cloud Messaging (FCM) heads-up notifications.
+
+---
+
+### Bug 8.2: Web-Only Leaflet DOM Map Engine Incompatible with Native Android Runtimes
+
+- **Affected Components**:
+  - Map Engine: [`userApp/frontend/src/components/RealGoogleMap.jsx`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/src/components/RealGoogleMap.jsx#L1-L80)
+  - Package Dependencies: [`userApp/package.json`](file:///d:/Projects/SurakshaDrishti/userApp/package.json#L16)
+- **Severity**: **HIGH (Native Mobile Rendering Blocker)**
+
+#### Failure Mechanism for Bug 8.2
+
+`RealGoogleMap.jsx` (~1,300 lines) is built on top of standard browser Leaflet (`L.map`, `L.tileLayer`, `L.marker`, `L.polyline`, `L.geoJSON`).
+- Leaflet strictly requires an active HTML DOM (`document.createElement`, CSS transform animations, DOM event propagation).
+- If migrating to native React Native, Leaflet will fail to execute because React Native does not contain a browser DOM.
+- If using Capacitor/WebView, Leaflet works inside the WebView, but suffers from performance degradation (pinch-to-zoom lag, battery drain, tile memory pressure) on lower-end Android hardware during crisis events.
+
+#### Remediation for Bug 8.2
+
+- **If migrating to React Native**: Extract coordinate transformation, route math, and hazard zone metadata from `RealGoogleMap.jsx` and plug them into `react-native-maps` (Google Maps SDK for Android) or `@maplibre/maplibre-react-native`.
+- **If using Capacitor**: Retain Leaflet inside the WebView or wrap a native Google Maps Capacitor plugin (`@capacitor-community/google-maps`).
+
+---
+
+### Bug 8.3: Browser `sessionStorage` Volatility & Non-Portability on Native Mobile
+
+- **Affected Components**:
+  - Auth Flow & State: [`userApp/frontend/src/App.jsx`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/src/App.jsx#L14-L28)
+  - Login Component: [`userApp/frontend/src/components/AppLogin.jsx`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/src/components/AppLogin.jsx)
+- **Severity**: **MEDIUM (Session Loss & Mobile Storage Incompatibility)**
+
+#### Failure Mechanism for Bug 8.3
+
+`App.jsx` stores auth tokens and session profiles exclusively in browser `sessionStorage` (`suraksha_app_session`, `suraksha_intro_shown`).
+- On Android, mobile operating systems aggressively kill background web processes and tasks to reclaim RAM. When an Android user switches to another app or the system pauses the app, `sessionStorage` is frequently wiped, forcing citizens and rescue officers to re-authenticate during an evacuation.
+- In native React Native, `sessionStorage` and `localStorage` are undefined globals.
+
+#### Remediation for Bug 8.3
+
+Replace volatile `sessionStorage` with a robust multi-platform storage abstraction:
+- Use `@react-native-async-storage/async-storage` for React Native, or `@capacitor/preferences` for Capacitor.
+- Store auth tokens securely using native Android Keystore (`react-native-keychain` / `@capgo/capacitor-secure-storage`).
+
+---
+
+### Bug 8.4: Direct `window.location` URL/Hash Parsing Without Mobile Route Stack
+
+- **Affected Components**:
+  - Root Routing: [`userApp/frontend/src/App.jsx`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/src/App.jsx#L33)
+  - Dashboard Navigation: [`userApp/frontend/src/components/UserDashboard.jsx`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/src/components/UserDashboard.jsx#L38), [`userApp/frontend/src/components/UserDashboard.jsx`](file:///d:/Projects/SurakshaDrishti/userApp/frontend/src/components/UserDashboard.jsx#L54-L61)
+- **Severity**: **MEDIUM (Broken Deep-Linking & Hardware Back Button Handling)**
+
+#### Failure Mechanism for Bug 8.4
+
+Routing decisions (such as launching the standalone emergency alert modal or detecting dashboard tab changes) are implemented via raw browser window queries:
+```javascript
+const isAlertRoute = window.location.pathname === '/alert' || window.location.hash === '#/alert';
+```
+- Android applications have no browser address bar. Relying on `window.location` fails to integrate with the Android hardware back button (`BackHandler`), back gesture navigation, and Android Intent deep linking.
+
+#### Remediation for Bug 8.4
+
+Adopt a unified router such as `react-router` with memory/native history or React Navigation (`@react-navigation/native`), and register hardware back-press event hooks.
+
+---
+
 ## 9. Master Active Vulnerability Matrix
 
 | ID | Component | Severity | Description | Status |
@@ -914,6 +1006,10 @@ alertWindow.on('close', (e) => {
 | **BUG-24** | `AppLogin.jsx` | **MEDIUM** | Fake client-side captcha requests missing `/reCAPTCHA_logo.png` image (404 error). | Resolved |
 | **BUG-25** | `profile.js` / `dbHandler.js` | **MEDIUM** | `bio` and `profile_picture` columns missing in PostgreSQL schema and unhandled in local store. | Active |
 | **BUG-26** | `main.cjs` (Electron) | **MEDIUM** | `alertWindow` unacknowledged close cancellation traps user and prevents OS shutdown. | Active |
+| **BUG-27** | `userApp/backend/main.cjs` | **CRITICAL** | Desktop Electron runtime & Node IPC are incompatible with native Android execution. | Active (Mobile Migration Blocker) |
+| **BUG-28** | `RealGoogleMap.jsx` | **HIGH** | Web Leaflet DOM map engine cannot execute in native React Native without WebView / Native Maps. | Active (Mobile Migration Blocker) |
+| **BUG-29** | `App.jsx` / `AppLogin.jsx` | **MEDIUM** | In-memory `sessionStorage` wiped on Android OS background task reclamation; non-existent in React Native. | Active (Mobile Migration Blocker) |
+| **BUG-30** | `App.jsx` / `UserDashboard.jsx` | **MEDIUM** | Raw `window.location` routing ignores Android hardware back button and system intent deep links. | Active (Mobile Migration Blocker) |
 
 ---
 
