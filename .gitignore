@@ -5,10 +5,6 @@ dist-electron/
 out/
 .vite/
 
-# Legacy root folders (removed from main codebase)
-/frontend/
-/backend/
-
 # Local Environment Secrets & Overrides
 .env
 .env.*
