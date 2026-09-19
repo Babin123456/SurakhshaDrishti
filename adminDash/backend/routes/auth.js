@@ -208,7 +208,7 @@ router.post("/quick-signup", async (req, res, next) => {
 });
 
 // VERIFY OTP ROUTE
-router.post("/verify-otp", (req, res, next) => {
+router.post("/verify-otp", async (req, res, next) => {
     const { username, otp } = req.body;
     const record = otpStore.get(username);
 
@@ -225,12 +225,36 @@ router.post("/verify-otp", (req, res, next) => {
 
     if (record.code === otp) {
         otpStore.delete(username);
-        const token = jwt.sign({ user_id: username }, process.env.JWT_SECRET || 'suraksha_secret_jwt_2026_production', { expiresIn: "24h" });
-        return res.json({
-            success: true,
-            message: "Authentication successful!",
-            token: token
-        });
+        try {
+            const result = await db.query('SELECT * FROM users WHERE user_id = $1', [username]);
+            if (result.rows.length === 0) {
+                res.statusCode = 404;
+                return next(new Error("User not found after OTP verification."));
+            }
+            const user = result.rows[0];
+            const userRole = user.role || user.user_role;
+            const isResident = userRole === 'RESIDENT';
+            
+            const token = jwt.sign({ user_id: username, role: userRole }, process.env.JWT_SECRET || 'suraksha_secret_jwt_2026_production', { expiresIn: "24h" });
+            
+            return res.json({
+                success: true,
+                message: "Authentication successful!",
+                token: token,
+                user: {
+                    userId: user.user_id,
+                    fullName: user.full_name || user.user_id,
+                    email: user.email,
+                    phone: user.phone,
+                    role: userRole,
+                    officerMode: user.officer_mode || 'OFF_SITE',
+                    district: user.district || 'Wayanad, Kerala',
+                    zone: isResident ? 'Resident Sector' : 'NDRF Tactical Sector'
+                }
+            });
+        } catch (err) {
+            return next(err);
+        }
     }
 
     res.statusCode = 400;
