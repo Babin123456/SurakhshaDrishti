@@ -12,7 +12,6 @@ import Footer from './components/Footer';
 import AuthSection from './components/AuthSection';
 import EmergencyMode from './components/EmergencyMode';
 import QuickSignModal from './components/QuickSignModal';
-import DemoOfficerModal from './components/DemoOfficerModal';
 import Dashboard from './components/Dashboard';
 import IntroSequence from './components/IntroSequence';
 
@@ -95,16 +94,15 @@ export default function App() {
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState('signin');
   const [showEmergency, setShowEmergency] = useState(false);
-  const [showDemoOfficer, setShowDemoOfficer] = useState(false);
   const [showQuickSign, setShowQuickSign] = useState(false);
   const [quickSignLocation, setQuickSignLocation] = useState(null);
 
   useEffect(() => {
-    if (!showAuth && !showEmergency && !showDemoOfficer && !showQuickSign) {
+    if (!showAuth && !showEmergency && !showQuickSign) {
       document.body.style.overflow = '';
       if (window.__lenis) window.__lenis.start();
     }
-  }, [showAuth, showEmergency, showDemoOfficer, showQuickSign]);
+  }, [showAuth, showEmergency, showQuickSign]);
 
   const handleOpenAuth = (mode = 'signin') => {
     setAuthMode(mode);
@@ -125,7 +123,6 @@ export default function App() {
         // Keep officer session active
         setShowAuth(false);
         setShowEmergency(false);
-        setShowDemoOfficer(false);
         setShowQuickSign(false);
         return;
       }
@@ -137,7 +134,6 @@ export default function App() {
     } catch {}
     setShowAuth(false);
     setShowEmergency(false);
-    setShowDemoOfficer(false);
     setShowQuickSign(false);
 
     // If authority/officer, navigate to dashboard
@@ -430,12 +426,11 @@ export default function App() {
       )}
 
       {/* 2. Floating Apple-Style Shrinking Navbar (Hidden when Modals are open) */}
-      {!showAuth && !showEmergency && !showQuickSign && !showDemoOfficer && (
+      {!showAuth && !showEmergency && !showQuickSign && (
         <Navbar 
           onSignIn={() => handleOpenAuth('signin')}
           onSignUp={() => handleOpenAuth('signup')}
           onEmergencyAccess={() => setShowEmergency(true)}
-          onOpenDemo={() => setShowDemoOfficer(true)}
           userSession={userSession}
           onNavigateDashboard={() => navigate('/dashboard')}
           onNavigateProfile={() => navigate('/profile')}
@@ -456,7 +451,6 @@ export default function App() {
             }
           }}
           onEmergencyAccess={() => setShowEmergency(true)}
-          onOpenDemo={() => setShowDemoOfficer(true)}
         />
 
         {/* Restoring the scrolling features for "bragging" */}
@@ -472,7 +466,6 @@ export default function App() {
               else handleOpenAuth('signin');
             }}
             onSignUp={() => handleOpenAuth('signup')}
-            onOpenDemo={() => setShowDemoOfficer(true)}
             onNavigateDashboard={() => navigate('/dashboard')}
             onEmergencyAccess={() => setShowEmergency(true)}
             onQuickSign={() => setShowQuickSign(true)}
@@ -487,13 +480,6 @@ export default function App() {
         <AuthSection
           initialMode={authMode}
           onClose={() => setShowAuth(false)}
-          onAuthSuccess={handleAuthSuccess}
-        />
-      )}
-
-      {showDemoOfficer && (
-        <DemoOfficerModal
-          onClose={() => setShowDemoOfficer(false)}
           onAuthSuccess={handleAuthSuccess}
         />
       )}

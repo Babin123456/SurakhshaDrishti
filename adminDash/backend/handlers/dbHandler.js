@@ -21,309 +21,69 @@ const poolConfig = process.env.DATABASE_URL
 
 const pool = new Pool(poolConfig);
 
-let pgHealthy = true;
+let pgHealthy = false;
+let retryCount = 0;
+const MAX_RETRIES = 10;
+const RETRY_DELAY_MS = 5000;
 
 pool.on('error', (err) => {
-    console.warn('[PostgreSQL Pool Warning]', err.message);
+    console.error('[PostgreSQL Pool Error]', err.message);
     pgHealthy = false;
 });
-
-// Local JSON store fallback directory
-const dbDir = path.join(__dirname, "../database");
-const dbFile = path.join(dbDir, "suraksha_local_db.json");
-
-let localStore = {
-  users: [
-    { user_id: 'ndrf_admin', email: 'ndrf.command@mha.gov.in', password: '$2b$10$w09ZkF2xO59lU22qj4A24u7s2h/k8q5d/Z71d.a6f4s8b9c1d2e3f', full_name: 'NDRF Commander Chief', user_role: 'NDRF', officer_mode: 'OFF_SITE', district: 'Wayanad Sector 4' },
-    { user_id: 'sdma_officer', email: 'sdma.kerala@gov.in', password: '$2b$10$w09ZkF2xO59lU22qj4A24u7s2h/k8q5d/Z71d.a6f4s8b9c1d2e3f', full_name: 'SDMA Regional Officer', user_role: 'SDMA', officer_mode: 'ON_SITE', district: 'Wayanad, Kerala' }
-  ],
-  hazard_zones: [
-    { zone_id: 'RZ-WAYANAD-01', name: 'Wayanad Sector 4 (Chooralmala - Meppadi)', state: 'Kerala', lat: 11.5583, lng: 76.1384, zone_type: 'RED', hazard_type: 'LANDSLIDE', risk_score: 94, geohash: 'tdv2n19z', population_risk: 4820, radius_meters: 4000, access_key: 'RZ-89A4-91F2-3B7C', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 2, resolution_votes_cast: 0, is_open: true },
-    { zone_id: 'RZ-KULLU-02', name: 'Beas River Valley (Kullu - Manali)', state: 'Himachal Pradesh', lat: 32.2396, lng: 77.1887, zone_type: 'RED', hazard_type: 'FLASH_FLOOD', risk_score: 91, geohash: 'ttv3m4wx', population_risk: 3200, radius_meters: 5000, access_key: 'RZ-41C2-88E0-99A1', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 3, resolution_votes_cast: 0, is_open: true },
-    { zone_id: 'RZ-DHUBRI-03', name: 'Dhubri Lower Assam Basin', state: 'Assam', lat: 26.0207, lng: 89.9743, zone_type: 'RED', hazard_type: 'FLOOD', risk_score: 85, geohash: 'wh8r3p7q', population_risk: 12500, radius_meters: 8000, access_key: 'RZ-73F9-22D4-55B8', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 2, resolution_votes_cast: 0, is_open: true },
-    { zone_id: 'RZ-KODAGU-04', name: 'Kodagu Western Ghats Slopes', state: 'Karnataka', lat: 12.3375, lng: 75.8069, zone_type: 'RED', hazard_type: 'LANDSLIDE', risk_score: 82, geohash: 'tdnc2e6w', population_risk: 2100, radius_meters: 3000, access_key: 'RZ-12A4-9X82-6C4D', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 2, resolution_votes_cast: 0, is_open: true },
-    { zone_id: 'RZ-TEESTA-05', name: 'Teesta River Basin (Singtam & Rangpo)', state: 'Sikkim', lat: 27.5029, lng: 88.5309, zone_type: 'RED', hazard_type: 'FLASH_FLOOD', risk_score: 88, geohash: 'tuyf29pk', population_risk: 6400, radius_meters: 4500, access_key: 'RZ-99B2-3C44-1D7F', status: 'ACTIVE_RED_ZONE', resolution_votes_required: 3, resolution_votes_cast: 0, is_open: true }
-  ],
-  history_red_zones: [],
-  zone_assignments: [],
-  shelters: [
-    { shelter_id: 'SH-01', zone_id: 'RZ-WAYANAD-04', primary_hashed_key: 'RZ-89A4-91F2-3B7C', name: 'Nilambur Foothill Base Camp', lat: 11.2764, lng: 76.2241, capacity_total: 1420, capacity_occupied: 420, status: 'OPEN', evacuation_corridor: 'Via SH-28 (Clearing Teams Active)', is_officially_registered: true, source_data: 'SDMA', district: 'Malappuram, Kerala', emergency_phone: '+91 80000 11111' },
-    { shelter_id: 'SH-02', zone_id: 'RZ-WAYANAD-04', primary_hashed_key: 'RZ-89A4-91F2-3B7C', name: 'Pipalkoti Relief Center', lat: 30.4285, lng: 79.4312, capacity_total: 850, capacity_occupied: 210, status: 'OPEN', evacuation_corridor: 'Via NH-07 (Bypass Operational)', is_officially_registered: true, source_data: 'SDMA', district: 'Chamoli, Uttarakhand', emergency_phone: '+91 80000 22222' }
-  ],
-  emergency_passes: [],
-  e2ee_conversations: [],
-  e2ee_messages: [],
-  gsm_telemetry_logs: []
-};
-
-// Load saved local data if exists
-const loadLocalStore = () => {
-  if (fs.existsSync(dbFile)) {
-    try {
-      const raw = fs.readFileSync(dbFile, "utf-8");
-      const parsed = JSON.parse(raw);
-      localStore = { ...localStore, ...parsed };
-    } catch (e) {}
-  }
-};
-loadLocalStore();
-
-const saveLocalStore = () => {
-  try {
-    if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
-    fs.writeFileSync(dbFile, JSON.stringify(localStore, null, 2), "utf-8");
-  } catch (e) {}
-};
-
-async function executeLocalQuery(text, params = []) {
-  loadLocalStore();
-  const sql = text.trim();
-  const lower = sql.toLowerCase();
-
-  // Transactions
-  if (lower === 'begin' || lower === 'commit' || lower === 'rollback') {
-    return { rows: [] };
-  }
-
-  // SELECT FROM users
-  if (lower.startsWith('select') && lower.includes('from users')) {
-    if (params.length >= 1) {
-      const match = localStore.users.filter(u => {
-        return params.some(p => {
-          if (!p) return false;
-          const pStr = String(p).trim().toLowerCase();
-          return (
-            (u.user_id && String(u.user_id).trim().toLowerCase() === pStr) ||
-            (u.email && String(u.email).trim().toLowerCase() === pStr) ||
-            (u.phone && String(u.phone).trim() === String(p).trim())
-          );
-        });
-      });
-      return { rows: match };
-    }
-    return { rows: localStore.users };
-  }
-
-  // INSERT INTO users
-  if (lower.startsWith('insert into users')) {
-    const [user_id, email, password, full_name, phone, user_role, district, family_members, has_vulnerable] = params;
-    const existingIdx = localStore.users.findIndex(u => u.user_id === user_id || u.email === email);
-    const newUser = {
-      user_id, email, password, full_name: full_name || user_id, phone: phone || '', user_role: user_role || 'RESIDENT',
-      district: district || 'Wayanad, Kerala', family_members: family_members || 1,
-      has_vulnerable: !!has_vulnerable, created_at: new Date().toISOString()
-    };
-    if (existingIdx >= 0) {
-      localStore.users[existingIdx] = newUser;
-    } else {
-      localStore.users.push(newUser);
-    }
-    saveLocalStore();
-    return { rows: [newUser] };
-  }
-
-  // SELECT FROM hazard_zones
-  if (lower.startsWith('select') && lower.includes('from hazard_zones')) {
-    let zonesToReturn = localStore.hazard_zones;
-    if (lower.includes('where zone_id =') && params.length > 0) {
-      zonesToReturn = localStore.hazard_zones.filter(z => z.zone_id === params[0]);
-    } else if (lower.includes('where z.access_key ilike') || lower.includes('z.access_key ilike')) {
-      const qClean = params[0] ? String(params[0]).replace(/%/g, '').toLowerCase() : '';
-      zonesToReturn = localStore.hazard_zones.filter(z => 
-        (z.access_key && z.access_key.toLowerCase().includes(qClean)) ||
-        (z.name && z.name.toLowerCase().includes(qClean)) ||
-        (z.geohash && z.geohash.toLowerCase().includes(qClean)) ||
-        (z.zone_id && z.zone_id.toLowerCase().includes(qClean))
-      );
-    }
-
-    const populated = zonesToReturn.map(zone => {
-      const assigned = (localStore.zone_assignments || [])
-        .filter(a => a.zone_id === zone.zone_id)
-        .map(a => ({
-          user_id: a.user_id,
-          officer_name: a.officer_name,
-          department: a.department,
-          assigned_at: a.assigned_at || new Date().toISOString(),
-          vote_to_resolve: !!a.vote_to_resolve
-        }));
-      return {
-        ...zone,
-        active_officers_count: assigned.length,
-        assigned_officers: assigned
-      };
-    });
-
-    return { rows: populated };
-  }
-
-  // SELECT FROM shelters
-  if (lower.startsWith('select') && lower.includes('from shelters')) {
-    if (lower.includes('where primary_hashed_key') && params.length > 0) {
-      const match = localStore.shelters.filter(s => s.primary_hashed_key === params[0]);
-      return { rows: match };
-    }
-    return { rows: localStore.shelters };
-  }
-
-  // UPDATE zone_assignments
-  if (lower.startsWith('update zone_assignments') && lower.includes('vote_to_resolve')) {
-     const [zone_id, user_id] = params;
-     const assignment = localStore.zone_assignments.find(a => a.zone_id === zone_id && a.user_id === user_id);
-     if (assignment) assignment.vote_to_resolve = true;
-     saveLocalStore();
-     return { rows: [] };
-  }
-
-  // COUNT zone_assignments
-  if (lower.startsWith('select count(*)') && lower.includes('from zone_assignments')) {
-     const [zone_id] = params;
-     let count = 0;
-     if (lower.includes('vote_to_resolve = true')) {
-         count = localStore.zone_assignments.filter(a => a.zone_id === zone_id && a.vote_to_resolve).length;
-         return { rows: [{ total_votes: count }] };
-     } else {
-         count = localStore.zone_assignments.filter(a => a.zone_id === zone_id).length;
-         return { rows: [{ total_assigned: count }] };
-     }
-  }
-
-  // UPDATE hazard_zones (resolution_votes_cast)
-  if (lower.startsWith('update hazard_zones') && lower.includes('resolution_votes_cast')) {
-     const [totalVotes, zone_id] = params;
-     const zone = localStore.hazard_zones.find(z => z.zone_id === zone_id);
-     if (zone) zone.resolution_votes_cast = totalVotes;
-     saveLocalStore();
-     return { rows: [] };
-  }
-
-  // INSERT INTO history_red_zones & DELETE FROM hazard_zones
-  if (lower.startsWith('insert into history_red_zones')) {
-     const [zone_id] = params;
-     const zoneIdx = localStore.hazard_zones.findIndex(z => z.zone_id === zone_id);
-     if (zoneIdx >= 0) {
-         const closedZone = localStore.hazard_zones.splice(zoneIdx, 1)[0];
-         closedZone.is_open = false;
-         closedZone.status = 'SITUATION_UNDER_CONTROL';
-         localStore.history_red_zones.push(closedZone);
-         saveLocalStore();
-     }
-     return { rows: [] };
-  }
-
-  // INSERT INTO zone_assignments
-  if (lower.startsWith('insert into zone_assignments')) {
-     const [zone_id, user_id, officer_name, department] = params;
-     const existing = localStore.zone_assignments.find(a => a.zone_id === zone_id && a.user_id === user_id);
-     if (!existing) {
-         localStore.zone_assignments.push({ zone_id, user_id, officer_name, department, vote_to_resolve: false });
-         saveLocalStore();
-     }
-     return { rows: [] };
-  }
-  
-  // SELECT FROM zone_assignments
-  if (lower.startsWith('select user_id, officer_name') && lower.includes('from zone_assignments')) {
-     const [zone_id] = params;
-     return { rows: localStore.zone_assignments.filter(a => a.zone_id === zone_id) };
-  }
-
-  // INSERT INTO emergency_passes
-  if (lower.startsWith('insert into emergency_passes')) {
-    if (lower.includes('(pass_id, user_id, lat, lng')) {
-      const [pass_id, user_id, lat, lng] = params;
-      const existing = localStore.emergency_passes.find(p => p.pass_id === pass_id);
-      if (existing) {
-        existing.lat = lat;
-        existing.lng = lng;
-        existing.updated_at = new Date().toISOString();
-      } else {
-        const newPass = { pass_id, user_id, lat, lng, status: 'ACTIVE_RED_ZONE', created_at: new Date().toISOString() };
-        localStore.emergency_passes.push(newPass);
-      }
-      saveLocalStore();
-      return { rows: [] };
-    } else {
-      const [pass_id, user_id, phone, lat, lng, assigned_shelter_id, special_needs] = params;
-      const newPass = { pass_id, user_id, phone, lat, lng, assigned_shelter_id, special_needs, status: 'ACTIVE_RED_ZONE', created_at: new Date().toISOString() };
-      localStore.emergency_passes.push(newPass);
-      saveLocalStore();
-      return { rows: [newPass] };
-    }
-  }
-
-  // INSERT INTO hazard_zones
-  if (lower.startsWith('insert into hazard_zones')) {
-    const [zone_id, name, state, lat, lng, zone_type, hazard_type, risk_score, geohash, population_risk, radius, radius_meters, access_key, status, resolution_votes_required] = params;
-    const existing = localStore.hazard_zones.find(z => z.zone_id === zone_id);
-    if (existing) {
-        existing.lat = lat;
-        existing.lng = lng;
-        existing.risk_score = risk_score;
-        existing.radius = radius;
-        existing.radius_meters = radius_meters;
-    } else {
-        const newZone = { zone_id, name, state, lat, lng, zone_type, hazard_type, risk_score, geohash, population_risk, radius, radius_meters, access_key, status, resolution_votes_required, created_at: new Date().toISOString() };
-        localStore.hazard_zones.push(newZone);
-    }
-    saveLocalStore();
-    return { rows: [] };
-  }
-
-  return { rows: [] };
-}
 
 async function initDB() {
     try {
         const client = await pool.connect();
         try {
-            await client.query('BEGIN');
-            await client.query(`
-                CREATE TABLE IF NOT EXISTS users (
-                    user_id TEXT PRIMARY KEY,
-                    email TEXT UNIQUE NOT NULL,
-                    password TEXT NOT NULL,
-                    full_name TEXT,
-                    phone TEXT,
-                    user_role TEXT DEFAULT 'RESIDENT',
-                    officer_mode TEXT DEFAULT 'OFF_SITE',
-                    district TEXT DEFAULT 'Wayanad, Kerala',
-                    family_members INTEGER DEFAULT 1,
-                    has_vulnerable BOOLEAN DEFAULT false,
-                    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-                )
-            `);
-            await client.query('COMMIT');
-            console.log("[SurakshaDrishti Database] PostgreSQL connected & schemas verified!");
+            console.log("[SurakshaDrishti Database] Connecting to PostgreSQL/Supabase...");
+            
+            // Execute schema.sql directly to fix Bug 2.2
+            const schemaPath = path.join(__dirname, "../database/schema.sql");
+            if (fs.existsSync(schemaPath)) {
+                const schemaSql = fs.readFileSync(schemaPath, "utf-8");
+                await client.query('BEGIN');
+                await client.query(schemaSql);
+                await client.query('COMMIT');
+                console.log("[SurakshaDrishti Database] PostgreSQL connected & all schemas verified!");
+            } else {
+                console.warn("[SurakshaDrishti Database] schema.sql not found! Skipping DDL.");
+            }
+            
             pgHealthy = true;
+            retryCount = 0; // Reset retries on successful connect
         } catch (e) {
             await client.query('ROLLBACK');
+            console.error("[SurakshaDrishti Database] Schema execution failed:", e.message);
             pgHealthy = false;
+            throw e;
         } finally {
             client.release();
         }
     } catch (err) {
-        console.warn("[SurakshaDrishti Database] PostgreSQL offline/unreachable. Resilient local fallback ACTIVE.");
+        console.error(`[SurakshaDrishti Database] PostgreSQL offline/unreachable: ${err.message}`);
         pgHealthy = false;
+        
+        // Self-Healing Retry to fix Bug 2.3
+        if (retryCount < MAX_RETRIES) {
+            retryCount++;
+            console.log(`[SurakshaDrishti Database] Retrying connection in ${RETRY_DELAY_MS / 1000} seconds... (Attempt ${retryCount}/${MAX_RETRIES})`);
+            setTimeout(initDB, RETRY_DELAY_MS);
+        } else {
+            console.error("[SurakshaDrishti Database] Max retries reached. Database is offline. Application may crash on queries.");
+        }
     }
 }
 
-initDB().catch(() => {
-    pgHealthy = false;
-});
+initDB();
 
 const dbWrapper = {
     query: async (text, params) => {
-        if (pgHealthy) {
-            try {
-                return await pool.query(text, params);
-            } catch (err) {
-                console.warn("[Database Query Warning - Supabase]", err.message, "SQL:", text.slice(0, 60));
-                return executeLocalQuery(text, params);
-            }
+        if (!pgHealthy) {
+            throw new Error("Database is currently offline. Please wait for reconnection.");
         }
-        return executeLocalQuery(text, params);
-    }
+        return await pool.query(text, params);
+    },
+    getPool: () => pool
 };
 
 module.exports = dbWrapper;

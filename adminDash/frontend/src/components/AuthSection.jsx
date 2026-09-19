@@ -110,38 +110,13 @@ export default function AuthSection({ initialMode = 'signin', onClose, onAuthSuc
     const updatedCustomPassword = localStorage.getItem(`suraksha_pwd_${trimmedUsername}`);
 
     let loginSuccessful = false;
-    let authResult = null;
-
-    if (updatedCustomPassword) {
-      if (password === updatedCustomPassword) {
-        loginSuccessful = true;
-        authResult = {
-          success: true,
-          token: 'jwt_officer_custom_' + Date.now(),
-          user: {
-            userId: trimmedUsername,
-            fullName: trimmedUsername === 'officer_vikram_singh' ? 'Commander Vikram Singh' : trimmedUsername,
-            role: 'NDRF',
-            district: 'Wayanad Sector 4',
-            zone: 'NDRF Tactical Sector'
-          }
-        };
-      } else {
-        setIsLoading(false);
-        const errText = 'Incorrect password. Note: If you updated your password in Profile, you must use your new password.';
-        addToast(errText, 'error');
-        setMessage({ type: 'error', text: errText });
-        return;
-      }
-    } else {
-      authResult = await apiService.login({
-        username: trimmedUsername,
-        password,
-        loginType,
-        role: loginType,
-      });
-      loginSuccessful = authResult.success;
-    }
+    let authResult = await apiService.login({
+      username: trimmedUsername,
+      password,
+      loginType,
+      role: loginType,
+    });
+    loginSuccessful = authResult.success;
 
     setIsLoading(false);
 

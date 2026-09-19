@@ -150,29 +150,6 @@ router.post("/login", async (req, res, next) => {
                 return next(new Error("Incorrect password"));
             }
         } else {
-            // Auto-provision demo authority user if authority login is attempted
-            if (username.includes('ndrf') || username.includes('sdma') || loginType === 'authority') {
-                await db.query(
-                    `INSERT INTO users (user_id, full_name, email, role, district) 
-                     VALUES ($1, $2, $3, $4, $5) 
-                     ON CONFLICT (user_id) DO NOTHING`,
-                    [username, 'NDRF Command Officer', `${username}@gov.in`, 'NDRF', 'Wayanad Sector 4']
-                ).catch(e => console.error('Auto-provision error:', e));
-
-                const token = jwt.sign({ user_id: username, role: 'NDRF' }, process.env.JWT_SECRET || 'suraksha_secret_jwt_2026_production', { expiresIn: "24h" });
-                return res.json({
-                    success: true,
-                    token,
-                    user: {
-                        userId: username,
-                        fullName: 'NDRF Command Officer',
-                        role: 'NDRF',
-                        officerMode: 'OFF_SITE',
-                        district: 'Wayanad Sector 4'
-                    }
-                });
-            }
-
             res.statusCode = 400;
             return next(new Error("Username/Email not found. Please register first."));
         }
