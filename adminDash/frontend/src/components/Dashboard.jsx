@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { 
   ShieldAlert, 
   Map, 
@@ -997,9 +998,9 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
                         isMe 
                           ? 'bg-[#2C2A29] text-[#FDFBF7] rounded-tr-xs' 
                           : 'bg-[#F6F4F0] text-[#1A1A1A] border border-[#E8E1D5] rounded-tl-xs'
-                      }`}>
-                        {msg.text}
-                      </div>
+                      }`}
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.text) }}
+                      />
                     </div>
                   );
                 })}

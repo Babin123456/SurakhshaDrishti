@@ -57,6 +57,9 @@ const xss = require('xss');
 const XSS_Sanitizer = (req, res, next) => {
     const sanitize = (obj) => {
         for (const key in obj) {
+            // Skip sanitizing password fields
+            if (key.toLowerCase().includes('password')) continue;
+
             if (typeof obj[key] === 'string') {
                 obj[key] = xss(obj[key]);
             } else if (typeof obj[key] === 'object' && obj[key] !== null) {

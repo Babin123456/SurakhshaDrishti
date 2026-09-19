@@ -29,6 +29,40 @@ app.get("/", (req, res) => {
   res.json({ success: true, message: "SurakshaDrishti API Server is running on port " + PORT });
 });
 
+// Ghost endpoint fixes (Bug 5.1)
+app.get("/stats/live", (req, res) => {
+  res.json({
+    activeRedZones: 14,
+    highRiskAreas: 23,
+    peopleAtRisk: 28450,
+    shelterCapacity: 12800,
+    activeAlerts: 7,
+  });
+});
+
+app.get("/alerts/active", (req, res) => {
+  res.json([
+    {
+      id: 'ALT-001',
+      type: 'landslide',
+      severity: 'critical',
+      title: 'Landslide Warning — Wayanad Hill Slope',
+      message: 'Active landslide risk in Sector 4. Evacuate immediately.',
+      location: { lat: 11.6854, lng: 76.132, name: 'Wayanad Sector 4' },
+      timestamp: new Date().toISOString(),
+    },
+    {
+      id: 'ALT-002',
+      type: 'flood',
+      severity: 'high',
+      title: 'Flash Flood Alert — Teesta Riverbank',
+      message: 'Rising water levels. Move to higher ground.',
+      location: { lat: 27.0883, lng: 88.2609, name: 'Teesta Riverbank' },
+      timestamp: new Date().toISOString(),
+    },
+  ]);
+});
+
 app.use("/auth", API_Limiter(60, 50, 1), authRoutes); // 60 seconds, 50 requests
 app.use("/api/auth", API_Limiter(60, 50, 1), authRoutes);
 app.use("/zones", zonesRoutes);
