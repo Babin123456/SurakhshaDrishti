@@ -161,8 +161,11 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess, onOpenD
             </div>
           </div>
 
-          {/* ─── RIGHT COLUMN: Floating Tactical Location & Orbiting Satellite (No Background Box) ─── */}
+          {/* ─── RIGHT COLUMN: Floating Tactical Location & Real-Time Orbiting Satellite ─── */}
           <div className="relative w-full aspect-square max-w-[520px] mx-auto lg:mx-0 lg:ml-auto flex items-center justify-center pointer-events-none select-none">
+            {/* Ambient Radial Soft Glow */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#8B7355]/10 via-[#B85C38]/5 to-transparent rounded-full blur-2xl pointer-events-none"></div>
+
             {/* Main Location Earth Globe (Transparent, floating) */}
             <img 
               src="/location_transparent.gif" 
@@ -175,20 +178,28 @@ export default function GovernmentLanding({ onSignIn, onEmergencyAccess, onOpenD
               draggable={false}
             />
 
-            {/* Orbiting Satellite / Earth Telemetry Animation */}
+            {/* Live Vector Satellite Sensor System with Pulse Beacon */}
             <div 
-              className="absolute -top-6 -right-6 sm:-top-8 sm:-right-8 w-36 h-36 sm:w-48 sm:h-48 z-20"
+              className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 w-36 h-36 sm:w-48 sm:h-48 z-20"
               style={{ 
                 animation: 'float 7s ease-in-out infinite reverse',
-                filter: 'drop-shadow(0 15px 30px rgba(139, 115, 85, 0.22))'
+                filter: 'drop-shadow(0 15px 30px rgba(139, 115, 85, 0.25))'
               }}
             >
               <img 
-                src="/satellite_earth_transparent.gif" 
-                alt="ISRO Satellite Earth Telemetry Orbit" 
+                src="/Sattelite.svg" 
+                alt="Tactical Satellite Telemetry Sensor" 
                 className="w-full h-full object-contain select-none pointer-events-none"
                 draggable={false}
               />
+              
+              {/* Telemetry Sensor Ping Beacon Badge */}
+              <div className="absolute -bottom-2 -left-2 bg-white/90 border border-[#E8E1D5] rounded-full px-2.5 py-1 shadow-xs backdrop-blur-md flex items-center gap-1.5 pointer-events-auto">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#2D7A4F] animate-pulse"></span>
+                <span className="text-[9px] font-mono font-bold tracking-wider text-[#4A4238] uppercase">
+                  SAT-GEO • LIVE
+                </span>
+              </div>
             </div>
           </div>
 

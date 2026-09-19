@@ -214,7 +214,7 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
       };
 
       try {
-        localStorage.setItem('suraksha_user_credentials', JSON.stringify({
+        localStorage.setItem(`suraksha_user_credentials_${targetUserId}`, JSON.stringify({
           fullName: fullName.trim(),
           email: verifiedMail,
           phone: initialPhone.trim(),
@@ -254,7 +254,7 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
       };
 
       try {
-        localStorage.setItem('suraksha_user_credentials', JSON.stringify({
+        localStorage.setItem(`suraksha_user_credentials_${targetUserId}`, JSON.stringify({
           fullName: fullName.trim(),
           email: initialEmail.trim(),
           phone: verifiedPhone,

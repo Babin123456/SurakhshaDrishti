@@ -221,6 +221,10 @@ export default function RealGoogleMap({
         zoom: initialZoom,
         zoomControl: true,
         scrollWheelZoom: true,
+        touchZoom: true,
+        tap: true,
+        bounceAtZoomLimits: false,
+        preferCanvas: true, // Hardware-accelerated canvas renderer for smooth mobile performance
       });
 
       map.on('movestart', (e) => {
@@ -254,23 +258,27 @@ export default function RealGoogleMap({
         if (mapInstanceRef.current) mapInstanceRef.current.invalidateSize();
       }, 250);
 
-      // Robust ResizeObserver: ensures map tiles immediately recalculate when switching Split <-> Full View
+      // Robust ResizeObserver: ensures map tiles immediately recalculate when switching Split <-> Full View or on mobile orientation flip
+      let resizeObserver = null;
       if (typeof ResizeObserver !== 'undefined' && mapContainerRef.current) {
-        const resizeObserver = new ResizeObserver(() => {
+        resizeObserver = new ResizeObserver(() => {
           if (mapInstanceRef.current) {
             mapInstanceRef.current.invalidateSize();
           }
         });
         resizeObserver.observe(mapContainerRef.current);
       }
-    }
 
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
-        mapInstanceRef.current = null;
-      }
-    };
+      return () => {
+        if (resizeObserver) {
+          resizeObserver.disconnect();
+        }
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.remove();
+          mapInstanceRef.current = null;
+        }
+      };
+    }
   }, []);
 
   useEffect(() => {

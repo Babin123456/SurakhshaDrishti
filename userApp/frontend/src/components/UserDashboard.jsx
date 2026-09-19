@@ -55,11 +55,25 @@ export default function UserDashboard({ onLogout, session }) {
     const handlePopState = () => setCurrentRoute(window.location.pathname + window.location.hash);
     window.addEventListener('popstate', handlePopState);
     window.addEventListener('hashchange', handlePopState);
+
+    // Mobile / Android Hardware back button handler for safehouse detail modal or sub-screens
+    const handleAndroidBack = () => {
+      if (selectedSafehouse) {
+        setSelectedSafehouse(null);
+      } else if (window.location.hash) {
+        window.history.back();
+      }
+    };
+    window.addEventListener('ionBackButton', handleAndroidBack);
+    document.addEventListener('backbutton', handleAndroidBack);
+
     return () => {
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('hashchange', handlePopState);
+      window.removeEventListener('ionBackButton', handleAndroidBack);
+      document.removeEventListener('backbutton', handleAndroidBack);
     };
-  }, []);
+  }, [selectedSafehouse]);
 
   // Poll for zones to see if there's an emergency
   useEffect(() => {
