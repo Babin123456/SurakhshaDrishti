@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import DOMPurify from 'dompurify';
+import { io } from 'socket.io-client';
 import { 
   ShieldAlert, 
   Map, 
@@ -107,6 +108,24 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
     { id: 1, sender: 'NDRF Base Control', department: 'HQ Command', text: 'Tactical mesh channel open. Geohash telemetry streaming.', time: 'Just now' },
     { id: 2, sender: 'SDMA Field Lead', department: 'SDMA', text: 'Sector perimeter assessed. Awaiting team assignment.', time: '1m ago' }
   ]);
+  const socketRef = useRef(null);
+
+  useEffect(() => {
+    socketRef.current = io(API_BASE_URL.replace('/api', '')); // Connect to root WebSocket
+    
+    // Join the currently active zone chat
+    if (selectedZoneId) {
+        socketRef.current.emit("join_chat", selectedZoneId);
+    }
+
+    socketRef.current.on("tactical_message", (data) => {
+        setChatMessages(prev => [...prev, data.message]);
+    });
+
+    return () => {
+        if (socketRef.current) socketRef.current.disconnect();
+    };
+  }, [selectedZoneId]);
 
   const [isFullMapView, setIsFullMapView] = useState(true);
   const [showProfileModal, setShowProfileModal] = useState(false);
@@ -353,19 +372,10 @@ export default function Dashboard({ user, onLogout, onNavigateProfile, onNavigat
     setChatMessages(prev => [...prev, newMsg]);
     setChatInput('');
 
-    // Simulate inter-agency confirmation
-    setTimeout(() => {
-      setChatMessages(prev => [
-        ...prev,
-        {
-          id: Date.now() + 1,
-          sender: 'NDRF Air Dispatch',
-          department: 'Emergency Airborne',
-          text: `Acknowledged message for ${activeZone.name}. Drone corridor monitoring active.`,
-          time: 'Just now'
-        }
-      ]);
-    }, 1200);
+    // Emit message to backend via WebSocket for real-time chat
+    if (socketRef.current) {
+        socketRef.current.emit("tactical_message", { room: selectedZoneId || 'global', message: newMsg });
+    }
   };
 
   // 3. Vote to Resolve Situation in Red Zone

@@ -113,6 +113,18 @@ io.on("connection", (socket) => {
         console.log(`[Socket] ${socket.id} joined disaster sector room: ${geohash}`);
     });
 
+    // Dynamic room join for tactical chat (Bug 4.2 fix)
+    socket.on("join_chat", (conversationId) => {
+        socket.join(conversationId);
+        console.log(`[Socket] ${socket.id} joined chat room: ${conversationId}`);
+    });
+
+    // Handle incoming tactical chat messages
+    socket.on("tactical_message", (data) => {
+        // Broadcast the message to everyone in the room except the sender
+        socket.to(data.room).emit("tactical_message", data);
+    });
+
     // Emergency telemetry ping from client
     socket.on("emergency_ping", (data) => {
         io.emit("red_zone_alert", {

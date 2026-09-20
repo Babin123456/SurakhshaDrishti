@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import { io } from 'socket.io-client';
 import { 
   ShieldAlert, 
   ShieldCheck, 
@@ -56,6 +57,23 @@ export default function AgentDashboard({ onLogout, session }) {
   ]);
   const [safehouses, setSafehouses] = useState([]);
   const [trappedCitizens, setTrappedCitizens] = useState([]);
+  const socketRef = useRef(null);
+
+  useEffect(() => {
+    socketRef.current = io(API_BASE_URL.replace('/api', ''));
+    
+    // Join the chat room for the first active zone if any
+    const activeZone = zones.length > 0 ? zones[0].zone_id : 'global';
+    socketRef.current.emit("join_chat", activeZone);
+
+    socketRef.current.on("tactical_message", (data) => {
+        setE2eeMessages(prev => [...prev, { ...data.message, isSelf: false }]);
+    });
+
+    return () => {
+        if (socketRef.current) socketRef.current.disconnect();
+    };
+  }, [zones]);
 
   const handleSendMessage = (e) => {
     if (e) e.preventDefault();
@@ -71,6 +89,11 @@ export default function AgentDashboard({ onLogout, session }) {
 
     if (chatMode === 'E2EE') {
       setE2eeMessages(prev => [...prev, newMsg]);
+      // Emit to backend
+      const activeZone = zones.length > 0 ? zones[0].zone_id : 'global';
+      if (socketRef.current) {
+        socketRef.current.emit("tactical_message", { room: activeZone, message: newMsg });
+      }
     } else {
       setGsmMessages(prev => [...prev, newMsg]);
     }
