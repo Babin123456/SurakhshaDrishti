@@ -42,6 +42,29 @@ export default function UserDashboard({ onLogout, session }) {
   const [userLat, setUserLat] = useState(session?.location?.lat);
   const [userLng, setUserLng] = useState(session?.location?.lng);
   const [isInitializing, setIsInitializing] = useState(true);
+  
+  // GSM Fallback specific states
+  const [isOffline, setIsOffline] = useState(!navigator.onLine);
+
+  useEffect(() => {
+    const handleOffline = () => setIsOffline(true);
+    const handleOnline = () => setIsOffline(false);
+    
+    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', handleOnline);
+    
+    return () => {
+      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', handleOnline);
+    };
+  }, []);
+
+  const sendGsmSos = () => {
+    // Generate highly compressed payload (SOS|LAT|LNG|BATT)
+    const payload = `SOS|${(userLat || 0).toFixed(4)}|${(userLng || 0).toFixed(4)}|BATT90`;
+    // Trigger native SMS capability to the drone's OpenBTS shortcode
+    window.location.href = `sms:8888?body=${encodeURIComponent(payload)}`;
+  };
 
   // In-app loader: small round spiral icon for 1 second
   useEffect(() => {
@@ -318,6 +341,31 @@ export default function UserDashboard({ onLogout, session }) {
               Calibrating Radar...
             </span>
           </div>
+        </div>
+      )}
+
+      {/* GSM Fallback Overlay (Shown only when offline) */}
+      {isOffline && (
+        <div className="absolute top-14 right-4 sm:right-12 z-[1001] bg-black/90 backdrop-blur-md rounded-2xl shadow-[0_15px_35px_rgba(200,0,0,0.3)] border border-red-500/50 p-4 max-w-xs sm:max-w-sm animate-pulse-slow">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-10 h-10 rounded-full bg-red-500/20 flex items-center justify-center shrink-0">
+              <Radio className="w-5 h-5 text-red-500 animate-ping" />
+            </div>
+            <div>
+              <h2 className="text-white font-bold text-sm tracking-tight">NO INTERNET</h2>
+              <p className="text-red-400 text-[10px] font-mono tracking-widest uppercase">GSM Fallback Active</p>
+            </div>
+          </div>
+          <p className="text-gray-300 text-xs mb-4 leading-relaxed">
+            Network connectivity lost. Your app is now in E-OTD mode. Your SOS will be transmitted via SMS to the nearest Drone Tower.
+          </p>
+          <button 
+            onClick={sendGsmSos}
+            className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-2.5 rounded-xl text-xs transition-colors flex items-center justify-center gap-2"
+          >
+            <AlertTriangle className="w-4 h-4" />
+            Transmit SMS SOS
+          </button>
         </div>
       )}
 
