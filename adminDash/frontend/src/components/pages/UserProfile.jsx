@@ -59,6 +59,9 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
   const [verificationModal, setVerificationModal] = useState(null); // { type: 'email' | 'phone', targetValue: string, otpCode: string, generatedOtp: string }
   const [enteredOtp, setEnteredOtp] = useState('');
 
+  // Bio state
+  const [bio, setBio] = useState('');
+
   // Profile picture state (supports local preview, upload, remove)
   const [profileImage, setProfileImage] = useState(
     user?.profile_picture || user?.avatar || localStorage.getItem('suraksha_user_pfp') || null
@@ -85,6 +88,29 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
     }
   }, [user]);
 
+  // Fetch bio and pfp from backend on mount
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      try {
+        const response = await fetch(`${apiService.API_BASE_URL || 'http://localhost:5000'}/profile`, {
+          credentials: 'omit' // or 'include' depending on auth, we'll try standard for now
+        });
+        const data = await response.json();
+        if (data.success) {
+          if (data.bio_text) setBio(data.bio_text);
+          if (data.pfp) {
+            const pfpUrl = `${apiService.API_BASE_URL || 'http://localhost:5000'}${data.pfp}`;
+            setProfileImage(pfpUrl);
+            localStorage.setItem('suraksha_user_pfp', pfpUrl);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch backend profile:", err);
+      }
+    };
+    fetchProfileData();
+  }, []);
+
   // Status feedback
   const [saveSuccess, setSaveSuccess] = useState(null);
   const [saveError, setSaveError] = useState(null);
@@ -92,8 +118,8 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
 
   const fileInputRef = useRef(null);
 
-  // Handle Photo Upload via local file reader
-  const handlePhotoUpload = (e) => {
+  // Handle Photo Upload via local file reader and Backend
+  const handlePhotoUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -107,19 +133,47 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
       return;
     }
 
+    // Show preview immediately
     const reader = new FileReader();
     reader.onload = (event) => {
-      const dataUrl = event.target.result;
-      setProfileImage(dataUrl);
-      localStorage.setItem('suraksha_user_pfp', dataUrl);
-      setSaveSuccess('Profile photo updated successfully!');
-      setSaveError(null);
-      addToast('Profile photo updated successfully!', 'success');
-      if (onUpdateUser) {
-        onUpdateUser({ ...user, profile_picture: dataUrl, avatar: dataUrl });
-      }
+      setProfileImage(event.target.result);
     };
     reader.readAsDataURL(file);
+
+    // Upload to backend
+    try {
+      const formData = new FormData();
+      formData.append('profile_picture', file);
+
+      const response = await fetch(`${apiService.API_BASE_URL || 'http://localhost:5000'}/profile/pfp`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'omit' // use appropriate auth
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        setSaveSuccess('Profile photo uploaded to server!');
+        setSaveError(null);
+        addToast('Profile photo updated securely!', 'success');
+        // Fetch to get exact remote URL (so subsequent saves use the right path)
+        const getRes = await fetch(`${apiService.API_BASE_URL || 'http://localhost:5000'}/profile`, { credentials: 'omit' });
+        const getData = await getRes.json();
+        if (getData.success && getData.pfp) {
+          const finalUrl = `${apiService.API_BASE_URL || 'http://localhost:5000'}${getData.pfp}`;
+          setProfileImage(finalUrl);
+          localStorage.setItem('suraksha_user_pfp', finalUrl);
+          if (onUpdateUser) onUpdateUser({ ...user, profile_picture: finalUrl, avatar: finalUrl });
+        }
+      } else {
+        setSaveError(data.error || 'Failed to upload photo');
+        addToast(data.error || 'Failed to upload', 'error');
+      }
+    } catch (err) {
+      console.error("Upload error:", err);
+      setSaveError('Network error uploading profile photo.');
+    }
   };
 
   // Handle Photo Removal
@@ -376,6 +430,18 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
       localStorage.setItem(`suraksha_pwd_${targetUserId}`, newPassword);
     }
 
+    // Attempt to save bio to backend
+    try {
+      await fetch(`${apiService.API_BASE_URL || 'http://localhost:5000'}/profile/bio`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ bio_msg: bio }),
+        credentials: 'omit'
+      });
+    } catch (err) {
+      console.error("Failed to save bio to backend:", err);
+    }
+
     // Persist real-time modifications in local session & local database store
     const updatedUserData = {
       ...user,
@@ -605,6 +671,17 @@ export default function UserProfile({ user, onUpdateUser, onBack, onLogout, onNa
                     className="w-full bg-[#FDFBF7] text-[#1A1A1A] text-xs pl-10 pr-3.5 py-2.5 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] transition-colors"
                   />
                 </div>
+              </div>
+
+              {/* Officer Bio */}
+              <div className="sm:col-span-2 space-y-1.5 mt-2">
+                <label className="text-xs font-semibold text-[#1A1A1A]">Officer Biography & Clearances</label>
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="Enter operational experience, secondary clearances, or medical training..."
+                  className="w-full bg-[#FDFBF7] text-[#1A1A1A] text-xs p-3 rounded-xl border border-[#E8E1D5] focus:outline-none focus:border-[#8B7355] transition-colors resize-y min-h-[80px]"
+                />
               </div>
 
               {/* Official Email Address with Verification Action */}
