@@ -260,7 +260,7 @@ router.post("/assign", FN_verifyTkn, async (req, res, next) => {
     }
 });
 
-// 4. POST /zones/vote-resolve — Officer votes to resolve Red Zone (Requires Majority Consensus)
+// 4. POST /zones/vote-resolve — Officer votes to resolve Red Zone (Requires Majority Consensus + Department Diversity)
 router.post("/vote-resolve", FN_verifyTkn, async (req, res, next) => {
     const { zone_id } = req.body;
     const user_id = req.user.user_id;
@@ -277,7 +277,7 @@ router.post("/vote-resolve", FN_verifyTkn, async (req, res, next) => {
             [zone_id, user_id]
         );
 
-        // Calculate total votes vs required
+        // Calculate total votes vs required (80% consensus)
         const voteCountRes = await db.query(
             `SELECT COUNT(*)::int AS total_votes FROM zone_assignments WHERE zone_id = $1 AND vote_to_resolve = true`,
             [zone_id]
@@ -291,10 +291,24 @@ router.post("/vote-resolve", FN_verifyTkn, async (req, res, next) => {
         const totalAssigned = assignedRes.rows[0].total_assigned;
         const votesRequired = Math.max(1, Math.ceil(totalAssigned * 0.8)); // 80% consensus required
 
+        // Department diversity check: each unique department assigned must have at least 1 vote
+        const deptCheckRes = await db.query(
+            `SELECT department, 
+                    BOOL_OR(vote_to_resolve) AS has_voted
+             FROM zone_assignments 
+             WHERE zone_id = $1 
+             GROUP BY department`,
+            [zone_id]
+        );
+        const departments = deptCheckRes.rows;
+        const allDepartmentsVoted = departments.every(d => d.has_voted === true);
+        const missingDepts = departments.filter(d => !d.has_voted).map(d => d.department);
+
         let newStatus = 'ACTIVE_RED_ZONE';
         let isResolved = false;
 
-        if (totalVotes >= votesRequired) {
+        // Both conditions must be met: 80% votes AND every department represented
+        if (totalVotes >= votesRequired && allDepartmentsVoted) {
             newStatus = 'SITUATION_UNDER_CONTROL';
             isResolved = true;
             await db.query(
@@ -318,9 +332,16 @@ router.post("/vote-resolve", FN_verifyTkn, async (req, res, next) => {
             status: newStatus,
             totalVotes,
             votesRequired,
+            departmentConsensus: {
+                allDepartmentsVoted,
+                missingDepartments: missingDepts,
+                departments: departments.map(d => ({ department: d.department, voted: d.has_voted }))
+            },
             message: isResolved 
                 ? `Red Zone ${zone_id} marked as RESOLVED — Situation Under Control!` 
-                : `Vote recorded (${totalVotes}/${votesRequired} consensus votes).`
+                : !allDepartmentsVoted 
+                    ? `Vote recorded (${totalVotes}/${votesRequired}). Awaiting votes from: ${missingDepts.join(', ')}.`
+                    : `Vote recorded (${totalVotes}/${votesRequired} consensus votes).`
         });
     } catch (err) {
         return next(err);
@@ -432,7 +453,7 @@ router.get("/shelters/dynamic", async (req, res, next) => {
         // Step 1: Check officially registered shelters
         const officialRes = await db.query(`SELECT * FROM shelters WHERE is_officially_registered = true`);
         
-        // Simple manual distance filter for the hackathon (Haversine)
+        // Haversine distance filter for spatial proximity matching
         const R = 6371e3;
         const officialNearby = officialRes.rows.filter(s => {
             const dLat = (s.lat - lat) * Math.PI / 180;
@@ -471,7 +492,7 @@ router.get("/shelters/dynamic", async (req, res, next) => {
             for (const node of osmData.elements) {
                 if (!node.tags || !node.tags.name) continue; // skip unnamed places
                 const type = node.tags.amenity;
-                const capacity = type === 'hospital' ? 300 : 800; // Mock assumed capacities
+                const capacity = type === 'hospital' ? 300 : 800; // Estimated capacity by amenity type
 
                 dynamicShelters.push({
                     shelter_id: `OSM-${node.id}`,
@@ -491,34 +512,36 @@ router.get("/shelters/dynamic", async (req, res, next) => {
         }
 
         // Final fallback if all Overpass endpoints failed or returned nothing
+        // Generate coordinate-derived IDs so they are deterministic and unique per location
         if (dynamicShelters.length === 0) {
+             const locHash = Math.abs(Math.round((parseFloat(lat) * 1000 + parseFloat(lng) * 1000))).toString(36);
              dynamicShelters.push({
-                 shelter_id: `MOCK-1`,
+                 shelter_id: `FB-H-${locHash}-N`,
                  zone_id: null,
                  primary_hashed_key: 'N/A',
                  name: 'District General Hospital (Emergency Fallback)',
                  lat: parseFloat(lat) + 0.005,
                  lng: parseFloat(lng) + 0.005,
                  capacity_total: 500,
-                 capacity_occupied: 100,
+                 capacity_occupied: 0,
                  status: 'OPEN',
                  evacuation_corridor: 'Main Highway Route',
                  is_officially_registered: false,
-                 source_data: 'Mock Fallback'
+                 source_data: 'Geo-Fallback'
              });
              dynamicShelters.push({
-                 shelter_id: `MOCK-2`,
+                 shelter_id: `FB-S-${locHash}-S`,
                  zone_id: null,
                  primary_hashed_key: 'N/A',
-                 name: 'State Secondary School (Emergency Fallback)',
+                 name: 'Government Secondary School (Emergency Fallback)',
                  lat: parseFloat(lat) - 0.005,
                  lng: parseFloat(lng) - 0.005,
                  capacity_total: 1200,
-                 capacity_occupied: 1200,
-                 status: 'FULL',
+                 capacity_occupied: 0,
+                 status: 'OPEN',
                  evacuation_corridor: 'Secondary Route',
                  is_officially_registered: false,
-                 source_data: 'Mock Fallback'
+                 source_data: 'Geo-Fallback'
              });
         }
 

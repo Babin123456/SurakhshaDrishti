@@ -21,6 +21,7 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-rate-limit": "^8.5.2",
+    "h3-js": "^4.5.0",
     "jsdom": "^29.1.1",
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.2.0",

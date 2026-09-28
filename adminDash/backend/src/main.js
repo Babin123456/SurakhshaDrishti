@@ -14,6 +14,7 @@ const authRoutes = require("../routes/auth");
 const zonesRoutes = require("../routes/zones");
 const chatRoutes = require("../routes/chat");
 const feedbackRoutes = require("../routes/feedback");
+const h3Routes = require("../routes/h3routing");
 
 const app = express();
 app.set('trust proxy', 1); // Trust first proxy (solves the X-Forwarded-For rate limit error)
@@ -70,6 +71,8 @@ app.use("/api/zones", zonesRoutes);
 app.use("/chat", FN_verifyTkn, API_Limiter(10, 500, 0), chatRoutes); // 10 seconds, 500 requests [because for testing we need this]
 app.use("/profile", FN_verifyTkn, API_Limiter(10, 50, 0), profileRoutes); // 10 seconds, 50 requests
 app.use("/feedback", FN_verifyTkn, API_Limiter(60, 50, 1), feedbackRoutes); // 60 seconds, 50 requests
+app.use("/h3", h3Routes);
+app.use("/api/h3", h3Routes);
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // error handlers

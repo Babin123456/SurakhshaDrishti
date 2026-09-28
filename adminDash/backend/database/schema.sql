@@ -162,3 +162,13 @@ CREATE TABLE IF NOT EXISTS ai_prediction_history (
     status TEXT DEFAULT 'TRIGGERED', -- TRIGGERED, FALSE_ALARM, VALIDATED
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
+
+-- CONSENSUS LOGS (Audit trail for multi-agency Red Zone clearance)
+CREATE TABLE IF NOT EXISTS consensus_log (
+    log_id SERIAL PRIMARY KEY,
+    zone_id TEXT REFERENCES hazard_zones(zone_id) ON DELETE CASCADE,
+    user_id TEXT REFERENCES users(user_id) ON DELETE CASCADE,
+    department TEXT,
+    action TEXT, -- e.g., VOTE_CAST, CLEARANCE_GRANTED
+    timestamp TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
